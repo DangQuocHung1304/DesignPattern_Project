@@ -1,0 +1,270 @@
+/* Additional component styles */
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 4rem 0;
+    margin-bottom: 0;
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.hero .lead {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Features Section */
+.features {
+    padding: 4rem 0;
+}
+
+.features .card {
+    height: 100%;
+    border: none;
+    transition: var(--transition);
+}
+
+.features .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Sections */
+.py-5 {
+    padding: 3rem 0;
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+}
+
+.badge-primary { background-color: var(--primary-color); color: white; }
+.badge-success { background-color: var(--success-color); color: white; }
+.badge-danger { background-color: var(--error-color); color: white; }
+.badge-warning { background-color: var(--warning-color); color: #212529; }
+.badge-info { background-color: var(--info-color); color: white; }
+.badge-secondary { background-color: var(--text-muted); color: white; }
+
+/* Footer */
+.footer {
+    background: var(--primary-color);
+    color: white;
+    margin-top: auto;
+}
+
+/* Slot selection buttons */
+.slot-btn {
+    margin: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.slot-btn.btn-success {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+    color: white;
+}
+
+/* Modal improvements */
+.modal-body .row {
+    margin: 0 -0.75rem;
+}
+
+.modal-body .col-6,
+.modal-body .col-4,
+.modal-body .col-3 {
+    padding: 0 0.75rem;
+}
+
+/* Card improvements */
+.card .small {
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.card h6 {
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+/* Loading improvements */
+.loading-spinner {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Rating stars */
+.text-warning {
+    color: #ffc107 !important;
+}
+
+/* Responsive improvements */
+@media (max-width: 992px) {
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+    
+    .hero .lead {
+        font-size: 1.125rem;
+    }
+    
+    .hero-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .col-4 {
+        flex: 0 0 50%;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero {
+        padding: 2rem 0;
+    }
+    
+    .hero h1 {
+        font-size: 2rem;
+    }
+    
+    .col-4,
+    .col-6 {
+        flex: 0 0 100%;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .modal {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+    }
+    
+    .modal-body .col-6 {
+        flex: 0 0 100%;
+        margin-bottom: 1rem;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-light);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* Focus styles for accessibility */
+.btn:focus,
+.form-control:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Hover effects */
+.card:hover .btn {
+    transform: translateY(-1px);
+}
+
+/* Text utilities */
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.font-weight-bold {
+    font-weight: 700 !important;
+}
+
+.font-weight-normal {
+    font-weight: 400 !important;
+}
+
+/* Border utilities */
+.border {
+    border: 1px solid var(--border-color) !important;
+}
+
+.border-top {
+    border-top: 1px solid var(--border-color) !important;
+}
+
+.border-bottom {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.rounded {
+    border-radius: var(--border-radius) !important;
+}
+
+/* Shadow utilities */
+.shadow {
+    box-shadow: var(--box-shadow) !important;
+}
+
+.shadow-sm {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24) !important;
+}
+
+.shadow-lg {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+}

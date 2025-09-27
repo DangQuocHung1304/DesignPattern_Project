@@ -1,0 +1,57 @@
+Cấu trúc thư mục Web:
+Web/HealthySystem-Frontend/
+├── index.html                 # Trang chủ chính
+├── assets/
+│   ├── css/
+│   │   ├── main.css          # CSS chính
+│   │   └── components.css    # CSS cho components
+│   ├── js/
+│   │   ├── config.js         # Cấu hình ứng dụng
+│   │   ├── utils.js          # Các hàm tiện ích
+│   │   ├── api.js            # Service gọi API
+│   │   ├── auth.js           # Quản lý xác thực
+│   │   └── app.js            # Logic ứng dụng chính
+│   └── images/               # Thư mục hình ảnh
+├── pages/                    # Các trang khác (dự phòng)
+└── components/               # Các component tái sử dụng
+
+✨ Tính năng đã implement:
+🔐 Authentication System:
+✅ Đăng nhập/Đăng ký
+✅ JWT Token management
+✅ Persistent login
+✅ User menu và profile
+🏥 Core Features (theo Sprint User Stories):
+✅ US-01: Trang chủ với thông tin phòng khám
+✅ US-02: Danh sách chuyên khoa
+✅ US-03: Danh sách bác sĩ theo chuyên khoa
+✅ US-04: Chi tiết bác sĩ và đánh giá
+✅ US-05: Đặt lịch khám (cần đăng nhập)
+✅ US-06: Quản lý lịch hẹn cá nhân
+✅ US-07: Tạo tài khoản bệnh nhân
+🎨 UI/UX Features:
+✅ Responsive design (Mobile-first)
+✅ Modern UI với gradient và animations
+✅ Loading states và error handling
+✅ Toast notifications
+✅ Modal system
+✅ Smooth scrolling navigation
+🔧 Technical Features:
+✅ Vanilla JavaScript (không dependency)
+✅ Modular architecture
+✅ API service với error handling
+✅ Local storage management
+✅ Real-time API health checking
+✅ Form validation
+
+🚀 Cách sử dụng:
+1. Mở trang web:
+2. Đảm bảo API server đang chạy:
+3. Test các tính năng:
+🏠 Trang chủ: Xem thông tin và tính năng
+👨‍⚕️ Bác sĩ: Xem danh sách và chi tiết bác sĩ
+🩺 Chuyên khoa: Lọc bác sĩ theo chuyên khoa
+📝 Đăng ký: Tạo tài khoản bệnh nhân mới
+🔐 Đăng nhập: Đăng nhập để đặt lịch
+📅 Đặt lịch: Chọn bác sĩ và thời gian khám
+📋 Quản lý lịch: Xem và hủy lịch hẹn

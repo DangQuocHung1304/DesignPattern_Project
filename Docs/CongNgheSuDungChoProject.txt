@@ -1,0 +1,4 @@
+Backend:    ASP.NET Core Web API (C#)
+Frontend:   Vanilla JavaScript + HTML5 + CSS3  
+Mobile:     React Native
+Database:   SQL Server

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthySystem API - Chào mừng</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        .links {
+            margin-top: 30px;
+        }
+        .links a {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            margin: 10px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .links a:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 HealthySystem API</h1>
+        <p>Chào mừng bạn đến với API Hệ thống Quản lý Phòng khám!</p>
+        <p>API đang hoạt động bình thường.</p>
+        
+        <div class="links">
+            <a href="/api/health">🔍 Health Check</a>
+            <a href="/swagger">📚 API Documentation</a>
+            <a href="/api/specialties">👨‍⚕️ Chuyên khoa</a>
+            <a href="/api/doctors">🩺 Bác sĩ</a>
+        </div>
+        
+        <p style="margin-top: 30px; font-size: 0.9rem; opacity: 0.8;">
+            Server Time: <span id="serverTime"></span>
+        </p>
+    </div>
+    
+    <script>
+        document.getElementById('serverTime').textContent = new Date().toLocaleString('vi-VN');
+    </script>
+</body>
+</html>

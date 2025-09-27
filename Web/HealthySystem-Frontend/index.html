@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthySystem - Hệ thống Quản lý Phòng khám</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                🏥 HealthySystem
+            </a>
+            <nav>
+                <ul class="nav">
+                    <li><a href="#home">Trang chủ</a></li>
+                    <li><a href="#specialties">Chuyên khoa</a></li>
+                    <li><a href="#doctors">Bác sĩ</a></li>
+                    <li><a href="#appointments">Lịch hẹn</a></li>
+                    <li><a href="#" id="auth-link">Đăng nhập</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="container">
+                <div class="hero-content text-center">
+                    <h1>Chào mừng đến với HealthySystem</h1>
+                    <p class="lead">Hệ thống quản lý phòng khám hiện đại, giúp bạn dễ dàng đặt lịch khám và quản lý sức khỏe</p>
+                    <div class="hero-actions mt-4">
+                        <a href="#specialties" class="btn btn-primary btn-lg">Đặt lịch khám</a>
+                        <a href="#doctors" class="btn btn-outline btn-lg">Tìm bác sĩ</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features py-5">
+            <div class="container">
+                <h2 class="text-center mb-5">Tính năng nổi bật</h2>
+                <div class="row">
+                    <div class="col-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">🩺</div>
+                                <h4>Đặt lịch khám</h4>
+                                <p>Dễ dàng đặt lịch khám với bác sĩ chuyên khoa phù hợp</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">👨‍⚕️</div>
+                                <h4>Bác sĩ chuyên nghiệp</h4>
+                                <p>Đội ngũ bác sĩ giàu kinh nghiệm và chuyên môn cao</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">📱</div>
+                                <h4>Quản lý online</h4>
+                                <p>Quản lý lịch khám và theo dõi tình trạng sức khỏe online</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Specialties Section -->
+        <section id="specialties" class="specialties py-5 bg-light">
+            <div class="container">
+                <h2 class="text-center mb-5">Chuyên khoa</h2>
+                <div id="specialties-list" class="row">
+                    <!-- Sẽ được load bởi JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Doctors Section -->
+        <section id="doctors" class="doctors py-5">
+            <div class="container">
+                <h2 class="text-center mb-5">Đội ngũ bác sĩ</h2>
+                <div id="doctors-list" class="row">
+                    <!-- Sẽ được load bởi JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Appointments Section (Only for logged in users) -->
+        <section id="appointments" class="appointments py-5 bg-light d-none">
+            <div class="container">
+                <h2 class="text-center mb-5">Lịch hẹn của bạn</h2>
+                <div id="appointments-list">
+                    <!-- Sẽ được load bởi JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer py-4 bg-primary text-white text-center">
+        <div class="container">
+            <p>&copy; 2025 HealthySystem. Tất cả quyền được bảo lưu.</p>
+            <p>Phiên bản 1.0.0 | API Status: <span id="api-status">Đang kiểm tra...</span></p>
+        </div>
+    </footer>
+
+    <!-- Modals sẽ được thêm bởi JavaScript -->
+    <div id="modals-container"></div>
+
+    <!-- Scripts -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+</html>

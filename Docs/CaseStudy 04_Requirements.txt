@@ -1,0 +1,37 @@
+Case study 04
+ XÂY DỰNG HỆ THỐNG PHÒNG KHÁM TƯ NHÂN “HEALTHY SYSTEM”
+
+1.1. Mô tả hệ thống và yêu cầu chức năng
+•	Hệ thống phòng khám tư nhân “Healthy system” là 1 application trên điện thoại (android & ios) đối với người dùng là bệnh nhân hoặc người muốn xem thông tin và tìm hiểu thông tin về phòng khám. 1 application cho các nhân viên của phòng khám.
+•	Ứng dụng phía người dùng cá nhân gồm các tính năng như sau:
+o	Cho phép người dùng vào xem các thông tin về phòng khám. Ví dụ, thông tin các chuyên môn khám, thông tin bác sỹ, thông tin trang thiết bị,…
+o	Cho phép người dùng đăng ký lịch khám trực tuyến bằng cách chọn bác sĩ khám, chọn ngày giờ khám bệnh
+o	Cho phép người dùng tạo tài khoản để xem lại các thông tin về lịch sử bệnh cũng như quá trình điều trị của mình
+o	Cho phép người dùng thay đổi lịch hẹn khi đã đặt lịch (thời gian trước khi khám 2 tiếng)
+o	Cho phép người dùng gọi tới đường dây nóng của phòng khám để đặt câu hỏi và nhận tư vấn
+o	Cho phép người dùng đánh giá về bác sĩ cũng như các dịch vụ của phòng khám
+•	Ứng dụng phía nhân viên của phòng khám bao gồm:
+o	Tiếp tân:
+	Tiếp tân của phòng khám nhận lịch khám của khách hàng thông qua việc đặt trực tuyến hoặc đăng ký tại phòng khám
+	Tiếp tân được phép đặt lịch hẹn giữa bệnh nhân và bác sĩ
+	Hủy lịch hẹn khi có yêu cầu
+	Chuyển đổi lịch hẹn khi có yêu cầu
+	Liên hệ khách hàng khi cần
+o	Bác sĩ:
+	Cập nhật thông tin cá nhân
+	Cập nhật lịch trình làm việc để nhân viên tiếp tân có thể theo dõi và sắp lịch
+	Xem thông tin cá nhân của bệnh nhân
+	Thay đổi lịch hẹn khi cần thiết
+	Hủy lịch hẹn khi cần thiết
+	Xem lịch sử bệnh của bệnh nhân đã khám trước đó
+	Yêu cầu thực hiện các xét nghiệm, chụp phim, siêu âm,… cần thiết cho bệnh nhân
+	Đọc kết quả xét nghiệm, chụp phim, siêu âm,… và cho đơn thuốc
+o	Nhân viên/bác sĩ xét nghiệm, chụp phim, siêu âm
+	Nhận các yêu cầu xét nghiệm, chụp phim, siêu âm,… từ phiếu yêu cầu của bác sĩ
+	Điền các kết quả xét nghiệm, chụp phim, siêu âm
+o	Nhân viên kế toán
+	Tính toán các chi phí khám chữa bệnh và xuất ra bảng chi phí khám bệnh cho bệnh nhân
+	Tính toán lương cho tất cả bác sĩ, nhân viên của phòng khám
+
+•	Hệ thống có tính năng nhắc lịch hẹn khi gần đến giờ cho tất cả các người dùng của hệ thống
+•	Hệ thống cho phép in ra lịch sử cũng như thông tin của bệnh nhân khi cần

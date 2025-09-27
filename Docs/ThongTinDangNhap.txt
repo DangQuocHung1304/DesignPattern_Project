@@ -1,0 +1,3 @@
+Mở trang chủ: index.html
+Click "Đăng nhập" để chuyển đến trang login
+Sử dụng tài khoản: dr.an@clinic.local và mật khẩu: 123456

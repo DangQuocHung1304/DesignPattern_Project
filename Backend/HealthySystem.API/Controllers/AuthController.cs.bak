@@ -1,0 +1,281 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using HealthySystem.API.Data;
+using HealthySystem.API.Models;
+
+namespace HealthySystem.API.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
+    {
+        private readonly HealthySystemDbContext _context;
+        private readonly IConfiguration _configuration;
+
+        public AuthController(HealthySystemDbContext context, IConfiguration configuration)
+        {
+            _context = context;
+            _configuration = configuration;
+        }
+
+        // POST: api/auth/login
+        [HttpPost("login")]
+        public async Task<ActionResult<object>> Login([FromBody] LoginRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+            {
+                return BadRequest("Email and password are required.");
+            }
+
+            var user = await _context.Users
+                .Include(u => u.PatientProfile)
+                .Include(u => u.StaffProfile)
+                .FirstOrDefaultAsync(u => u.Email == request.Email && u.Status == "active" && u.DeletedAt == null);
+
+            if (user == null)
+            {
+                return Unauthorized("Invalid email or password.");
+            }
+
+            // In a real application, you should hash and verify passwords
+            // For now, we'll use plain text comparison (NOT recommended for production)
+            if (user.PasswordHash != HashPassword(request.Password))
+            {
+                return Unauthorized("Invalid email or password.");
+            }
+
+            var token = GenerateJwtToken(user);
+
+            var response = new
+            {
+                Token = token,
+                User = new
+                {
+                    Id = user.Id,
+                    PublicId = user.PublicId,
+                    Email = user.Email,
+                    FullName = (user.FirstName + " " + user.LastName).Trim(),
+                    Phone = user.Phone,
+                    Role = user.Role,
+                    Gender = user.Gender,
+                    DateOfBirth = user.DateOfBirth
+                }
+            };
+
+            return Ok(response);
+        }
+
+        // POST: api/auth/register (Temporarily disabled)
+        /*[HttpPost("register")]
+        public async Task<ActionResult<object>> Register([FromBody] RegisterRequest request)
+        {
+            // Validate request
+            if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password) || 
+                string.IsNullOrEmpty(request.FullName) || string.IsNullOrEmpty(request.Phone))
+            {
+                return BadRequest("Email, password, full name, and phone are required.");
+            }
+
+            if (request.Password.Length < 6)
+            {
+                return BadRequest("Password must be at least 6 characters long.");
+            }
+
+            // Check if user already exists
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == request.Email);
+
+            if (existingUser != null)
+            {
+                return BadRequest("A user with this email already exists.");
+            }
+
+            // Create new user
+            var user = new User
+            {
+                PublicId = Guid.NewGuid(),
+                Email = request.Email,
+                PasswordHash = HashPassword(request.Password),
+                FirstName = request.FullName.Split(' ').FirstOrDefault() ?? "",
+                LastName = request.FullName.Split(' ').Skip(1).FirstOrDefault() ?? "",
+                Phone = request.Phone,
+                Role = "patient", // New registrations are patients by default
+                Gender = request.Gender,
+                DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.Value) : null,
+                Status = "active",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // Create patient profile
+            var patientProfile = new PatientProfile
+            {
+                UserId = user.Id,
+                MedicalRecordNumber = GenerateMedicalRecordNumber(),
+                EmergencyContactName = request.EmergencyContactName,
+                EmergencyContactPhone = request.EmergencyContactPhone,
+                // BloodType = request.BloodType,
+                Allergies = request.Allergies,
+                // MedicalHistory = request.MedicalHistory,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+
+            _context.PatientProfiles.Add(patientProfile);
+            await _context.SaveChangesAsync();
+
+            var token = GenerateJwtToken(user);
+
+            var response = new
+            {
+                Token = token,
+                User = new
+                {
+                    Id = user.Id,
+                    PublicId = user.PublicId,
+                    Email = user.Email,
+                    FullName = user.FullName,
+                    Phone = user.Phone,
+                    Role = user.Role,
+                    Gender = user.Gender,
+                    DateOfBirth = user.DateOfBirth,
+                    Profile = new
+                    {
+                        MedicalRecordNumber = patientProfile.MedicalRecordNumber,
+                        EmergencyContactName = patientProfile.EmergencyContactName,
+                        EmergencyContactPhone = patientProfile.EmergencyContactPhone,
+                        BloodType = patientProfile.BloodType,
+                        Allergies = patientProfile.Allergies,
+                        MedicalHistory = patientProfile.MedicalHistory
+                    }
+                }
+            };
+
+            return CreatedAtAction(nameof(Login), response);
+        }
+
+        // POST: api/auth/refresh
+        [HttpPost("refresh")]
+        public async Task<ActionResult<object>> RefreshToken([FromBody] RefreshTokenRequest request)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]!);
+
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidIssuer = _configuration["JwtSettings:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = _configuration["JwtSettings:Audience"],
+                    ValidateLifetime = false, // We'll validate manually
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                var principal = tokenHandler.ValidateToken(request.Token, validationParameters, out var validatedToken);
+                var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized("Invalid token.");
+                }
+
+                var user = await _context.Users
+                    .Include(u => u.PatientProfile)
+                    .Include(u => u.StaffProfile)
+                    .FirstOrDefaultAsync(u => u.Id == userId && u.Status == "active" && u.DeletedAt == null);
+
+                if (user == null)
+                {
+                    return Unauthorized("User not found or inactive.");
+                }
+
+                var newToken = GenerateJwtToken(user);
+
+                return Ok(new { Token = newToken });
+            }
+            catch
+            {
+                return Unauthorized("Invalid token.");
+            }
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]!));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim("public_id", user.PublicId.ToString())
+            };
+
+            var expirationMinutes = int.Parse(_configuration["JwtSettings:ExpirationMinutes"]!);
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JwtSettings:Issuer"],
+                audience: _configuration["JwtSettings:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private string HashPassword(string password)
+        {
+            // In a real application, use a proper password hashing library like BCrypt
+            // This is just for demonstration purposes
+            return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password + "salt"));
+        }
+
+        private string GenerateMedicalRecordNumber()
+        {
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd");
+            var random = new Random().Next(1000, 9999);
+            return $"MRN{timestamp}{random}";
+        }
+    }
+
+    // DTOs for request bodies
+    public class LoginRequest
+    {
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+
+    public class RegisterRequest
+    {
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+        public string FullName { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public string? Gender { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public string? EmergencyContactName { get; set; }
+        public string? EmergencyContactPhone { get; set; }
+        public string? BloodType { get; set; }
+        public string? Allergies { get; set; }
+        public string? MedicalHistory { get; set; }
+    }
+
+    public class RefreshTokenRequest
+    {
+        public string Token { get; set; } = "";
+    }
+}
