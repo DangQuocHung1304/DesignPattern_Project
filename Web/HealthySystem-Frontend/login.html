@@ -177,7 +177,7 @@
             </form>
             
             <div class="login-footer">
-                <p>Chưa có tài khoản? <a href="#" id="register-link">Đăng ký ngay</a></p>
+                <p>Chưa có tài khoản? <a href="register.html" id="register-link">Đăng ký ngay</a></p>
                 <p><a href="#" id="forgot-password-link">Quên mật khẩu?</a></p>
             </div>
         </div>
@@ -189,63 +189,126 @@
     <script src="assets/js/auth.js"></script>
     
     <script>
+        console.log('Login script started loading...');
+        
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, getting elements...');
+            
             const loginForm = document.getElementById('login-form');
             const loginBtn = document.getElementById('login-btn');
             const errorMessage = document.getElementById('error-message');
             const successMessage = document.getElementById('success-message');
             
-            // Kiểm tra nếu đã đăng nhập
-            if (authManager.isAuthenticated()) {
-                window.location.href = 'index.html';
+            console.log('Elements found:', {
+                loginForm: !!loginForm,
+                loginBtn: !!loginBtn,
+                errorMessage: !!errorMessage,
+                successMessage: !!successMessage
+            });
+            
+            // Kiểm tra elements tồn tại
+            if (!loginForm || !loginBtn || !errorMessage || !successMessage) {
+                console.error('Missing required elements:', {
+                    loginForm: !!loginForm,
+                    loginBtn: !!loginBtn,
+                    errorMessage: !!errorMessage,
+                    successMessage: !!successMessage
+                });
                 return;
             }
             
+            // Kiểm tra authManager
+            console.log('Checking authManager:', typeof authManager);
+            if (typeof authManager !== 'undefined') {
+                console.log('AuthManager available, checking authentication...');
+                if (authManager.isAuthenticated()) {
+                    console.log('User already authenticated, redirecting...');
+                    window.location.href = 'index.html';
+                    return;
+                }
+            } else {
+                console.warn('AuthManager not loaded yet');
+            }
+            
             // Xử lý form đăng nhập
+            console.log('Setting up form event listener...');
             loginForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
+                e.preventDefault(); // Prevent form submission first
+                console.log('Form submitted!');
+                
+                // Prevent multiple submissions
+                if (loginBtn.disabled) {
+                    console.log('Login already in progress, ignoring...');
+                    return;
+                }
                 
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
                 
+                // Validate input
+                if (!email || !password) {
+                    errorMessage.textContent = 'Vui lòng điền đầy đủ email và mật khẩu.';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+                
                 // Disable nút và hiển thị loading
+                console.log('Disabling login button...');
                 loginBtn.disabled = true;
                 loginBtn.textContent = 'Đang đăng nhập...';
                 
                 // Ẩn messages cũ
+                console.log('Hiding old messages...');
                 errorMessage.style.display = 'none';
                 successMessage.style.display = 'none';
                 
                 try {
+                    // Kiểm tra authManager có tồn tại không
+                    if (typeof authManager === 'undefined') {
+                        throw new Error('AuthManager không được load');
+                    }
+                    
+                    console.log('Calling authManager.login with:', email);
                     const result = await authManager.login(email, password);
+                    console.log('Login result:', result);
                     
                     if (result.success) {
+                        console.log('Login successful, showing success message...');
                         successMessage.textContent = 'Đăng nhập thành công! Đang chuyển hướng...';
                         successMessage.style.display = 'block';
                         
-                        // Chuyển về trang chủ sau 1 giây
+                        // Disable form to prevent further submissions
+                        loginForm.style.pointerEvents = 'none';
+                        
+                        // Chuyển về trang chủ sau 1.5 giây
                         setTimeout(() => {
+                            console.log('Redirecting to index.html...');
                             window.location.href = 'index.html';
-                        }, 1000);
+                        }, 1500);
                     } else {
+                        console.log('Login failed:', result.error);
                         errorMessage.textContent = result.error || 'Đăng nhập thất bại. Vui lòng kiểm tra lại email và mật khẩu.';
                         errorMessage.style.display = 'block';
                     }
                 } catch (error) {
-                    errorMessage.textContent = 'Lỗi kết nối server. Vui lòng thử lại sau.';
+                    console.error('Login error:', error);
+                    errorMessage.textContent = error.message || 'Lỗi kết nối server. Vui lòng thử lại sau.';
                     errorMessage.style.display = 'block';
                 } finally {
-                    // Enable nút lại
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = 'Đăng nhập';
+                    // Enable nút lại (chỉ khi không thành công)
+                    if (!successMessage.style.display || successMessage.style.display === 'none') {
+                        console.log('Re-enabling login button...');
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Đăng nhập';
+                    }
                 }
             });
             
-            // Xử lý link đăng ký
+            /* Xử lý link đăng ký
             document.getElementById('register-link').addEventListener('click', function(e) {
                 e.preventDefault();
                 alert('Chức năng đăng ký sẽ được phát triển trong phiên bản tiếp theo.');
-            });
+            });*/
             
             // Xử lý link quên mật khẩu
             document.getElementById('forgot-password-link').addEventListener('click', function(e) {

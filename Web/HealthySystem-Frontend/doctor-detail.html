@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết Bác sĩ - HealthySystem</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
+    <style>
+        .doctor-detail-page {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 40px;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 16px;
+            transition: opacity 0.3s;
+        }
+        
+        .back-btn:hover {
+            opacity: 0.8;
+            color: white;
+        }
+        
+        .back-btn i {
+            margin-right: 8px;
+        }
+        
+        .doctor-profile {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .doctor-header {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+        
+        .doctor-avatar {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .doctor-basic-info {
+            flex: 1;
+        }
+        
+        .doctor-name {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .doctor-title {
+            font-size: 1.3rem;
+            color: var(--secondary-color);
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .doctor-rating {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .stars {
+            color: #ffc107;
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+        
+        .rating-text {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-book-appointment {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-book-appointment:hover {
+            background: var(--primary-dark);
+            color: white;
+        }
+        
+        .btn-call, .btn-email {
+            padding: 12px 20px;
+            border: 2px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-call:hover, .btn-email:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .info-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .info-icon {
+            width: 20px;
+            margin-right: 12px;
+            color: var(--primary-color);
+            flex-shrink: 0;
+        }
+        
+        .info-content {
+            flex: 1;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .info-value {
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .specialties-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .specialty-tag {
+            background: var(--primary-color);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .schedule-table th,
+        .schedule-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .schedule-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #dc3545;
+        }
+        
+        .reviews-section {
+            margin-top: 20px;
+        }
+        
+        .review-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .review-author {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .review-date {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .review-rating {
+            color: #ffc107;
+            margin-bottom: 8px;
+        }
+        
+        .review-text {
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .doctor-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .doctor-avatar {
+                width: 120px;
+                height: 120px;
+                font-size: 3rem;
+                margin: 0 auto;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="doctor-detail-page">
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <a href="index.html" class="logo">
+                    🏥 HealthySystem
+                </a>
+                <nav>
+                    <ul class="nav">
+                        <li><a href="index.html">Trang chủ</a></li>
+                        <li><a href="index.html#specialties">Chuyên khoa</a></li>
+                        <li><a href="doctors.html">Bác sĩ</a></li>
+                        <li><a href="index.html#appointments">Lịch hẹn</a></li>
+                        <li><a href="login.html" id="auth-link">Đăng nhập</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="container">
+                <a href="doctors.html" class="back-btn">
+                    ← Quay lại danh sách bác sĩ
+                </a>
+                <h1>Thông tin chi tiết bác sĩ</h1>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="container">
+            <!-- Loading State -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Đang tải thông tin bác sĩ...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-message" class="error-message" style="display: none;">
+                <h3>Không thể tải thông tin bác sĩ</h3>
+                <p>Vui lòng thử lại sau hoặc quay lại danh sách bác sĩ.</p>
+                <button class="btn btn-primary" onclick="window.location.reload()">Thử lại</button>
+            </div>
+
+            <!-- Doctor Profile -->
+            <div id="doctor-profile" style="display: none;">
+                <div class="doctor-profile">
+                    <div class="doctor-header">
+                        <div class="doctor-avatar" id="doctor-avatar">
+                            👨‍⚕️
+                        </div>
+                        <div class="doctor-basic-info">
+                            <h1 class="doctor-name" id="doctor-name">BS. Nguyễn Văn An</h1>
+                            <div class="doctor-title" id="doctor-title">Bác sĩ Chuyên khoa Nội</div>
+                            <div class="doctor-rating">
+                                <div class="stars" id="doctor-stars">⭐⭐⭐⭐⭐</div>
+                                <span class="rating-text" id="doctor-rating-text">4.8/5 (156 đánh giá)</span>
+                            </div>
+                            <div class="quick-actions">
+                                <button class="btn-book-appointment" id="btn-book-appointment">
+                                    📅 Đặt lịch khám
+                                </button>
+                                <a href="#" class="btn-call" id="btn-call">
+                                    📞 Gọi điện
+                                </a>
+                                <a href="#" class="btn-email" id="btn-email">
+                                    ✉️ Gửi email
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Information -->
+                <div class="info-grid">
+                    <!-- Personal Information -->
+                    <div class="info-card">
+                        <h3>📋 Thông tin cá nhân</h3>
+                        <div class="info-item">
+                            <div class="info-icon">👤</div>
+                            <div class="info-content">
+                                <div class="info-label">Họ và tên</div>
+                                <div class="info-value" id="info-fullname">BS. Nguyễn Văn An</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📧</div>
+                            <div class="info-content">
+                                <div class="info-label">Email</div>
+                                <div class="info-value" id="info-email">dr.an@clinic.local</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📱</div>
+                            <div class="info-content">
+                                <div class="info-label">Điện thoại</div>
+                                <div class="info-value" id="info-phone">0902000001</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">🚻</div>
+                            <div class="info-content">
+                                <div class="info-label">Giới tính</div>
+                                <div class="info-value" id="info-gender">Nam</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Professional Information -->
+                    <div class="info-card">
+                        <h3>💼 Thông tin nghề nghiệp</h3>
+                        <div class="info-item">
+                            <div class="info-icon">🏥</div>
+                            <div class="info-content">
+                                <div class="info-label">Khoa</div>
+                                <div class="info-value" id="info-department">Nội tổng quát</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">💼</div>
+                            <div class="info-content">
+                                <div class="info-label">Kinh nghiệm</div>
+                                <div class="info-value" id="info-experience">3 năm</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">🎯</div>
+                            <div class="info-content">
+                                <div class="info-label">Chuyên khoa</div>
+                                <div class="info-value">
+                                    <div class="specialties-list" id="info-specialties">
+                                        <span class="specialty-tag">Nội tổng quát</span>
+                                        <span class="specialty-tag">Tim mạch</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📜</div>
+                            <div class="info-content">
+                                <div class="info-label">Trình độ</div>
+                                <div class="info-value" id="info-qualifications">Bác sĩ đa khoa</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Schedule Information -->
+                    <div class="info-card">
+                        <h3>🕒 Lịch làm việc</h3>
+                        <div class="info-item">
+                            <div class="info-icon">📅</div>
+                            <div class="info-content">
+                                <div class="info-label">Thời gian làm việc</div>
+                                <div class="info-value">
+                                    <table class="schedule-table">
+                                        <tbody id="schedule-table-body">
+                                            <tr>
+                                                <td><strong>Thứ 2 - Thứ 6</strong></td>
+                                                <td>8:00 - 17:00</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Thứ 7</strong></td>
+                                                <td>8:00 - 12:00</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Chủ nhật</strong></td>
+                                                <td>Nghỉ</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reviews/Ratings -->
+                    <div class="info-card">
+                        <h3>⭐ Đánh giá từ bệnh nhân</h3>
+                        <div class="reviews-section" id="reviews-section">
+                            <!-- Reviews will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer py-4 bg-primary text-white text-center">
+            <div class="container">
+                <p>&copy; 2025 HealthySystem. Tất cả quyền được bảo lưu.</p>
+                <p>Phiên bản 1.0.0 | API Status: <span id="api-status">Đang kiểm tra...</span></p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/doctor-detail.js"></script>
+</body>
+</html>

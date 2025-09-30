@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Doctors Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Test Trang Danh Sách Bác Sĩ</h1>
+    
+    <div class="debug">
+        <h3>Debug Information:</h3>
+        <p>Mở Developer Tools (F12) để xem console logs</p>
+        <button onclick="testAPI()">Test API Connection</button>
+        <button onclick="testNavigation('8DD4F358-849B-F011-A1CB-F46D3F6043FB')">Test Navigation</button>
+    </div>
+
+    <div style="border: 2px solid #007bff; padding: 20px; margin: 20px 0;">
+        <h2>🎯 HƯỚNG DẪN TEST:</h2>
+        <ol>
+            <li><strong>Mở trang danh sách bác sĩ:</strong>
+                <br><a href="doctors.html" target="_blank">👉 Mở doctors.html</a>
+            </li>
+            <li><strong>Kiểm tra Console:</strong>
+                <br>Nhấn F12 → Console tab → Xem logs
+            </li>
+            <li><strong>Test Click:</strong>
+                <br>Click vào thẻ bác sĩ hoặc nút ℹ️
+            </li>
+            <li><strong>Kết quả mong đợi:</strong>
+                <br>Chuyển đến trang chi tiết với URL: <code>doctor-detail.html?id=...</code>
+            </li>
+        </ol>
+    </div>
+
+    <div style="background: #e8f5e8; padding: 15px; border-radius: 5px;">
+        <h3>✅ Các lỗi đã sửa:</h3>
+        <ul>
+            <li>Thêm window.doctorsPage check</li>
+            <li>Thêm backup event listeners</li>
+            <li>Thêm debug logging</li>
+            <li>Sửa template string rendering</li>
+            <li>Xử lý doctor.publicId || doctor.id</li>
+        </ul>
+    </div>
+
+    <script>
+        async function testAPI() {
+            try {
+                const response = await fetch('http://localhost:5196/api/doctors');
+                const data = await response.json();
+                console.log('API Test Result:', data);
+                alert('API OK! Check console for details.');
+            } catch (error) {
+                console.error('API Test Failed:', error);
+                alert('API Failed: ' + error.message);
+            }
+        }
+
+        function testNavigation(doctorId) {
+            const url = `doctor-detail.html?id=${doctorId}`;
+            console.log('Testing navigation to:', url);
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>

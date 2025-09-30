@@ -22,34 +22,37 @@ class AuthManager {
     // Login
     async login(email, password) {
         try {
+            console.log('AuthManager: Calling API login...');
             const response = await apiService.login(email, password);
+            console.log('AuthManager: API response:', response);
             
             if (response.success) {
-                const { token, user } = response.data;
+                const userData = response.data;
+                console.log('AuthManager: Login successful, userData:', userData);
                 
-                this.token = token;
-                this.user = user;
+                this.user = userData.user || userData;
+                this.token = userData.token || 'dummy-token';
                 
-                // Save to localStorage
-                localStorage.setItem(CONFIG.STORAGE_KEYS.TOKEN, token);
-                localStorage.setItem(CONFIG.STORAGE_KEYS.USER, JSON.stringify(user));
+                // Save to localStorage if CONFIG exists
+                if (typeof CONFIG !== 'undefined' && CONFIG.STORAGE_KEYS) {
+                    localStorage.setItem(CONFIG.STORAGE_KEYS.TOKEN, this.token);
+                    localStorage.setItem(CONFIG.STORAGE_KEYS.USER, JSON.stringify(this.user));
+                }
                 
-                // Set token for API service
-                apiService.setToken(token);
+                // Set token for API service if method exists
+                if (apiService && apiService.setToken) {
+                    apiService.setToken(this.token);
+                }
                 
-                // Update UI
-                this.updateUI();
-                
-                Utils.showNotification('Đăng nhập thành công!', 'success');
-                
-                return { success: true, user };
+                console.log('AuthManager: Saved user data, returning success');
+                return { success: true, user: this.user };
             } else {
-                Utils.showNotification(response.error || 'Đăng nhập thất bại', 'error');
-                return { success: false, error: response.error };
+                console.log('AuthManager: Login failed:', response.error);
+                return { success: false, error: response.error || 'Đăng nhập thất bại' };
             }
         } catch (error) {
-            Utils.showNotification('Lỗi kết nối server', 'error');
-            return { success: false, error: error.message };
+            console.error('AuthManager: Login error:', error);
+            return { success: false, error: error.message || 'Lỗi kết nối server' };
         }
     }
     

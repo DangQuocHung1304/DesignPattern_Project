@@ -95,7 +95,7 @@ class ApiService {
     
     // Authentication
     async login(email, password) {
-        return this.post('/simpleauth/login', { email, password }, false);
+        return this.post('/auth/login', { email, password }, false);
     }
     
     async register(userData) {

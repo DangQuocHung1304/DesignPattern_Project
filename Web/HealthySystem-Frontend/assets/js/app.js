@@ -184,18 +184,9 @@ class HealthySystemApp {
     }
     
     // View specialty doctors
-    async viewSpecialtyDoctors(specialtyId) {
-        try {
-            const response = await apiService.getSpecialtyDoctors(specialtyId);
-            
-            if (response.success && response.data) {
-                this.showDoctorsModal(response.data, `Bác sĩ chuyên khoa ${this.specialties.find(s => s.id === specialtyId)?.name || ''}`);
-            } else {
-                Utils.showNotification('Không thể tải danh sách bác sĩ', 'error');
-            }
-        } catch (error) {
-            Utils.showNotification('Lỗi khi tải danh sách bác sĩ', 'error');
-        }
+    viewSpecialtyDoctors(specialtyId) {
+        // Redirect to specialty detail page
+        window.location.href = `specialty-detail.html?id=${specialtyId}`;
     }
     
     // Show doctors modal
@@ -337,13 +328,12 @@ class HealthySystemApp {
     
     // Book appointment
     bookAppointment(doctorPublicId) {
-        if (!authManager.isAuthenticated()) {
-            Utils.showNotification('Vui lòng đăng nhập để đặt lịch khám', 'warning');
-            window.location.href = 'login.html';
-            return;
+        // Redirect to book appointment page with doctor pre-selected
+        if (doctorPublicId) {
+            window.location.href = `book-appointment.html?doctor=${doctorPublicId}`;
+        } else {
+            window.location.href = 'book-appointment.html';
         }
-        
-        this.showBookingModal(doctorPublicId);
     }
     
     // Show booking modal

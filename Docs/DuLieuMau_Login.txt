@@ -1,0 +1,11 @@
+Họ,Tên,Email,Số điện thoại,Giới tính,Ngày sinh,Địa chỉ,Mật khẩu,Xác nhận mật khẩu
+Nguyễn,Văn A,nguyenvana@test.com,0901234567,Nam,15/05/1990,123 Đường ABC, Quận 1,Password123!,Password123!
+Trần,Thị B,tranb@test.com,0912345678,Nữ,22/11/1995,456 Phố XYZ, Quận 3,Secur3Pass!,Secur3Pass!
+Lê,Hoàng C,lehoangc@test.com,0978901234,Nam,01/03/1985,789 Đại lộ QWE, Quận 5,MyWeb1234@,MyWeb1234@
+Phạm,Quỳnh D,phamquynhd@test.com,0867123456,Nữ,30/09/2000,101 Hẻm TYU, Quận 7,TestUser99#,TestUser99#
+Huỳnh,Đức E,huynhde@test.com,0888999000,Khác,10/07/1992,202 Lô GHI, Quận Bình Thạnh,AccounT567$,AccounT567$
+Võ,Minh F,vominhef@test.com,0945678901,Nam,05/02/1978,303 Tầng JKL, Quận Tân Bình,LoginHere1!,LoginHere1!
+Đặng,Ngọc G,dangngocg@test.com,0933444555,Nữ,18/12/1989,404 KCN MNO, Quận Phú Nhuận,NewPass@2024,NewPass@2024
+Bùi,Tiến H,buitienh@test.com,0890123789,Nam,25/06/1998,505 Chung cư PQR, Quận Gò Vấp,TrialPW#33,TrialPW#33
+Hồ,Thanh I,hothanhi@test.com,0966777888,Nữ,08/04/1993,606 Khu Đô thị STU, TP Thủ Đức,SampleAcc1!,SampleAcc1!
+Dương,Gia K,duonggiak@test.com,0707888999,Khác,14/01/2002,707 Đường VWX, Huyện Củ Chi,FinalP@ss2023,FinalP@ss2023

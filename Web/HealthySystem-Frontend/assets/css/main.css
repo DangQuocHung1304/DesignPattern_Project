@@ -129,6 +129,22 @@ a:hover {
     text-decoration: none;
 }
 
+.nav .btn-appointment {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 25px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.nav .btn-appointment:hover {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+    transform: translateY(-1px);
+    color: white;
+}
+
 /* Cards */
 .card {
     background: var(--bg-white);
