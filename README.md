@@ -22,17 +22,27 @@ HealthySystem là một hệ thống quản lý phòng khám hiện đại, đư
 ## Tính năng chính
 
 ### ✅ Đã hoàn thành
-- 🏥 **Quản lý chuyên khoa**: Hiển thị danh sách các chuyên khoa y tế
-- 👨‍⚕️ **Quản lý bác sĩ**: Danh sách bác sĩ với thông tin chi tiết
-- 🔐 **Hệ thống đăng nhập**: Authentication với trang đăng nhập riêng
-- 📱 **Giao diện responsive**: Tương thích trên mọi thiết bị
-- 🌐 **API RESTful**: Endpoints đầy đủ cho frontend
+- 🏥 **Quản lý chuyên khoa**: Hiển thị danh sách và chi tiết chuyên khoa với bài viết chuyên môn
+- 👨‍⚕️ **Quản lý bác sĩ**: Danh sách bác sĩ với tìm kiếm, lọc và thông tin chi tiết đầy đủ
+- � **Đặt lịch khám trực tuyến**: Hệ thống booking 4 bước với calendar và time slots
+- 🔐 **Hệ thống xác thực**: Đăng ký, đăng nhập với JWT authentication
+- 📱 **Giao diện responsive**: Thiết kế hiện đại tương thích mọi thiết bị
+- 🌐 **API RESTful**: Backend hoàn chỉnh với appointments, doctors, specialties
+- 🎨 **UX/UI cải tiến**: Navigation bar, loading states, error handling
+
+### 🆕 Tính năng mới
+- **� Đặt lịch khám**: 4 bước dễ dàng (Chọn bác sĩ → Chọn thời gian → Điền thông tin → Xác nhận)
+- **🗓️ Calendar nâng cao**: Chọn tháng, chặn ngày quá khứ, hiển thị cuối tuần
+- **�‍⚕️ Chi tiết bác sĩ**: Trang profile đầy đủ với thông tin chuyên môn
+- **🏥 Chuyên khoa detail**: Bài viết chuyên môn về từng chuyên khoa
+- **🔍 Tìm kiếm nâng cao**: Filter bác sĩ theo chuyên khoa và tên
+- **🔗 Deep linking**: URL parameters cho pre-select bác sĩ
 
 ### 🚧 Đang phát triển
-- 📅 **Đặt lịch khám**: Booking appointments
-- 👤 **Quản lý hồ sơ bệnh nhân**: Patient profiles
-- 📊 **Dashboard quản trị**: Admin dashboard
-- 📧 **Thông báo**: Email/SMS notifications
+- 👤 **Quản lý hồ sơ bệnh nhân**: Patient profiles và medical records
+- 📊 **Dashboard quản trị**: Admin dashboard với statistics
+- 📧 **Thông báo**: Email/SMS notifications cho appointments
+- 💰 **Thanh toán**: Payment integration
 
 ## Cấu trúc thư mục
 
@@ -101,13 +111,40 @@ Project/
    - Hoặc sử dụng Live Server extension trong VS Code
 
 2. **Đăng nhập test**:
-   - Email: `dr.an@clinic.local`
-   - Password: `123456`
+   - Tạo tài khoản mới hoặc sử dụng dữ liệu mẫu
+   - Xem file `Docs/DuLieuMau_Login.txt` để biết thông tin test
+
+## 🚀 Hướng dẫn sử dụng
+
+### Đặt lịch khám
+1. **Truy cập trang chủ** → Click "Đặt lịch khám"
+2. **Bước 1**: Chọn bác sĩ (có thể tìm kiếm và lọc theo chuyên khoa)
+3. **Bước 2**: Chọn ngày và giờ khám (dùng calendar và time slots)
+4. **Bước 3**: Điền thông tin bệnh nhân (tự động fill nếu đã đăng nhập)
+5. **Bước 4**: Xác nhận thông tin và hoàn tất đặt lịch
+
+### Xem thông tin bác sĩ
+- **Danh sách bác sĩ**: `/doctors.html` với tìm kiếm và filter
+- **Chi tiết bác sĩ**: Click vào card bác sĩ để xem profile đầy đủ
+- **Đặt lịch từ bác sĩ**: Click "Đặt lịch" từ bất kỳ trang bác sĩ nào
+
+### Chuyên khoa
+- **Trang chủ**: Click vào thẻ chuyên khoa
+- **Bài viết chuyên môn**: Đọc về từng chuyên khoa
+- **Bác sĩ liên quan**: Xem danh sách bác sĩ trong chuyên khoa
 
 ## API Endpoints
 
 ### Authentication
-- `POST /api/simpleauth/login` - Đăng nhập
+- `POST /api/auth/login` - Đăng nhập
+- `POST /api/auth/register` - Đăng ký tài khoản
+
+### Appointments 🆕
+- `GET /api/appointments` - Lấy danh sách lịch hẹn
+- `POST /api/appointments` - Tạo lịch hẹn mới
+- `GET /api/appointments/{id}` - Chi tiết lịch hẹn
+- `PUT /api/appointments/{id}/status` - Cập nhật trạng thái
+- `DELETE /api/appointments/{id}` - Hủy lịch hẹn
 
 ### Specialties
 - `GET /api/specialties` - Lấy danh sách chuyên khoa
