@@ -23,7 +23,22 @@
                     <li><a href="book-appointment.html" class="btn-appointment">
                         <i class="fas fa-calendar-plus"></i> Đặt lịch khám
                     </a></li>
-                    <li><a href="login.html" id="auth-link">Đăng nhập</a></li>
+                    <li id="auth-container">
+                        <!-- Hiển thị nút đăng nhập khi chưa đăng nhập -->
+                        <a href="login.html" id="login-btn" class="auth-btn">
+                            <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                        </a>
+                        <!-- Hiển thị tên người dùng khi đã đăng nhập -->
+                        <div id="user-menu" class="user-menu" style="display: none;">
+                            <span id="user-display-name" class="user-name">
+                                <i class="fas fa-user-circle"></i> Tài khoản
+                            </span>
+                            <div class="user-dropdown">
+                                <a href="profile.html"><i class="fas fa-user"></i> Hồ sơ</a>
+                                <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                            </div>
+                        </div>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -135,6 +150,7 @@
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/api.js"></script>
     <script src="assets/js/auth.js"></script>
+    <script src="assets/js/main.js"></script>
     <script src="assets/js/app.js"></script>
 </body>
 </html>

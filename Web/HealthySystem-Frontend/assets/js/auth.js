@@ -33,11 +33,17 @@ class AuthManager {
                 this.user = userData.user || userData;
                 this.token = userData.token || 'dummy-token';
                 
-                // Save to localStorage if CONFIG exists
+                // Save to localStorage - save to both CONFIG keys and fallback keys for compatibility
                 if (typeof CONFIG !== 'undefined' && CONFIG.STORAGE_KEYS) {
                     localStorage.setItem(CONFIG.STORAGE_KEYS.TOKEN, this.token);
                     localStorage.setItem(CONFIG.STORAGE_KEYS.USER, JSON.stringify(this.user));
+                    console.log('AuthManager: Saved with CONFIG keys');
                 }
+                
+                // Also save to fallback keys for compatibility
+                localStorage.setItem('authToken', this.token);
+                localStorage.setItem('user', JSON.stringify(this.user));
+                console.log('AuthManager: Saved with fallback keys');
                 
                 // Set token for API service if method exists
                 if (apiService && apiService.setToken) {
@@ -67,9 +73,15 @@ class AuthManager {
                 this.token = token;
                 this.user = user;
                 
-                // Save to localStorage
-                localStorage.setItem(CONFIG.STORAGE_KEYS.TOKEN, token);
-                localStorage.setItem(CONFIG.STORAGE_KEYS.USER, JSON.stringify(user));
+                // Save to localStorage - save to both CONFIG keys and fallback keys
+                if (typeof CONFIG !== 'undefined' && CONFIG.STORAGE_KEYS) {
+                    localStorage.setItem(CONFIG.STORAGE_KEYS.TOKEN, token);
+                    localStorage.setItem(CONFIG.STORAGE_KEYS.USER, JSON.stringify(user));
+                }
+                
+                // Also save to fallback keys for compatibility
+                localStorage.setItem('authToken', token);
+                localStorage.setItem('user', JSON.stringify(user));
                 
                 // Set token for API service
                 apiService.setToken(token);
@@ -95,9 +107,15 @@ class AuthManager {
         this.token = null;
         this.user = null;
         
-        // Clear localStorage
-        localStorage.removeItem(CONFIG.STORAGE_KEYS.TOKEN);
-        localStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
+        // Clear localStorage - remove both CONFIG keys and fallback keys
+        if (typeof CONFIG !== 'undefined' && CONFIG.STORAGE_KEYS) {
+            localStorage.removeItem(CONFIG.STORAGE_KEYS.TOKEN);
+            localStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
+        }
+        
+        // Also remove fallback keys
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
         
         // Clear API service token
         apiService.setToken(null);

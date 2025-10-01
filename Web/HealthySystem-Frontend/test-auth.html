@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Authentication - HealthySystem</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Test Authentication Status</h2>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Local Storage Content</h5>
+            </div>
+            <div class="card-body">
+                <div id="storage-content"></div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-primary me-2" onclick="simulateLogin()">Simulate Login (Phạm Quỳnh D)</button>
+                <button class="btn btn-warning me-2" onclick="clearStorage()">Clear Storage</button>
+                <button class="btn btn-info me-2" onclick="refreshStorage()">Refresh</button>
+                <button class="btn btn-success" onclick="goToProfile()">Go to Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/config.js"></script>
+    <script>
+        function refreshStorage() {
+            const storageDiv = document.getElementById('storage-content');
+            let html = '<div class="row">';
+            
+            // Check CONFIG keys
+            html += '<div class="col-md-6">';
+            html += '<h6>CONFIG Keys:</h6>';
+            html += '<p><strong>healthysystem_token:</strong><br><code>' + (localStorage.getItem('healthysystem_token') || 'null') + '</code></p>';
+            
+            let configUser = localStorage.getItem('healthysystem_user');
+            html += '<p><strong>healthysystem_user:</strong><br><code>' + (configUser || 'null') + '</code></p>';
+            
+            if (configUser) {
+                try {
+                    let userData = JSON.parse(configUser);
+                    html += '<p><strong>Parsed User Data:</strong><br>';
+                    html += 'Name: ' + (userData.fullName || userData.firstName + ' ' + userData.lastName || userData.name || 'N/A') + '<br>';
+                    html += 'Email: ' + (userData.email || 'N/A') + '<br>';
+                    html += 'Phone: ' + (userData.phone || 'N/A') + '</p>';
+                } catch(e) {
+                    html += '<p class="text-danger">Error parsing user data: ' + e.message + '</p>';
+                }
+            }
+            html += '</div>';
+            
+            // Check fallback keys
+            html += '<div class="col-md-6">';
+            html += '<h6>Fallback Keys:</h6>';
+            html += '<p><strong>authToken:</strong><br><code>' + (localStorage.getItem('authToken') || 'null') + '</code></p>';
+            
+            let fallbackUser = localStorage.getItem('user');
+            html += '<p><strong>user:</strong><br><code>' + (fallbackUser || 'null') + '</code></p>';
+            
+            if (fallbackUser) {
+                try {
+                    let userData = JSON.parse(fallbackUser);
+                    html += '<p><strong>Parsed User Data:</strong><br>';
+                    html += 'Name: ' + (userData.fullName || userData.firstName + ' ' + userData.lastName || userData.name || 'N/A') + '<br>';
+                    html += 'Email: ' + (userData.email || 'N/A') + '<br>';
+                    html += 'Phone: ' + (userData.phone || 'N/A') + '</p>';
+                } catch(e) {
+                    html += '<p class="text-danger">Error parsing user data: ' + e.message + '</p>';
+                }
+            }
+            html += '</div></div>';
+            
+            storageDiv.innerHTML = html;
+        }
+        
+        function simulateLogin() {
+            const userData = {
+                id: 2,
+                fullName: 'Phạm Quỳnh D',
+                firstName: 'Phạm',
+                lastName: 'Quỳnh D',
+                email: 'phamquynhd@example.com',
+                phone: '0987654321',
+                gender: 'female',
+                dateOfBirth: '1995-08-20',
+                address: '456 Đường XYZ, Quận 3, TP.HCM',
+                memberSince: '2024-02-15',
+                createdAt: '2024-02-15T10:30:00Z'
+            };
+            
+            const token = 'demo-token-phamquynhd';
+            
+            // Save to both storage systems
+            localStorage.setItem('healthysystem_token', token);
+            localStorage.setItem('healthysystem_user', JSON.stringify(userData));
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('user', JSON.stringify(userData));
+            
+            alert('Đã simulate login cho Phạm Quỳnh D');
+            refreshStorage();
+        }
+        
+        function clearStorage() {
+            localStorage.removeItem('healthysystem_token');
+            localStorage.removeItem('healthysystem_user');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            
+            alert('Đã xóa tất cả storage');
+            refreshStorage();
+        }
+        
+        function goToProfile() {
+            window.location.href = 'profile.html';
+        }
+        
+        // Load on page load
+        document.addEventListener('DOMContentLoaded', refreshStorage);
+    </script>
+</body>
+</html>

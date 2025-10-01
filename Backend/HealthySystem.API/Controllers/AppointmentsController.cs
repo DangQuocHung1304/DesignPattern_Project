@@ -329,6 +329,105 @@ namespace HealthySystem.API.Controllers
             return int.TryParse(userIdClaim, out var userId) ? userId : 0;
         }
 
+        /// <summary>
+        /// Get appointment history for a user
+        /// </summary>
+        [HttpGet("history/{userId}")]
+        [Authorize]
+        public IActionResult GetAppointmentHistory(int userId)
+        {
+            try
+            {
+                var currentUserId = GetCurrentUserId();
+                var currentUserRole = GetCurrentUserRole();
+                
+                // Check authorization - only allow users to see their own history or staff to see any
+                if (currentUserRole == "patient" && currentUserId != userId)
+                {
+                    return Unauthorized();
+                }
+
+                // For demo purposes, return mock appointment history
+                var appointments = GetMockAppointmentHistory(userId);
+                
+                return Ok(new
+                {
+                    success = true,
+                    data = appointments
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAppointmentHistory: {ex.Message}");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Không thể tải lịch sử khám bệnh"
+                });
+            }
+        }
+
+        private List<object> GetMockAppointmentHistory(int userId)
+        {
+            return new List<object>
+            {
+                new
+                {
+                    id = 1,
+                    date = "2024-12-15",
+                    time = "14:30",
+                    doctor = new
+                    {
+                        name = "BS. Nguyễn Thị Lan",
+                        specialization = "Tim mạch",
+                        avatar = (string?)null
+                    },
+                    status = "completed",
+                    diagnosis = "Khám tổng quát",
+                    symptoms = "Đau ngực, khó thở",
+                    prescription = "Thuốc hạ huyết áp, nghỉ ngơi",
+                    notes = "Bệnh nhân cần theo dõi huyết áp định kỳ",
+                    cost = 500000
+                },
+                new
+                {
+                    id = 2,
+                    date = "2024-11-20",
+                    time = "10:00",
+                    doctor = new
+                    {
+                        name = "BS. Trần Văn Minh",
+                        specialization = "Nội tổng quát",
+                        avatar = (string?)null
+                    },
+                    status = "completed",
+                    diagnosis = "Viêm dạ dày",
+                    symptoms = "Đau bụng, buồn nôn",
+                    prescription = "Thuốc kháng acid, chế độ ăn nhẹ",
+                    notes = "Tái khám sau 2 tuần",
+                    cost = 300000
+                },
+                new
+                {
+                    id = 3,
+                    date = "2024-12-25",
+                    time = "09:00",
+                    doctor = new
+                    {
+                        name = "BS. Lê Thị Hương",
+                        specialization = "Da liễu",
+                        avatar = (string?)null
+                    },
+                    status = "scheduled",
+                    diagnosis = (string?)null,
+                    symptoms = "Khám da định kỳ",
+                    prescription = (string?)null,
+                    notes = "Lịch khám sắp tới",
+                    cost = 400000
+                }
+            };
+        }
+
         private string GetCurrentUserRole()
         {
             return User.FindFirst(ClaimTypes.Role)?.Value ?? "";

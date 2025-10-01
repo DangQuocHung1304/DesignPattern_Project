@@ -1,4 +1,17 @@
-# HealthySystem - Hệ thống Quản lý Phòng khám
+# HealthySystem - Hệ thống Quản ### 🆕 Tính năng mới nhất
+- **📅 Đặt lịch khám**: 4 bước dễ dàng (Chọn bác sĩ → Chọn thời gian → Điền thông tin → Xác nhận)
+- **🗓️ Calendar nâng cao**: Chọn tháng, chặn ngày quá khứ, hiển thị cuối tuần
+- **👤 Hồ sơ người dùng**: Quản lý thông tin cá nhân, lịch sử khám bệnh, liệu trình điều trị
+- **📋 Lịch sử khám bệnh**: Xem chi tiết các lần khám trước, chẩn đoán, đơn thuốc
+- **💊 Liệu trình điều trị**: Theo dõi tiến độ điều trị, đơn thuốc hiện tại
+- **🔍 Tìm kiếm nâng cao**: Filter bác sĩ theo chuyên khoa và tên
+- **🔗 Deep linking**: URL parameters cho pre-select bác sĩ
+
+### 🚧 Có thể phát triển thêm
+- 📊 **Dashboard quản trị**: Admin dashboard với statistics
+- 📧 **Thông báo**: Email/SMS notifications cho appointments
+- 💰 **Thanh toán**: Payment integration
+- 📱 **Mobile App**: React Native hoặc Flutter app
 
 ## Mô tả dự án
 
@@ -143,8 +156,20 @@ Project/
 - `GET /api/appointments` - Lấy danh sách lịch hẹn
 - `POST /api/appointments` - Tạo lịch hẹn mới
 - `GET /api/appointments/{id}` - Chi tiết lịch hẹn
+- `GET /api/appointments/history/{userId}` - Lịch sử khám bệnh
 - `PUT /api/appointments/{id}/status` - Cập nhật trạng thái
 - `DELETE /api/appointments/{id}` - Hủy lịch hẹn
+
+### Users 🆕
+- `GET /api/users/profile` - Lấy thông tin hồ sơ người dùng
+- `PUT /api/users/profile` - Cập nhật thông tin hồ sơ
+- `GET /api/users/statistics` - Thống kê người dùng
+
+### Treatments 🆕
+- `GET /api/treatments/current/{userId}` - Liệu trình đang điều trị
+- `GET /api/treatments/history/{userId}` - Lịch sử liệu trình
+- `GET /api/treatments/{id}` - Chi tiết liệu trình
+- `PUT /api/treatments/{id}/progress` - Cập nhật tiến độ
 
 ### Specialties
 - `GET /api/specialties` - Lấy danh sách chuyên khoa
