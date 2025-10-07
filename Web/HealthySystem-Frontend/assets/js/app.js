@@ -97,7 +97,7 @@ class HealthySystemApp {
                         <h5 class="card-title">${specialty.name}</h5>
                         <p class="card-text">${specialty.description || 'Chuyên khoa ' + specialty.name}</p>
                         <button class="btn btn-primary" onclick="app.viewSpecialtyDoctors(${specialty.id})">
-                            Xem bác sĩ
+                            Xem thêm
                         </button>
                     </div>
                 </div>
@@ -241,17 +241,8 @@ class HealthySystemApp {
     
     // View doctor details
     async viewDoctor(publicId) {
-        try {
-            const response = await apiService.getDoctor(publicId);
-            
-            if (response.success && response.data) {
-                this.showDoctorDetailModal(response.data);
-            } else {
-                Utils.showNotification('Không thể tải thông tin bác sĩ', 'error');
-            }
-        } catch (error) {
-            Utils.showNotification('Lỗi khi tải thông tin bác sĩ', 'error');
-        }
+        // Chuyển đến trang chi tiết bác sĩ
+        window.location.href = `doctor-detail.html?id=${publicId}`;
     }
     
     // Show doctor detail modal

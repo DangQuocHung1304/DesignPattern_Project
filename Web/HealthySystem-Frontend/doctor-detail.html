@@ -6,6 +6,7 @@
     <title>Chi tiết Bác sĩ - HealthySystem</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
     <style>
         .doctor-detail-page {
@@ -332,15 +333,32 @@
         <header class="header">
             <div class="container">
                 <a href="index.html" class="logo">
-                    🏥 HealthySystem
+                    HealthySystem
                 </a>
                 <nav>
                     <ul class="nav">
-                        <li><a href="index.html">Trang chủ</a></li>
-                        <li><a href="index.html#specialties">Chuyên khoa</a></li>
-                        <li><a href="doctors.html">Bác sĩ</a></li>
-                        <li><a href="index.html#appointments">Lịch hẹn</a></li>
-                        <li><a href="login.html" id="auth-link">Đăng nhập</a></li>
+                        <li><a href="index.html"><i class="fas fa-home"></i> Trang chủ</a></li>
+                        <li><a href="index.html#specialties"><i class="fas fa-stethoscope"></i> Chuyên khoa</a></li>
+                        <li><a href="doctors.html"><i class="fas fa-user-md"></i> Bác sĩ</a></li>
+                        <li><a href="book-appointment.html" class="btn-appointment">
+                            <i class="fas fa-calendar-plus"></i> Đặt lịch khám
+                        </a></li>
+                        <li id="auth-container">
+                            <!-- Hiển thị nút đăng nhập khi chưa đăng nhập -->
+                            <a href="login.html" id="login-btn" class="auth-btn">
+                                <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                            </a>
+                            <!-- Hiển thị tên người dùng khi đã đăng nhập -->
+                            <div id="user-menu" class="user-menu" style="display: none;">
+                                <span id="user-display-name" class="user-name">
+                                    <i class="fas fa-user-circle"></i> Tài khoản
+                                </span>
+                                <div class="user-dropdown">
+                                    <a href="profile.html"><i class="fas fa-user"></i> Hồ sơ</a>
+                                    <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                                </div>
+                            </div>
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -528,5 +546,11 @@
     <script src="assets/js/api.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/doctor-detail.js"></script>
+    <!-- JavaScript -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/main.js"></script>
 </body>
 </html>
