@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đánh giá Bác Sĩ - Healthy System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/notifications.css">
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .rating-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .doctor-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .doctor-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            transform: translateX(5px);
+        }
+
+        .doctor-card.selected {
+            border-left-color: #f39c12;
+            background: #fffbf0;
+        }
+
+        .doctor-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 2.5rem;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
+        .star-rating i {
+            cursor: pointer;
+            color: #ddd;
+            transition: all 0.3s;
+        }
+
+        .star-rating i.fas {
+            color: #f39c12;
+        }
+
+        .star-rating i:hover,
+        .star-rating i:hover ~ i {
+            color: #f39c12;
+        }
+
+        .rating-summary {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .rating-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rating-bar-fill {
+            flex: 1;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .rating-bar-fill-inner {
+            height: 100%;
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+            transition: width 0.3s;
+        }
+
+        .review-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e0e0e0;
+        }
+
+        .review-stars {
+            color: #f39c12;
+        }
+
+        .btn-submit-rating {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 25px;
+        }
+
+        .btn-submit-rating:hover {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #8c8c8c;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .auth-required {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .rating-stats {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .rating-stat {
+            flex: 1;
+        }
+
+        .rating-stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #f39c12;
+        }
+
+        .rating-stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay"></div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0">
+                        <i class="fas fa-star me-2"></i>Đánh Giá Bác Sĩ
+                    </h2>
+                    <p class="mb-0 mt-2 opacity-75">Chia sẻ trải nghiệm của bạn với bác sĩ</p>
+                </div>
+                <a href="index.html" class="btn btn-light">
+                    <i class="fas fa-home me-2"></i>Trang chủ
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Authentication Check -->
+        <div id="authCheck"></div>
+
+        <!-- My Doctors Section -->
+        <div id="doctorsSection" style="display: none;">
+            <div class="rating-section">
+                <h4 class="mb-4">
+                    <i class="fas fa-user-md me-2"></i>Chọn Bác Sĩ Để Đánh Giá
+                </h4>
+                <p class="text-muted mb-4">Bạn chỉ có thể đánh giá bác sĩ sau khi hoàn thành lịch khám</p>
+                
+                <div id="doctorsList">
+                    <div class="empty-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Đang tải danh sách bác sĩ...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rating Form Section -->
+            <div id="ratingFormSection" style="display: none;">
+                <div class="rating-section">
+                    <h4 class="mb-4">
+                        <i class="fas fa-edit me-2"></i>Đánh Giá Của Bạn
+                    </h4>
+                    
+                    <div class="text-center mb-4">
+                        <div class="doctor-avatar mx-auto mb-3" id="selectedDoctorAvatar">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <h5 id="selectedDoctorName">Tên bác sĩ</h5>
+                        <p class="text-muted" id="selectedDoctorSpecialty">Chuyên khoa</p>
+                    </div>
+
+                    <form id="ratingForm">
+                        <input type="hidden" id="selectedDoctorId">
+
+                        <div class="mb-4">
+                            <label class="form-label text-center d-block">
+                                <strong>Đánh giá chất lượng dịch vụ</strong>
+                            </label>
+                            <div class="star-rating" id="starRating">
+                                <i class="far fa-star" data-rating="1"></i>
+                                <i class="far fa-star" data-rating="2"></i>
+                                <i class="far fa-star" data-rating="3"></i>
+                                <i class="far fa-star" data-rating="4"></i>
+                                <i class="far fa-star" data-rating="5"></i>
+                            </div>
+                            <p class="text-center text-muted" id="ratingText">Chưa chọn đánh giá</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <strong>Nhận xét của bạn</strong>
+                            </label>
+                            <textarea class="form-control" id="comment" rows="5" 
+                                      placeholder="Chia sẻ trải nghiệm của bạn về bác sĩ: Thái độ, chuyên môn, thời gian khám..."></textarea>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="button" class="btn btn-outline-secondary me-2" onclick="cancelRating()">
+                                <i class="fas fa-times me-2"></i>Hủy
+                            </button>
+                            <button type="submit" class="btn btn-submit-rating">
+                                <i class="fas fa-paper-plane me-2"></i>Gửi Đánh Giá
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Doctor Ratings Display Section -->
+            <div id="doctorRatingsSection" style="display: none;">
+                <div class="rating-section">
+                    <h4 class="mb-4">
+                        <i class="fas fa-comments me-2"></i>Đánh Giá Từ Bệnh Nhân
+                    </h4>
+
+                    <div class="rating-summary">
+                        <div class="rating-stats">
+                            <div class="rating-stat">
+                                <div class="rating-stat-value" id="avgRating">0.0</div>
+                                <div class="rating-stat-label">Trung bình</div>
+                                <div class="rating-stars mt-2">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                            <div class="rating-stat">
+                                <div class="rating-stat-value" id="totalRatings">0</div>
+                                <div class="rating-stat-label">Đánh giá</div>
+                            </div>
+                        </div>
+
+                        <div id="ratingDistribution" class="mt-4">
+                            <!-- Rating bars will be inserted here -->
+                        </div>
+                    </div>
+
+                    <div id="reviewsList">
+                        <!-- Reviews will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/notifications.js"></script>
+    <script src="assets/js/loading.js"></script>
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        let doctors = [];
+        let selectedDoctor = null;
+        let selectedRating = 0;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+            setupStarRating();
+            setupRatingForm();
+        });
+
+        // Check authentication
+        function checkAuthentication() {
+            const token = localStorage.getItem('authToken');
+            const userRole = localStorage.getItem('userRole');
+            const authCheckDiv = document.getElementById('authCheck');
+
+            if (!token || userRole !== 'patient') {
+                authCheckDiv.innerHTML = `
+                    <div class="auth-required">
+                        <i class="fas fa-lock fa-3x mb-3 text-warning"></i>
+                        <h4>Yêu Cầu Đăng Nhập</h4>
+                        <p>Bạn cần đăng nhập với tài khoản bệnh nhân để sử dụng tính năng đánh giá</p>
+                        <a href="login.html" class="btn btn-warning mt-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập ngay
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Authenticated - show doctors section
+            document.getElementById('doctorsSection').style.display = 'block';
+            loadDoctors();
+        }
+
+        // Load doctors that patient has completed appointments with
+        async function loadDoctors() {
+            try {
+                LoadingSystem.show('Đang tải danh sách bác sĩ...');
+                
+                const token = localStorage.getItem('authToken');
+                
+                // Get patient's completed appointments
+                const appointmentsResponse = await fetch(`${API_BASE_URL}/appointments`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!appointmentsResponse.ok) {
+                    throw new Error('Không thể tải danh sách lịch hẹn');
+                }
+
+                const appointmentsData = await appointmentsResponse.json();
+                const completedAppointments = (appointmentsData.appointments || [])
+                    .filter(apt => apt.status === 'completed');
+
+                if (completedAppointments.length === 0) {
+                    document.getElementById('doctorsList').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-times"></i>
+                            <p>Bạn chưa có lịch khám hoàn thành nào</p>
+                            <a href="patient-appointments.html" class="btn btn-primary mt-3">
+                                <i class="fas fa-calendar-plus me-2"></i>Đặt lịch khám
+                            </a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Get unique doctors from completed appointments
+                const doctorMap = new Map();
+                completedAppointments.forEach(apt => {
+                    if (apt.doctor && !doctorMap.has(apt.doctor.id)) {
+                        doctorMap.set(apt.doctor.id, apt.doctor);
+                    }
+                });
+
+                doctors = Array.from(doctorMap.values());
+                renderDoctors();
+
+            } catch (error) {
+                console.error('Error loading doctors:', error);
+                NotificationSystem.error('Lỗi', error.message);
+                document.getElementById('doctorsList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Không thể tải danh sách bác sĩ</p>
+                    </div>
+                `;
+            } finally {
+                LoadingSystem.hide();
+            }
+        }
+
+        // Render doctors
+        function renderDoctors() {
+            const container = document.getElementById('doctorsList');
+
+            if (doctors.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user-md-times"></i>
+                        <p>Không tìm thấy bác sĩ nào</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = doctors.map(doctor => `
+                <div class="doctor-card" onclick="selectDoctor('${doctor.publicId}')">
+                    <div class="d-flex align-items-center">
+                        <div class="doctor-avatar me-3">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">BS. ${doctor.firstName} ${doctor.lastName}</h5>
+                            <p class="mb-0 text-muted">
+                                <i class="fas fa-id-card me-2"></i>${doctor.publicId}
+                            </p>
+                            ${doctor.email ? `
+                                <p class="mb-0 text-muted small">
+                                    <i class="fas fa-envelope me-2"></i>${doctor.email}
+                                </p>
+                            ` : ''}
+                        </div>
+                        <div class="text-end">
+                            <button class="btn btn-warning btn-sm">
+                                <i class="fas fa-star me-1"></i>Đánh giá
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Select doctor to rate
+        function selectDoctor(doctorPublicId) {
+            selectedDoctor = doctors.find(d => d.publicId === doctorPublicId);
+            if (!selectedDoctor) return;
+
+            // Update UI
+            document.querySelectorAll('.doctor-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+
+            // Show rating form
+            document.getElementById('selectedDoctorId').value = doctorPublicId;
+            document.getElementById('selectedDoctorName').textContent = 
+                `BS. ${selectedDoctor.firstName} ${selectedDoctor.lastName}`;
+            document.getElementById('selectedDoctorSpecialty').textContent = 
+                selectedDoctor.email || 'Bác sĩ';
+
+            // Reset form
+            selectedRating = 0;
+            updateStarDisplay();
+            document.getElementById('comment').value = '';
+            document.getElementById('ratingText').textContent = 'Chưa chọn đánh giá';
+
+            document.getElementById('ratingFormSection').style.display = 'block';
+            document.getElementById('ratingFormSection').scrollIntoView({ behavior: 'smooth' });
+
+            // Load existing ratings
+            loadDoctorRatings(doctorPublicId);
+        }
+
+        // Setup star rating
+        function setupStarRating() {
+            const stars = document.querySelectorAll('.star-rating i');
+            
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    selectedRating = parseInt(this.dataset.rating);
+                    updateStarDisplay();
+                    updateRatingText();
+                });
+
+                star.addEventListener('mouseenter', function() {
+                    const rating = parseInt(this.dataset.rating);
+                    stars.forEach((s, index) => {
+                        if (index < rating) {
+                            s.classList.remove('far');
+                            s.classList.add('fas');
+                        } else {
+                            s.classList.remove('fas');
+                            s.classList.add('far');
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('starRating').addEventListener('mouseleave', function() {
+                updateStarDisplay();
+            });
+        }
+
+        // Update star display
+        function updateStarDisplay() {
+            const stars = document.querySelectorAll('.star-rating i');
+            stars.forEach((star, index) => {
+                if (index < selectedRating) {
+                    star.classList.remove('far');
+                    star.classList.add('fas');
+                } else {
+                    star.classList.remove('fas');
+                    star.classList.add('far');
+                }
+            });
+        }
+
+        // Update rating text
+        function updateRatingText() {
+            const ratingTexts = {
+                1: 'Rất không hài lòng',
+                2: 'Không hài lòng',
+                3: 'Bình thường',
+                4: 'Hài lòng',
+                5: 'Rất hài lòng'
+            };
+            document.getElementById('ratingText').textContent = ratingTexts[selectedRating] || 'Chưa chọn đánh giá';
+        }
+
+        // Setup rating form
+        function setupRatingForm() {
+            document.getElementById('ratingForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await submitRating();
+            });
+        }
+
+        // Submit rating
+        async function submitRating() {
+            try {
+                if (selectedRating === 0) {
+                    NotificationSystem.warning('Thông báo', 'Vui lòng chọn số sao đánh giá');
+                    return;
+                }
+
+                const doctorPublicId = document.getElementById('selectedDoctorId').value;
+                const comment = document.getElementById('comment').value.trim();
+
+                LoadingSystem.show('Đang gửi đánh giá...');
+
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/ratings/doctor`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        doctorPublicId: doctorPublicId,
+                        rating: selectedRating,
+                        comment: comment || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Không thể gửi đánh giá');
+                }
+
+                NotificationSystem.success('Thành công', data.message || 'Đã gửi đánh giá thành công');
+                
+                // Reload ratings
+                await loadDoctorRatings(doctorPublicId);
+
+                // Scroll to reviews
+                document.getElementById('doctorRatingsSection').scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                console.error('Error submitting rating:', error);
+                NotificationSystem.error('Lỗi', error.message);
+            } finally {
+                LoadingSystem.hide();
+            }
+        }
+
+        // Load doctor ratings
+        async function loadDoctorRatings(doctorPublicId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/ratings/doctor/${doctorPublicId}`);
+
+                if (!response.ok) {
+                    throw new Error('Không thể tải đánh giá');
+                }
+
+                const data = await response.json();
+                displayDoctorRatings(data);
+
+            } catch (error) {
+                console.error('Error loading ratings:', error);
+            }
+        }
+
+        // Display doctor ratings
+        function displayDoctorRatings(data) {
+            document.getElementById('doctorRatingsSection').style.display = 'block';
+
+            // Update summary
+            document.getElementById('avgRating').textContent = data.averageRating.toFixed(1);
+            document.getElementById('totalRatings').textContent = data.totalRatings;
+
+            // Calculate rating distribution
+            const distribution = [0, 0, 0, 0, 0];
+            data.ratings.forEach(r => {
+                distribution[r.rating - 1]++;
+            });
+
+            // Render rating bars
+            const barsHtml = [5, 4, 3, 2, 1].map(stars => {
+                const count = distribution[stars - 1];
+                const percentage = data.totalRatings > 0 ? (count / data.totalRatings * 100) : 0;
+                return `
+                    <div class="rating-bar">
+                        <span style="min-width: 20px;">${stars}★</span>
+                        <div class="rating-bar-fill">
+                            <div class="rating-bar-fill-inner" style="width: ${percentage}%"></div>
+                        </div>
+                        <span style="min-width: 40px; text-align: right;">${count}</span>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('ratingDistribution').innerHTML = barsHtml;
+
+            // Render reviews
+            const reviewsHtml = data.ratings.map(review => `
+                <div class="review-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <strong>${review.patientName}</strong>
+                            <div class="review-stars mt-1">
+                                ${'<i class="fas fa-star"></i>'.repeat(review.rating)}
+                                ${'<i class="far fa-star"></i>'.repeat(5 - review.rating)}
+                            </div>
+                        </div>
+                        <small class="text-muted">${formatDate(review.createdAt)}</small>
+                    </div>
+                    ${review.comment ? `<p class="mb-0">${review.comment}</p>` : '<p class="mb-0 text-muted fst-italic">Không có nhận xét</p>'}
+                </div>
+            `).join('');
+
+            document.getElementById('reviewsList').innerHTML = reviewsHtml || `
+                <div class="empty-state">
+                    <i class="fas fa-comment-slash"></i>
+                    <p>Chưa có đánh giá nào</p>
+                </div>
+            `;
+        }
+
+        // Cancel rating
+        function cancelRating() {
+            document.getElementById('ratingFormSection').style.display = 'none';
+            document.querySelectorAll('.doctor-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            selectedDoctor = null;
+            selectedRating = 0;
+        }
+
+        // Helper function
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+    </script>
+</body>
+</html>

@@ -288,6 +288,9 @@
                             if (userRole === 'reception' || userRole === 'Reception') {
                                 console.log('Redirecting to reception dashboard...');
                                 window.location.href = 'reception-dashboard.html';
+                            } else if (userRole === 'doctor' || userRole === 'Doctor') {
+                                console.log('Redirecting to doctor appointments...');
+                                window.location.href = 'doctor-appointments.html';
                             } else {
                                 console.log('Redirecting to index.html...');
                                 window.location.href = 'index.html';

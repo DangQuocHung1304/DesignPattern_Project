@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kế hoạch Sprint</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>KẾ HOẠCH SPRINT</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Mã sprint</th>
+                <th>Thời gian bắt đầu</th>
+                <th>Thời gian kết thúc</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>3</td>
+                <td>10/10/2025</td>
+                <td>15/10/2025</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>1. Mục tiêu Sprint</h2>
+    <ul>
+        <li>Hoàn thành các chức năng thiết yếu về Quản lý Lịch hẹn.</li>
+        <li>Hoàn tất thiết kế giao diện người dùng (UI) cho các trang quan trọng.</li>
+        <li>Hoàn thành API cho các chức năng Quản lý lịch hẹn của bác sĩ.</li>
+        <li>Hoàn thành API cho trang đánh giá bác sĩ và đánh giá phòng khám.</li>
+    </ul>
+
+    <h2>2. Backlog được chọn cho Sprint</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>User Story</th>
+                <th>Mô tả</th>
+                <th>Độ ưu tiên</th>
+                <th>Points</th>
+                <th>Người phụ trách</th>
+                <th>Trạng thái</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>US-01</td>
+                <td>Thay đổi lịch hẹn của bác sĩ.</td>
+                <td>Cao</td>
+                <td>2</td>
+                <td>Quốc Hưng</td>
+                <td>To Do</td>
+            </tr>
+            <tr>
+                <td>US-02</td>
+                <td>Hủy lịch hẹn của bác sĩ.</td>
+                <td>Cao</td>
+                <td>3</td>
+                <td>Quốc Hưng</td>
+                <td>To Do</td>
+            </tr>
+            <tr>
+                <td>US-03</td>
+                <td>Đánh giá bác sĩ.</td>
+                <td>Trung bình</td>
+                <td>1</td>
+                <td>Quốc Hưng</td>
+                <td>To Do</td>
+            </tr>
+            <tr>
+                <td>US-04</td>
+                <td>Đánh giá phòng khám.</td>
+                <td>Trung bình</td>
+                <td>3</td>
+                <td>Quốc Hưng</td>
+                <td>To Do</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>3. Phân công công việc chi tiết</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Công việc</th>
+                <th>Người thực hiện</th>
+                <th>Deadline</th>
+                <th>Công nghệ/tool/thư viện…</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Thiết kế UI cho Trang quản lý lịch hẹn của bác sĩ.</td>
+                <td>Quốc Hưng</td>
+                <td>15/10/2025</td>
+                <td>…</td>
+            </tr>
+            <tr>
+                <td>Thiết kế UI cho Trang đánh giá phòng khám.</td>
+                <td>Quốc Hưng</td>
+                <td>15/10/2025</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Thiết kế UI cho Trang đánh giá bác sĩ.</td>
+                <td>Quốc Hưng</td>
+                <td>15/10/2025</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Viết API liên quan đến quản lý lịch hẹn của bác sĩ.</td>
+                <td>Quốc Hưng</td>
+                <td>15/10/2025</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Viết API liên quan đến quản lý đánh giá phòng khám.</td>
+                <td>Quốc Hưng</td>
+                <td>15/10/2025</td>
+                <td>…</td>
+            </tr>
+            <tr>
+                <td>Viết API liên quan đến quản lý đánh giá bác sĩ.</td>
+                <td>Quốc Hưng</td>
+                <td>15/10/2025</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>4. Rủi ro và biện pháp</h2>
+    <ul>
+        <li>Rủi ro: Quá trình tìm hiểu công nghệ lập trình FE chưa được học có thể tốn khá nhiều thời gian, API được viết có thể gặp lỗi khiến mất nhiều thời gian sửa lỗi.</li>
+        <li>Biện pháp: Tranh thủ làm sớm, phát hiện lỗi sớm sửa sớm.</li>
+    </ul>
+
+    <h2>5. Sprint Planning Update (nếu là version cập nhật cho sprint cũ)</h2>
+    <ul>
+        <li>Thay đổi so với kế hoạch ban đầu: …</li>
+        <li>Lý do cập nhật: …</li>
+    </ul>
+
+</body>
+</html>

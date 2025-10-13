@@ -428,6 +428,169 @@ namespace HealthySystem.API.Controllers
             };
         }
 
+        // PUT: api/appointments/{id}/doctor-reschedule (Doctor reschedules appointment)
+        [HttpPut("{id}/doctor-reschedule")]
+        [Authorize(Roles = "doctor")]
+        public async Task<IActionResult> DoctorRescheduleAppointment(long id, [FromBody] RescheduleAppointmentRequest request)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var appointment = await _context.Appointments
+                    .Include(a => a.Patient)
+                    .Include(a => a.Doctor)
+                    .FirstOrDefaultAsync(a => a.Id == id);
+
+                if (appointment == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy lịch hẹn" });
+                }
+
+                // Verify doctor owns this appointment
+                if (appointment.DoctorId != userId)
+                {
+                    return Forbid();
+                }
+
+                // Validate appointment can be rescheduled
+                if (appointment.Status == "completed" || appointment.Status == "cancelled")
+                {
+                    return BadRequest(new { message = "Không thể thay đổi lịch hẹn đã hoàn thành hoặc đã hủy" });
+                }
+
+                // Validate new time
+                if (request.NewAppointmentStart >= request.NewAppointmentEnd)
+                {
+                    return BadRequest(new { message = "Thời gian kết thúc phải sau thời gian bắt đầu" });
+                }
+
+                if (request.NewAppointmentStart < DateTime.UtcNow)
+                {
+                    return BadRequest(new { message = "Không thể đặt lịch trong quá khứ" });
+                }
+
+                // Update appointment
+                var oldStart = appointment.AppointmentStart;
+                var oldEnd = appointment.AppointmentEnd;
+                appointment.AppointmentStart = request.NewAppointmentStart;
+                appointment.AppointmentEnd = request.NewAppointmentEnd;
+                appointment.Status = "rescheduled";
+                appointment.UpdatedAt = DateTimeOffset.UtcNow;
+
+                // Create history record
+                var history = new AppointmentHistory
+                {
+                    AppointmentId = id,
+                    ChangedBy = userId,
+                    OldStatus = appointment.Status,
+                    NewStatus = "rescheduled",
+                    OldStart = oldStart,
+                    NewStart = request.NewAppointmentStart,
+                    OldEnd = oldEnd,
+                    NewEnd = request.NewAppointmentEnd,
+                    Comment = request.Reason ?? "Bác sĩ thay đổi lịch hẹn",
+                    ChangedAt = DateTimeOffset.UtcNow
+                };
+                _context.AppointmentHistory.Add(history);
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Đã thay đổi lịch hẹn thành công",
+                    appointment = new
+                    {
+                        id = appointment.Id,
+                        oldStart = oldStart,
+                        newStart = request.NewAppointmentStart,
+                        oldEnd = oldEnd,
+                        newEnd = request.NewAppointmentEnd,
+                        status = appointment.Status
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi thay đổi lịch hẹn", error = ex.Message });
+            }
+        }
+
+        // DELETE: api/appointments/{id}/doctor-cancel (Doctor cancels appointment)
+        [HttpDelete("{id}/doctor-cancel")]
+        [Authorize(Roles = "doctor")]
+        public async Task<IActionResult> DoctorCancelAppointment(long id, [FromBody] DoctorCancelRequest request)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var appointment = await _context.Appointments
+                    .Include(a => a.Patient)
+                    .FirstOrDefaultAsync(a => a.Id == id);
+
+                if (appointment == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy lịch hẹn" });
+                }
+
+                // Verify doctor owns this appointment
+                if (appointment.DoctorId != userId)
+                {
+                    return Forbid();
+                }
+
+                // Validate appointment can be cancelled
+                if (appointment.Status == "completed")
+                {
+                    return BadRequest(new { message = "Không thể hủy lịch hẹn đã hoàn thành" });
+                }
+
+                if (appointment.Status == "cancelled")
+                {
+                    return BadRequest(new { message = "Lịch hẹn đã được hủy trước đó" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Reason))
+                {
+                    return BadRequest(new { message = "Vui lòng cung cấp lý do hủy lịch" });
+                }
+
+                // Update appointment status
+                var oldStatus = appointment.Status;
+                appointment.Status = "cancelled";
+                appointment.CancellationReason = $"Bác sĩ hủy: {request.Reason}";
+                appointment.UpdatedAt = DateTimeOffset.UtcNow;
+
+                // Create history record
+                var history = new AppointmentHistory
+                {
+                    AppointmentId = id,
+                    ChangedBy = userId,
+                    OldStatus = oldStatus,
+                    NewStatus = "cancelled",
+                    Comment = $"Bác sĩ hủy lịch: {request.Reason}",
+                    ChangedAt = DateTimeOffset.UtcNow
+                };
+                _context.AppointmentHistory.Add(history);
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Đã hủy lịch hẹn thành công",
+                    appointment = new
+                    {
+                        id = appointment.Id,
+                        status = appointment.Status,
+                        cancellationReason = appointment.CancellationReason
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi hủy lịch hẹn", error = ex.Message });
+            }
+        }
+
         private string GetCurrentUserRole()
         {
             return User.FindFirst(ClaimTypes.Role)?.Value ?? "";
@@ -449,5 +612,17 @@ namespace HealthySystem.API.Controllers
     {
         public string Status { get; set; } = "";
         public string? Notes { get; set; }
+    }
+
+    public class RescheduleAppointmentRequest
+    {
+        public DateTime NewAppointmentStart { get; set; }
+        public DateTime NewAppointmentEnd { get; set; }
+        public string Reason { get; set; } = "";
+    }
+
+    public class DoctorCancelRequest
+    {
+        public string Reason { get; set; } = "";
     }
 }

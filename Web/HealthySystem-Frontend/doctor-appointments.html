@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Hẹn của Tôi - Bác Sĩ - Healthy System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/notifications.css">
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #16a085 0%, #27ae60 100%);
+            color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .doctor-info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid #27ae60;
+        }
+
+        .filter-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .appointment-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #16a085;
+            transition: all 0.3s;
+        }
+
+        .appointment-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateX(5px);
+        }
+
+        .appointment-card.status-scheduled {
+            border-left-color: #0958d9;
+        }
+
+        .appointment-card.status-confirmed {
+            border-left-color: #52c41a;
+        }
+
+        .appointment-card.status-rescheduled {
+            border-left-color: #faad14;
+        }
+
+        .appointment-card.status-cancelled {
+            border-left-color: #cf1322;
+        }
+
+        .appointment-card.status-completed {
+            border-left-color: #8c8c8c;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-scheduled {
+            background: #e6f7ff;
+            color: #0958d9;
+        }
+
+        .status-confirmed {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+
+        .status-rescheduled {
+            background: #fffbe6;
+            color: #faad14;
+        }
+
+        .status-cancelled {
+            background: #fff1f0;
+            color: #cf1322;
+        }
+
+        .status-completed {
+            background: #f0f0f0;
+            color: #595959;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #16a085 0%, #27ae60 100%);
+            color: white;
+        }
+
+        .btn-reschedule {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+        }
+
+        .btn-reschedule:hover {
+            background: linear-gradient(135deg, #2980b9, #21618c);
+            color: white;
+        }
+
+        .btn-cancel-appointment {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+        }
+
+        .btn-cancel-appointment:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            color: white;
+        }
+
+        .filter-btn {
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #16a085 0%, #27ae60 100%);
+            color: white;
+            border-color: #16a085;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #8c8c8c;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .patient-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .appointment-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay"></div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>Lịch Hẹn của Tôi
+                    </h2>
+                    <p class="mb-0 mt-2 opacity-75">Quản lý lịch khám bệnh</p>
+                </div>
+                <button class="btn btn-light" onclick="logout()">
+                    <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Doctor Info Card -->
+        <div class="doctor-info-card" id="doctorInfoCard">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="fas fa-user-md fa-3x text-success"></i>
+                </div>
+                <div>
+                    <h5 class="mb-1" id="doctorName">Đang tải...</h5>
+                    <p class="mb-0 text-muted" id="doctorEmail"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-card">
+            <h6 class="mb-3"><i class="fas fa-filter me-2"></i>Bộ lọc</h6>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Tất cả</option>
+                        <option value="scheduled">Đã đặt lịch</option>
+                        <option value="confirmed">Đã xác nhận</option>
+                        <option value="rescheduled">Đã thay đổi</option>
+                        <option value="completed">Hoàn thành</option>
+                        <option value="cancelled">Đã hủy</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Từ ngày</label>
+                    <input type="date" class="form-control" id="fromDate">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Đến ngày</label>
+                    <input type="date" class="form-control" id="toDate">
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-success" onclick="applyFilters()">
+                    <i class="fas fa-filter me-2"></i>Lọc
+                </button>
+                <button class="btn btn-outline-secondary" onclick="resetFilters()">
+                    <i class="fas fa-redo me-2"></i>Đặt lại
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Filters -->
+        <div class="mb-3">
+            <button class="btn btn-outline-success filter-btn active" data-filter="all" onclick="quickFilter('all')">
+                <i class="fas fa-th me-1"></i>Tất cả
+            </button>
+            <button class="btn btn-outline-success filter-btn" data-filter="today" onclick="quickFilter('today')">
+                <i class="fas fa-calendar-day me-1"></i>Hôm nay
+            </button>
+            <button class="btn btn-outline-success filter-btn" data-filter="tomorrow" onclick="quickFilter('tomorrow')">
+                <i class="fas fa-calendar-plus me-1"></i>Ngày mai
+            </button>
+            <button class="btn btn-outline-success filter-btn" data-filter="week" onclick="quickFilter('week')">
+                <i class="fas fa-calendar-week me-1"></i>Tuần này
+            </button>
+        </div>
+
+        <!-- Appointments List -->
+        <div id="appointmentsList">
+            <div class="empty-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Đang tải dữ liệu...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reschedule Modal -->
+    <div class="modal fade" id="rescheduleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-calendar-alt me-2"></i>Thay đổi lịch hẹn
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rescheduleForm">
+                        <input type="hidden" id="rescheduleAppointmentId">
+                        
+                        <div class="patient-info">
+                            <h6><i class="fas fa-user me-2"></i>Thông tin bệnh nhân</h6>
+                            <p class="mb-1"><strong>Tên:</strong> <span id="reschedulePatientName"></span></p>
+                            <p class="mb-0"><strong>Mã BN:</strong> <span id="reschedulePatientId"></span></p>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Lịch hiện tại:</strong><br>
+                            <span id="currentSchedule"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ngày mới <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="newDate" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="newStartTime" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="newEndTime" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Lý do thay đổi <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="rescheduleReason" rows="3" 
+                                      placeholder="VD: Có ca cấp cứu, Lịch trình thay đổi..." required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-reschedule" onclick="submitReschedule()">
+                        <i class="fas fa-calendar-check me-2"></i>Xác nhận thay đổi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Modal -->
+    <div class="modal fade" id="cancelModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white">
+                        <i class="fas fa-times-circle me-2"></i>Hủy lịch hẹn
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="cancelForm">
+                        <input type="hidden" id="cancelAppointmentId">
+                        
+                        <div class="patient-info">
+                            <h6><i class="fas fa-user me-2"></i>Thông tin bệnh nhân</h6>
+                            <p class="mb-1"><strong>Tên:</strong> <span id="cancelPatientName"></span></p>
+                            <p class="mb-0"><strong>Mã BN:</strong> <span id="cancelPatientId"></span></p>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác. Bệnh nhân sẽ nhận được thông báo về việc hủy lịch.
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Lý do hủy <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="cancelReason" rows="4" 
+                                      placeholder="VD: Có việc đột xuất, Lịch trình bị trùng..." required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-cancel-appointment" onclick="submitCancel()">
+                        <i class="fas fa-times me-2"></i>Xác nhận hủy
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Detail Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>Chi tiết lịch hẹn
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="detailModalBody">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/notifications.js"></script>
+    <script src="assets/js/loading.js"></script>
+    <script src="assets/js/validator.js"></script>
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        let appointments = [];
+        let filteredAppointments = [];
+        let currentFilter = 'all';
+
+        // Bootstrap modals
+        let rescheduleModal, cancelModal, detailModal;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            const token = localStorage.getItem('authToken');
+            const userRole = localStorage.getItem('userRole');
+            
+            if (!token || userRole !== 'doctor') {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Initialize modals
+            rescheduleModal = new bootstrap.Modal(document.getElementById('rescheduleModal'));
+            cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+
+            // Load doctor info and appointments
+            loadDoctorInfo();
+            loadAppointments();
+
+            // Set default date range (today to +7 days)
+            const today = new Date();
+            const nextWeek = new Date(today);
+            nextWeek.setDate(today.getDate() + 7);
+            
+            document.getElementById('fromDate').valueAsDate = today;
+            document.getElementById('toDate').valueAsDate = nextWeek;
+        });
+
+        // Load doctor info
+        async function loadDoctorInfo() {
+            try {
+                const userName = localStorage.getItem('userName');
+                const userEmail = localStorage.getItem('userEmail');
+                
+                if (userName && userEmail) {
+                    document.getElementById('doctorName').textContent = 'BS. ' + userName;
+                    document.getElementById('doctorEmail').textContent = userEmail;
+                }
+            } catch (error) {
+                console.error('Error loading doctor info:', error);
+            }
+        }
+
+        // Load appointments
+        async function loadAppointments() {
+            try {
+                LoadingSystem.show('Đang tải danh sách lịch hẹn...');
+                
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/appointments`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Không thể tải danh sách lịch hẹn');
+                }
+
+                const data = await response.json();
+                appointments = data.appointments || [];
+                applyFilters();
+                
+            } catch (error) {
+                console.error('Error loading appointments:', error);
+                NotificationSystem.error('Lỗi', error.message);
+                document.getElementById('appointmentsList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Không thể tải danh sách lịch hẹn</p>
+                    </div>
+                `;
+            } finally {
+                LoadingSystem.hide();
+            }
+        }
+
+        // Apply filters
+        function applyFilters() {
+            let filtered = [...appointments];
+
+            // Status filter
+            const status = document.getElementById('statusFilter').value;
+            if (status) {
+                filtered = filtered.filter(apt => apt.status === status);
+            }
+
+            // Date range filter
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+
+            if (fromDate) {
+                filtered = filtered.filter(apt => 
+                    new Date(apt.appointmentStart) >= new Date(fromDate)
+                );
+            }
+
+            if (toDate) {
+                const toDateTime = new Date(toDate);
+                toDateTime.setHours(23, 59, 59);
+                filtered = filtered.filter(apt => 
+                    new Date(apt.appointmentStart) <= toDateTime
+                );
+            }
+
+            filteredAppointments = filtered;
+            renderAppointments();
+        }
+
+        // Quick filter
+        function quickFilter(filter) {
+            currentFilter = filter;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let fromDate, toDate;
+
+            switch(filter) {
+                case 'today':
+                    fromDate = new Date(today);
+                    toDate = new Date(today);
+                    toDate.setHours(23, 59, 59);
+                    break;
+                case 'tomorrow':
+                    fromDate = new Date(today);
+                    fromDate.setDate(today.getDate() + 1);
+                    toDate = new Date(fromDate);
+                    toDate.setHours(23, 59, 59);
+                    break;
+                case 'week':
+                    fromDate = new Date(today);
+                    toDate = new Date(today);
+                    toDate.setDate(today.getDate() + 7);
+                    break;
+                case 'all':
+                default:
+                    fromDate = null;
+                    toDate = null;
+            }
+
+            if (fromDate) {
+                document.getElementById('fromDate').valueAsDate = fromDate;
+            } else {
+                document.getElementById('fromDate').value = '';
+            }
+
+            if (toDate) {
+                document.getElementById('toDate').valueAsDate = toDate;
+            } else {
+                document.getElementById('toDate').value = '';
+            }
+
+            applyFilters();
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('fromDate').value = '';
+            document.getElementById('toDate').value = '';
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector('[data-filter="all"]').classList.add('active');
+            
+            currentFilter = 'all';
+            applyFilters();
+        }
+
+        // Render appointments
+        function renderAppointments() {
+            const container = document.getElementById('appointmentsList');
+
+            if (filteredAppointments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>Không có lịch hẹn nào</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by date descending
+            filteredAppointments.sort((a, b) => 
+                new Date(b.appointmentStart) - new Date(a.appointmentStart)
+            );
+
+            container.innerHTML = filteredAppointments.map(apt => `
+                <div class="appointment-card status-${apt.status}" onclick="showDetail(${apt.id})">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="fas fa-user me-2"></i>${apt.patient?.firstName} ${apt.patient?.lastName}
+                            </h6>
+                            <p class="text-muted mb-0 small">
+                                <i class="fas fa-id-card me-1"></i>Mã BN: ${apt.patient?.publicId || 'N/A'}
+                            </p>
+                        </div>
+                        <span class="status-badge status-${apt.status}">${getStatusText(apt.status)}</span>
+                    </div>
+
+                    <div class="mb-2">
+                        <i class="fas fa-calendar me-2 text-primary"></i>
+                        <strong>${formatDate(apt.appointmentStart)}</strong>
+                    </div>
+
+                    <div class="mb-2">
+                        <i class="fas fa-clock me-2 text-success"></i>
+                        ${formatTime(apt.appointmentStart)} - ${formatTime(apt.appointmentEnd)}
+                    </div>
+
+                    ${apt.reason ? `
+                        <div class="mb-2">
+                            <i class="fas fa-notes-medical me-2 text-info"></i>
+                            <small>${apt.reason}</small>
+                        </div>
+                    ` : ''}
+
+                    ${canRescheduleOrCancel(apt) ? `
+                        <div class="appointment-actions mt-3" onclick="event.stopPropagation()">
+                            <button class="btn btn-sm btn-reschedule" onclick="showRescheduleModal(${apt.id})">
+                                <i class="fas fa-calendar-alt me-1"></i>Thay đổi lịch
+                            </button>
+                            <button class="btn btn-sm btn-cancel-appointment" onclick="showCancelModal(${apt.id})">
+                                <i class="fas fa-times me-1"></i>Hủy lịch
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Show reschedule modal
+        function showRescheduleModal(appointmentId) {
+            const apt = appointments.find(a => a.id === appointmentId);
+            if (!apt) return;
+
+            // Check if can reschedule
+            if (!canRescheduleOrCancel(apt)) {
+                NotificationSystem.warning('Thông báo', 'Không thể thay đổi lịch hẹn này');
+                return;
+            }
+
+            document.getElementById('rescheduleAppointmentId').value = apt.id;
+            document.getElementById('reschedulePatientName').textContent = 
+                `${apt.patient?.firstName} ${apt.patient?.lastName}`;
+            document.getElementById('reschedulePatientId').textContent = apt.patient?.publicId || 'N/A';
+            document.getElementById('currentSchedule').innerHTML = `
+                <i class="fas fa-calendar me-2"></i>${formatDate(apt.appointmentStart)}<br>
+                <i class="fas fa-clock me-2"></i>${formatTime(apt.appointmentStart)} - ${formatTime(apt.appointmentEnd)}
+            `;
+
+            // Set default new date (tomorrow)
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('newDate').valueAsDate = tomorrow;
+
+            // Clear form
+            document.getElementById('rescheduleForm').reset();
+            document.getElementById('rescheduleAppointmentId').value = apt.id;
+
+            rescheduleModal.show();
+        }
+
+        // Submit reschedule
+        async function submitReschedule() {
+            try {
+                const form = document.getElementById('rescheduleForm');
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                const appointmentId = document.getElementById('rescheduleAppointmentId').value;
+                const newDate = document.getElementById('newDate').value;
+                const newStartTime = document.getElementById('newStartTime').value;
+                const newEndTime = document.getElementById('newEndTime').value;
+                const reason = document.getElementById('rescheduleReason').value;
+
+                // Validate times
+                if (newStartTime >= newEndTime) {
+                    NotificationSystem.error('Lỗi', 'Giờ kết thúc phải sau giờ bắt đầu');
+                    return;
+                }
+
+                // Create datetime strings
+                const newStart = `${newDate}T${newStartTime}:00`;
+                const newEnd = `${newDate}T${newEndTime}:00`;
+
+                LoadingSystem.show('Đang thay đổi lịch hẹn...');
+
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/reschedule`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        newAppointmentStart: newStart,
+                        newAppointmentEnd: newEnd,
+                        reason: reason
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Không thể thay đổi lịch hẹn');
+                }
+
+                NotificationSystem.success('Thành công', 'Đã thay đổi lịch hẹn thành công');
+                rescheduleModal.hide();
+                loadAppointments();
+
+            } catch (error) {
+                console.error('Error rescheduling appointment:', error);
+                NotificationSystem.error('Lỗi', error.message);
+            } finally {
+                LoadingSystem.hide();
+            }
+        }
+
+        // Show cancel modal
+        function showCancelModal(appointmentId) {
+            const apt = appointments.find(a => a.id === appointmentId);
+            if (!apt) return;
+
+            // Check if can cancel
+            if (!canRescheduleOrCancel(apt)) {
+                NotificationSystem.warning('Thông báo', 'Không thể hủy lịch hẹn này');
+                return;
+            }
+
+            document.getElementById('cancelAppointmentId').value = apt.id;
+            document.getElementById('cancelPatientName').textContent = 
+                `${apt.patient?.firstName} ${apt.patient?.lastName}`;
+            document.getElementById('cancelPatientId').textContent = apt.patient?.publicId || 'N/A';
+
+            // Clear form
+            document.getElementById('cancelForm').reset();
+            document.getElementById('cancelAppointmentId').value = apt.id;
+
+            cancelModal.show();
+        }
+
+        // Submit cancel
+        async function submitCancel() {
+            try {
+                const form = document.getElementById('cancelForm');
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                const appointmentId = document.getElementById('cancelAppointmentId').value;
+                const reason = document.getElementById('cancelReason').value;
+
+                if (!confirm('Bạn có chắc chắn muốn hủy lịch hẹn này không?')) {
+                    return;
+                }
+
+                LoadingSystem.show('Đang hủy lịch hẹn...');
+
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/doctor-cancel`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        reason: reason
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Không thể hủy lịch hẹn');
+                }
+
+                NotificationSystem.success('Thành công', 'Đã hủy lịch hẹn thành công');
+                cancelModal.hide();
+                loadAppointments();
+
+            } catch (error) {
+                console.error('Error cancelling appointment:', error);
+                NotificationSystem.error('Lỗi', error.message);
+            } finally {
+                LoadingSystem.hide();
+            }
+        }
+
+        // Show appointment detail
+        function showDetail(appointmentId) {
+            const apt = appointments.find(a => a.id === appointmentId);
+            if (!apt) return;
+
+            const detailBody = document.getElementById('detailModalBody');
+            detailBody.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user me-2"></i>Thông tin bệnh nhân</h6>
+                        <p><strong>Họ tên:</strong> ${apt.patient?.firstName} ${apt.patient?.lastName}</p>
+                        <p><strong>Mã BN:</strong> ${apt.patient?.publicId || 'N/A'}</p>
+                        <p><strong>Email:</strong> ${apt.patient?.email || 'N/A'}</p>
+                        <p><strong>Điện thoại:</strong> ${apt.patient?.phone || 'N/A'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-calendar me-2"></i>Thông tin lịch hẹn</h6>
+                        <p><strong>Ngày khám:</strong> ${formatDate(apt.appointmentStart)}</p>
+                        <p><strong>Giờ:</strong> ${formatTime(apt.appointmentStart)} - ${formatTime(apt.appointmentEnd)}</p>
+                        <p><strong>Trạng thái:</strong> 
+                            <span class="status-badge status-${apt.status}">${getStatusText(apt.status)}</span>
+                        </p>
+                        <p><strong>Nguồn:</strong> ${getSourceText(apt.source)}</p>
+                    </div>
+                </div>
+                ${apt.reason ? `
+                    <div class="mt-3">
+                        <h6><i class="fas fa-notes-medical me-2"></i>Lý do khám</h6>
+                        <p>${apt.reason}</p>
+                    </div>
+                ` : ''}
+                ${apt.cancellationReason ? `
+                    <div class="mt-3">
+                        <h6><i class="fas fa-times-circle me-2 text-danger"></i>Lý do hủy</h6>
+                        <p>${apt.cancellationReason}</p>
+                    </div>
+                ` : ''}
+                <div class="mt-3">
+                    <h6><i class="fas fa-info-circle me-2"></i>Thông tin khác</h6>
+                    <p><strong>Ngày tạo:</strong> ${formatDateTime(apt.createdAt)}</p>
+                    ${apt.updatedAt ? `<p><strong>Cập nhật lần cuối:</strong> ${formatDateTime(apt.updatedAt)}</p>` : ''}
+                </div>
+            `;
+
+            detailModal.show();
+        }
+
+        // Helper functions
+        function canRescheduleOrCancel(apt) {
+            // Can only reschedule/cancel if status is scheduled, confirmed, or rescheduled
+            return ['scheduled', 'confirmed', 'rescheduled'].includes(apt.status);
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'scheduled': 'Đã đặt lịch',
+                'confirmed': 'Đã xác nhận',
+                'rescheduled': 'Đã thay đổi',
+                'cancelled': 'Đã hủy',
+                'completed': 'Hoàn thành',
+                'no_show': 'Không đến'
+            };
+            return statusMap[status] || status;
+        }
+
+        function getSourceText(source) {
+            const sourceMap = {
+                'online': 'Đặt online',
+                'walk_in': 'Trực tiếp',
+                'phone': 'Qua điện thoại',
+                'admin': 'Quản trị viên'
+            };
+            return sourceMap[source] || source || 'N/A';
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN', { 
+                weekday: 'long',
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleTimeString('vi-VN', { 
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
+        }
+
+        function formatDateTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('vi-VN', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
+        }
+
+        function logout() {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất không?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('userName');
+                localStorage.removeItem('userEmail');
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+</html>

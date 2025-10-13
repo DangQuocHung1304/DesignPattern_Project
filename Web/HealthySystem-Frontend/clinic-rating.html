@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đánh giá Phòng Khám - Healthy System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/notifications.css">
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .rating-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .clinic-header {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .clinic-logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 3rem;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
+        .star-rating i {
+            cursor: pointer;
+            color: #ddd;
+            transition: all 0.3s;
+        }
+
+        .star-rating i.fas {
+            color: #9b59b6;
+        }
+
+        .star-rating i:hover {
+            color: #9b59b6;
+            transform: scale(1.2);
+        }
+
+        .rating-category {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .category-stars {
+            display: flex;
+            gap: 0.25rem;
+            font-size: 1.5rem;
+        }
+
+        .category-stars i {
+            cursor: pointer;
+            color: #ddd;
+            transition: all 0.2s;
+        }
+
+        .category-stars i.fas {
+            color: #9b59b6;
+        }
+
+        .rating-summary {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .rating-stats {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            flex-wrap: wrap;
+        }
+
+        .rating-stat {
+            flex: 1;
+            min-width: 150px;
+            padding: 1rem;
+        }
+
+        .rating-stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #8e44ad;
+        }
+
+        .rating-stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .rating-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rating-bar-fill {
+            flex: 1;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .rating-bar-fill-inner {
+            height: 100%;
+            background: linear-gradient(90deg, #8e44ad, #9b59b6);
+            transition: width 0.3s;
+        }
+
+        .review-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .review-card:hover {
+            box-shadow: 0 5px 15px rgba(142, 68, 173, 0.1);
+            border-color: #9b59b6;
+        }
+
+        .review-stars {
+            color: #9b59b6;
+        }
+
+        .btn-submit-rating {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            color: white;
+            border: none;
+            padding: 0.75rem 2.5rem;
+            font-size: 1.1rem;
+            border-radius: 25px;
+        }
+
+        .btn-submit-rating:hover {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(142, 68, 173, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #8c8c8c;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .auth-required {
+            background: #f3e5f5;
+            border: 1px solid #9b59b6;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .criteria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay"></div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0">
+                        <i class="fas fa-hospital me-2"></i>Đánh Giá Phòng Khám
+                    </h2>
+                    <p class="mb-0 mt-2 opacity-75">Góp ý để chúng tôi phục vụ bạn tốt hơn</p>
+                </div>
+                <a href="index.html" class="btn btn-light">
+                    <i class="fas fa-home me-2"></i>Trang chủ
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Authentication Check -->
+        <div id="authCheck"></div>
+
+        <!-- Rating Section -->
+        <div id="ratingSection" style="display: none;">
+            <!-- Clinic Header -->
+            <div class="clinic-header">
+                <div class="clinic-logo">
+                    <i class="fas fa-hospital"></i>
+                </div>
+                <h3 class="mb-2">Healthy System Clinic</h3>
+                <p class="text-muted mb-0">Phòng khám đa khoa uy tín</p>
+            </div>
+
+            <!-- Rating Form -->
+            <div class="rating-section">
+                <h4 class="mb-4 text-center">
+                    <i class="fas fa-star me-2"></i>Đánh Giá Tổng Thể
+                </h4>
+                
+                <form id="ratingForm">
+                    <div class="mb-4">
+                        <label class="form-label text-center d-block">
+                            <strong>Mức độ hài lòng chung của bạn</strong>
+                        </label>
+                        <div class="star-rating" id="starRating">
+                            <i class="far fa-star" data-rating="1"></i>
+                            <i class="far fa-star" data-rating="2"></i>
+                            <i class="far fa-star" data-rating="3"></i>
+                            <i class="far fa-star" data-rating="4"></i>
+                            <i class="far fa-star" data-rating="5"></i>
+                        </div>
+                        <p class="text-center text-muted" id="ratingText">Chưa chọn đánh giá</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <strong><i class="fas fa-list-check me-2"></i>Đánh giá chi tiết (Tùy chọn)</strong>
+                        </label>
+                        <div class="criteria-grid">
+                            <div class="rating-category">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span><i class="fas fa-building me-2"></i>Cơ sở vật chất</span>
+                                    <div class="category-stars" data-category="facility">
+                                        <i class="far fa-star" data-rating="1"></i>
+                                        <i class="far fa-star" data-rating="2"></i>
+                                        <i class="far fa-star" data-rating="3"></i>
+                                        <i class="far fa-star" data-rating="4"></i>
+                                        <i class="far fa-star" data-rating="5"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="rating-category">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span><i class="fas fa-users me-2"></i>Thái độ nhân viên</span>
+                                    <div class="category-stars" data-category="staff">
+                                        <i class="far fa-star" data-rating="1"></i>
+                                        <i class="far fa-star" data-rating="2"></i>
+                                        <i class="far fa-star" data-rating="3"></i>
+                                        <i class="far fa-star" data-rating="4"></i>
+                                        <i class="far fa-star" data-rating="5"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="rating-category">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span><i class="fas fa-clock me-2"></i>Thời gian chờ</span>
+                                    <div class="category-stars" data-category="waiting">
+                                        <i class="far fa-star" data-rating="1"></i>
+                                        <i class="far fa-star" data-rating="2"></i>
+                                        <i class="far fa-star" data-rating="3"></i>
+                                        <i class="far fa-star" data-rating="4"></i>
+                                        <i class="far fa-star" data-rating="5"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="rating-category">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span><i class="fas fa-broom me-2"></i>Vệ sinh sạch sẽ</span>
+                                    <div class="category-stars" data-category="cleanliness">
+                                        <i class="far fa-star" data-rating="1"></i>
+                                        <i class="far fa-star" data-rating="2"></i>
+                                        <i class="far fa-star" data-rating="3"></i>
+                                        <i class="far fa-star" data-rating="4"></i>
+                                        <i class="far fa-star" data-rating="5"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <strong><i class="fas fa-comment-dots me-2"></i>Nhận xét của bạn</strong>
+                        </label>
+                        <textarea class="form-control" id="comment" rows="6" 
+                                  placeholder="Chia sẻ trải nghiệm của bạn về phòng khám:&#10;- Điểm mạnh&#10;- Điểm cần cải thiện&#10;- Đề xuất, góp ý..."></textarea>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-submit-rating">
+                            <i class="fas fa-paper-plane me-2"></i>Gửi Đánh Giá
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Ratings Display -->
+            <div class="rating-section">
+                <h4 class="mb-4">
+                    <i class="fas fa-comments me-2"></i>Đánh Giá Từ Bệnh Nhân
+                </h4>
+
+                <div class="rating-summary">
+                    <div class="rating-stats">
+                        <div class="rating-stat">
+                            <div class="rating-stat-value" id="avgRating">0.0</div>
+                            <div class="rating-stat-label">Trung bình</div>
+                            <div class="review-stars mt-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <div class="rating-stat">
+                            <div class="rating-stat-value" id="totalRatings">0</div>
+                            <div class="rating-stat-label">Đánh giá</div>
+                        </div>
+                    </div>
+
+                    <div id="ratingDistribution" class="mt-4">
+                        <!-- Rating bars will be inserted here -->
+                    </div>
+                </div>
+
+                <div id="reviewsList">
+                    <div class="empty-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Đang tải đánh giá...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/notifications.js"></script>
+    <script src="assets/js/loading.js"></script>
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        let selectedRating = 0;
+        let categoryRatings = {
+            facility: 0,
+            staff: 0,
+            waiting: 0,
+            cleanliness: 0
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+            setupStarRating();
+            setupCategoryRatings();
+            setupRatingForm();
+            loadClinicRatings();
+        });
+
+        // Check authentication
+        function checkAuthentication() {
+            const token = localStorage.getItem('authToken');
+            const userRole = localStorage.getItem('userRole');
+            const authCheckDiv = document.getElementById('authCheck');
+
+            if (!token || userRole !== 'patient') {
+                authCheckDiv.innerHTML = `
+                    <div class="auth-required">
+                        <i class="fas fa-lock fa-3x mb-3" style="color: #9b59b6;"></i>
+                        <h4>Yêu Cầu Đăng Nhập</h4>
+                        <p>Bạn cần đăng nhập với tài khoản bệnh nhân để sử dụng tính năng đánh giá</p>
+                        <a href="login.html" class="btn btn-submit-rating mt-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập ngay
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Authenticated - show rating section
+            document.getElementById('ratingSection').style.display = 'block';
+        }
+
+        // Setup main star rating
+        function setupStarRating() {
+            const stars = document.querySelectorAll('#starRating i');
+            
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    selectedRating = parseInt(this.dataset.rating);
+                    updateMainStarDisplay();
+                    updateRatingText();
+                });
+
+                star.addEventListener('mouseenter', function() {
+                    const rating = parseInt(this.dataset.rating);
+                    stars.forEach((s, index) => {
+                        if (index < rating) {
+                            s.classList.remove('far');
+                            s.classList.add('fas');
+                        } else {
+                            s.classList.remove('fas');
+                            s.classList.add('far');
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('starRating').addEventListener('mouseleave', function() {
+                updateMainStarDisplay();
+            });
+        }
+
+        // Setup category ratings
+        function setupCategoryRatings() {
+            document.querySelectorAll('.category-stars').forEach(container => {
+                const category = container.dataset.category;
+                const stars = container.querySelectorAll('i');
+
+                stars.forEach(star => {
+                    star.addEventListener('click', function() {
+                        categoryRatings[category] = parseInt(this.dataset.rating);
+                        updateCategoryStarDisplay(container, categoryRatings[category]);
+                    });
+
+                    star.addEventListener('mouseenter', function() {
+                        const rating = parseInt(this.dataset.rating);
+                        updateCategoryStarDisplay(container, rating);
+                    });
+                });
+
+                container.addEventListener('mouseleave', function() {
+                    updateCategoryStarDisplay(container, categoryRatings[category]);
+                });
+            });
+        }
+
+        // Update main star display
+        function updateMainStarDisplay() {
+            const stars = document.querySelectorAll('#starRating i');
+            stars.forEach((star, index) => {
+                if (index < selectedRating) {
+                    star.classList.remove('far');
+                    star.classList.add('fas');
+                } else {
+                    star.classList.remove('fas');
+                    star.classList.add('far');
+                }
+            });
+        }
+
+        // Update category star display
+        function updateCategoryStarDisplay(container, rating) {
+            const stars = container.querySelectorAll('i');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove('far');
+                    star.classList.add('fas');
+                } else {
+                    star.classList.remove('fas');
+                    star.classList.add('far');
+                }
+            });
+        }
+
+        // Update rating text
+        function updateRatingText() {
+            const ratingTexts = {
+                1: '⭐ Rất không hài lòng',
+                2: '⭐⭐ Không hài lòng',
+                3: '⭐⭐⭐ Bình thường',
+                4: '⭐⭐⭐⭐ Hài lòng',
+                5: '⭐⭐⭐⭐⭐ Rất hài lòng'
+            };
+            document.getElementById('ratingText').textContent = ratingTexts[selectedRating] || 'Chưa chọn đánh giá';
+        }
+
+        // Setup rating form
+        function setupRatingForm() {
+            document.getElementById('ratingForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await submitRating();
+            });
+        }
+
+        // Submit rating
+        async function submitRating() {
+            try {
+                if (selectedRating === 0) {
+                    NotificationSystem.warning('Thông báo', 'Vui lòng chọn số sao đánh giá tổng thể');
+                    return;
+                }
+
+                const comment = document.getElementById('comment').value.trim();
+
+                // Build comment with category ratings
+                let fullComment = comment;
+                const categoryNames = {
+                    facility: 'Cơ sở vật chất',
+                    staff: 'Thái độ nhân viên',
+                    waiting: 'Thời gian chờ',
+                    cleanliness: 'Vệ sinh sạch sẽ'
+                };
+
+                const categoryComments = Object.entries(categoryRatings)
+                    .filter(([_, rating]) => rating > 0)
+                    .map(([category, rating]) => `${categoryNames[category]}: ${rating}/5⭐`);
+
+                if (categoryComments.length > 0) {
+                    fullComment = fullComment 
+                        ? `${fullComment}\n\n[Chi tiết]\n${categoryComments.join('\n')}`
+                        : `[Chi tiết]\n${categoryComments.join('\n')}`;
+                }
+
+                LoadingSystem.show('Đang gửi đánh giá...');
+
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/ratings/clinic`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        rating: selectedRating,
+                        comment: fullComment || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Không thể gửi đánh giá');
+                }
+
+                NotificationSystem.success('Thành công', data.message || 'Cảm ơn bạn đã đánh giá!');
+                
+                // Reset form
+                selectedRating = 0;
+                categoryRatings = { facility: 0, staff: 0, waiting: 0, cleanliness: 0 };
+                document.getElementById('ratingForm').reset();
+                updateMainStarDisplay();
+                document.querySelectorAll('.category-stars').forEach(container => {
+                    updateCategoryStarDisplay(container, 0);
+                });
+                document.getElementById('ratingText').textContent = 'Chưa chọn đánh giá';
+
+                // Reload ratings
+                await loadClinicRatings();
+
+                // Scroll to reviews
+                document.getElementById('reviewsList').scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                console.error('Error submitting rating:', error);
+                NotificationSystem.error('Lỗi', error.message);
+            } finally {
+                LoadingSystem.hide();
+            }
+        }
+
+        // Load clinic ratings
+        async function loadClinicRatings() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/ratings/clinic`);
+
+                if (!response.ok) {
+                    throw new Error('Không thể tải đánh giá');
+                }
+
+                const data = await response.json();
+                displayClinicRatings(data);
+
+            } catch (error) {
+                console.error('Error loading ratings:', error);
+                document.getElementById('reviewsList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Không thể tải đánh giá</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Display clinic ratings
+        function displayClinicRatings(data) {
+            // Update summary
+            document.getElementById('avgRating').textContent = data.averageRating.toFixed(1);
+            document.getElementById('totalRatings').textContent = data.totalRatings;
+
+            // Calculate rating distribution
+            const distribution = [0, 0, 0, 0, 0];
+            data.ratings.forEach(r => {
+                distribution[r.rating - 1]++;
+            });
+
+            // Render rating bars
+            const barsHtml = [5, 4, 3, 2, 1].map(stars => {
+                const count = distribution[stars - 1];
+                const percentage = data.totalRatings > 0 ? (count / data.totalRatings * 100) : 0;
+                return `
+                    <div class="rating-bar">
+                        <span style="min-width: 30px;">${stars} <i class="fas fa-star" style="font-size: 0.8rem; color: #9b59b6;"></i></span>
+                        <div class="rating-bar-fill">
+                            <div class="rating-bar-fill-inner" style="width: ${percentage}%"></div>
+                        </div>
+                        <span style="min-width: 50px; text-align: right;">${count} đánh giá</span>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('ratingDistribution').innerHTML = barsHtml;
+
+            // Render reviews
+            if (data.ratings.length === 0) {
+                document.getElementById('reviewsList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-comment-slash"></i>
+                        <p>Chưa có đánh giá nào</p>
+                        <p class="small text-muted">Hãy là người đầu tiên đánh giá phòng khám!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const reviewsHtml = data.ratings.map(review => `
+                <div class="review-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <strong><i class="fas fa-user-circle me-1"></i>${review.patientName}</strong>
+                            </div>
+                            <div class="review-stars mt-1">
+                                ${'<i class="fas fa-star"></i>'.repeat(review.rating)}
+                                ${'<i class="far fa-star"></i>'.repeat(5 - review.rating)}
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            <i class="fas fa-calendar-alt me-1"></i>${formatDate(review.createdAt)}
+                        </small>
+                    </div>
+                    ${review.comment ? `
+                        <p class="mb-0" style="white-space: pre-line;">${review.comment}</p>
+                    ` : `
+                        <p class="mb-0 text-muted fst-italic">Không có nhận xét</p>
+                    `}
+                </div>
+            `).join('');
+
+            document.getElementById('reviewsList').innerHTML = reviewsHtml;
+        }
+
+        // Helper function
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return 'Hôm nay';
+            if (diffDays === 1) return 'Hôm qua';
+            if (diffDays < 7) return `${diffDays} ngày trước`;
+            
+            return date.toLocaleDateString('vi-VN', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+    </script>
+</body>
+</html>

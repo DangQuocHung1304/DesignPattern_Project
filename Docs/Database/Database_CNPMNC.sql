@@ -1181,7 +1181,7 @@ SELECT @u_doc2 = SCOPE_IDENTITY();
 
 -- Receptionist
 INSERT dbo.users (email, phone, password_hash, role, status, first_name, last_name, dob, gender)
-VALUES (N'reception@clinic.local', N'0903000001', N'hash:recep', N'reception', N'active', N'Lê', N'Thu Hà', '1996-02-14', N'F');
+VALUES (N'reception@clinic.local', N'0903000001', N'hash:recep', N'reception', N'active', N'Lê', N'Thu Hà', '1996-02-14', N'F');             reception@123
 SELECT @u_rece = SCOPE_IDENTITY();
 
 -- Lab staff

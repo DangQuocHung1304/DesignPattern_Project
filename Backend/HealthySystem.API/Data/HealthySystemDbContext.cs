@@ -29,6 +29,7 @@ namespace HealthySystem.API.Data
         public DbSet<ImagingResult> ImagingResults { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Rating> Ratings { get; set; }
+        public DbSet<AppointmentHistory> AppointmentHistory { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
