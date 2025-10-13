@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Planning S2</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            color: #333;
+        }
+        h1, h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        ul {
+            list-style-type: square;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .risk-section p {
+            margin-left: 20px;
+        }
+        strong {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>SPRING PLANNING</h1>
+
+    <div class="section">
+        <table>
+            <tr>
+                <td><strong>Mã sprint</strong></td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td><strong>Thời gian bắt đầu</strong></td>
+                <td>6/10/2025</td>
+            </tr>
+            <tr>
+                <td><strong>Thời gian kết thúc</strong></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>1. Mục tiêu Sprint</h2>
+        <ul>
+            <li>Hoàn thành các chức năng thiết yếu về Quản lý Lịch hẹn.</li>
+            <li>Hoàn tất thiết kế giao diện người dùng (UI) cho các trang quan trọng.</li>
+            <li>Hoàn thành API cho các chức năng tra cứu thông tin cơ bản.</li>
+            <li>Hoàn thành API cho trang quản lý lịch hẹn.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>2. Backlog được chọn cho Sprint</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>User Story</th>
+                    <th>Mô tả</th>
+                    <th>Độ ưu tiên</th>
+                    <th>Points</th>
+                    <th>Người phụ trách</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>US-01</td>
+                    <td>Thay đổi lịch hẹn khi đã đặt lịch.</td>
+                    <td>Cao</td>
+                    <td>2</td>
+                    <td>Quốc Hưng</td>
+                    <td>To Do</td>
+                </tr>
+                <tr>
+                    <td>US-02</td>
+                    <td>Đặt lịch hẹn giữa bệnh nhân và bác sĩ.</td>
+                    <td>Cao</td>
+                    <td>3</td>
+                    <td>Quốc Hưng</td>
+                    <td>To Do</td>
+                </tr>
+                <tr>
+                    <td>US-03</td>
+                    <td>Hủy lịch hẹn.</td>
+                    <td>Cao</td>
+                    <td>1</td>
+                    <td>Quốc Hưng</td>
+                    <td>To Do</td>
+                </tr>
+                <tr>
+                    <td>US-04</td>
+                    <td>Chuyển đổi lịch hẹn.</td>
+                    <td>Trung bình</td>
+                    <td>3</td>
+                    <td>Quốc Hưng</td>
+                    <td>To Do</td>
+                </tr>
+                <tr>
+                    <td>US-05</td>
+                    <td>Xem thông tin lịch khám.</td>
+                    <td>Trung bình</td>
+                    <td>2</td>
+                    <td>Quốc Hưng</td>
+                    <td>To Do</td>
+                </tr>
+                <tr>
+                    <td>US-06</td>
+                    <td>Xem bảng giá phòng khám.</td>
+                    <td>Thấp</td>
+                    <td>2</td>
+                    <td>Quốc Hưng</td>
+                    <td>To Do</td>
+                </tr>
+                <tr>
+                    <td>US-07</td>
+                    <td>Xem thông tin hướng dẫn khám bệnh.</td>
+                    <td>Trung bình</td>
+                    <td>2</td>
+                    <td>Quốc Hưng</td>
+                    <td>To Do</td>
+                </tr>
+                <tr>
+                    <td>US-08</td>
+                    <td>Xem các bài viết tin tức về kiến thức y tế.</td>
+                    <td>Thấp</td>
+                    <td>3</td>
+                    <td>Quốc Hưng</td>
+                    <td>To Do</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>3. Phân công công việc chi tiết</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Công việc</th>
+                    <th>Người thực hiện</th>
+                    <th>Deadline</th>
+                    <th>Công nghệ/tool/thư viện…</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Thiết kế UI cho Trang đặt lịch của tiếp tân.</td>
+                    <td>Quốc Hưng</td>
+                    <td>15/10/2025</td>
+                    <td>…</td>
+                </tr>
+                <tr>
+                    <td>Thiết kế UI cho Trang quản lý lịch hẹn của khách hàng.</td>
+                    <td>Quốc Hưng</td>
+                    <td>15/10/2025</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Thiết kế UI cho Trang lịch khám.</td>
+                    <td>Quốc Hưng</td>
+                    <td>15/10/2025</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Thiết kế UI cho Trang hiển thị bảng giá khám.</td>
+                    <td>Quốc Hưng</td>
+                    <td>15/10/2025</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Thiết kế UI cho Trang hướng dẫn khám bệnh.</td>
+                    <td>Quốc Hưng</td>
+                    <td>15/10/2025</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Thiết kế UI cho Trang tin tức y tế.</td>
+                    <td>Quốc Hưng</td>
+                    <td>15/10/2025</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Viết API liên quan đến đặt lịch.</td>
+                    <td>Quốc Hưng</td>
+                    <td>15/10/2025</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Viết API liên quan đến quản lý lịch khám.</td>
+                    <td>Quốc Hưng</td>
+                    <td>15/10/2025</td>
+                    <td>…</td>
+                </tr>
+                <tr>
+                    <td>Viết API liên quan đến bảng giá khám.</td>
+                    <td>Quốc Hưng</td>
+                    <td>15/10/2025</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Viết API liên quan đến bảng tin y tế.</td>
+                    <td>Quốc Hưng</td>
+                    <td>15/10/2025</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section risk-section">
+        <h2>4. Rủi ro và biện pháp</h2>
+        <p><strong>Rủi ro:</strong> Quá trình tìm hiểu công nghệ lập trình FE chưa được học có thể tốn khá nhiều thời gian, API được viết có thể gặp lỗi khiến mất nhiều thời gian sửa lỗi.</p>
+        <p><strong>Biện pháp:</strong> Tranh thủ làm sớm, phát hiện lỗi sớm sửa sớm.</p>
+    </div>
+
+    <div class="section">
+        <h2>5. Sprint Planning Update (nếu là version cập nhật cho sprint cũ)</h2>
+        <p><strong>Thay đổi so với kế hoạch ban đầu:</strong> …</p>
+        <p><strong>Lý do cập nhật:</strong> …</p>
+    </div>
+
+</body>
+</html>

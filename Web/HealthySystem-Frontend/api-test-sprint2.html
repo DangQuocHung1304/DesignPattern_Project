@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Testing - Sprint 2</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            padding: 2rem;
+            background: #f5f7fa;
+        }
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .response-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .test-btn {
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .endpoint-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+        .badge-get { background: #61affe; color: white; }
+        .badge-post { background: #49cc90; color: white; }
+        .badge-put { background: #fca130; color: white; }
+        .badge-delete { background: #f93e3e; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">
+            <i class="fas fa-vial me-2"></i>API Testing - Sprint 2
+        </h1>
+
+        <!-- Instructions -->
+        <div class="alert alert-info mb-4">
+            <h5><i class="fas fa-info-circle me-2"></i>Hướng dẫn test API:</h5>
+            <ol class="mb-2">
+                <li><strong>Đăng nhập:</strong> Scroll xuống phần "Login" và click nút login với credentials mặc định</li>
+                <li><strong>Lấy token:</strong> Token sẽ tự động được lưu và hiển thị</li>
+                <li><strong>Test APIs:</strong> Click các nút test để gọi API và xem response</li>
+                <li><strong>Xem kết quả:</strong> Response box hiển thị status, data, error...</li>
+            </ol>
+            <div class="mt-2">
+                <strong>Backend URL:</strong> <code>http://localhost:5000/api</code>
+                <span class="badge bg-success ms-2">Running ✓</span>
+            </div>
+            <div class="mt-2">
+                <strong>Default Credentials:</strong><br>
+                <code>Reception: reception@clinic.local / Reception@123</code><br>
+                <code>Patient: patient@email.com / Patient@123</code>
+            </div>
+        </div>
+
+        <!-- Password Hash Helper -->
+        <div class="test-section">
+            <div class="test-header">
+                <h3><i class="fas fa-key me-2"></i>Password Hash Helper (SHA256)</h3>
+            </div>
+            <p class="text-muted">Dùng để kiểm tra password hash và cập nhật database nếu cần</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Password cần hash:</label>
+                        <input type="text" class="form-control" id="passwordToHash" value="Reception@123" placeholder="Nhập password...">
+                    </div>
+                    <button class="btn btn-primary" onclick="hashPassword()">
+                        <i class="fas fa-lock me-2"></i>Hash Password
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">SHA256 Hash Result:</label>
+                        <textarea class="form-control" id="hashResult" rows="3" readonly placeholder="Hash sẽ hiển thị ở đây..."></textarea>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="copyHash()">
+                        <i class="fas fa-copy me-2"></i>Copy Hash
+                    </button>
+                    <div class="mt-2 text-muted small">
+                        <strong>SQL Update Example:</strong><br>
+                        <code>UPDATE users SET password_hash = 'YOUR_HASH' WHERE email = 'reception@clinic.local';</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Services API Tests -->
+        <div class="test-section">
+            <div class="test-header">
+                <h3><i class="fas fa-dollar-sign me-2"></i>Services API (Bảng giá)</h3>
+            </div>
+            
+            <div class="mb-3">
+                <span class="endpoint-badge badge-get">GET</span>
+                <code>/api/services</code>
+            </div>
+            <button class="btn btn-primary test-btn" onclick="testGetServices()">
+                <i class="fas fa-play me-2"></i>Test Get All Services
+            </button>
+            <button class="btn btn-info test-btn" onclick="testGetServicesByCategory('kham-benh')">
+                <i class="fas fa-filter me-2"></i>Test Get by Category (khám bệnh)
+            </button>
+            <button class="btn btn-secondary test-btn" onclick="testGetServiceCategories()">
+                <i class="fas fa-list me-2"></i>Test Get Categories
+            </button>
+            <div class="response-box" id="servicesResponse">Chưa có response...</div>
+        </div>
+
+        <!-- News API Tests -->
+        <div class="test-section">
+            <div class="test-header">
+                <h3><i class="fas fa-newspaper me-2"></i>News API (Tin tức)</h3>
+            </div>
+            
+            <div class="mb-3">
+                <span class="endpoint-badge badge-get">GET</span>
+                <code>/api/news</code>
+            </div>
+            <button class="btn btn-primary test-btn" onclick="testGetNews()">
+                <i class="fas fa-play me-2"></i>Test Get All News
+            </button>
+            <button class="btn btn-info test-btn" onclick="testGetFeaturedNews()">
+                <i class="fas fa-star me-2"></i>Test Get Featured News
+            </button>
+            <button class="btn btn-success test-btn" onclick="testGetNewsDetail(1)">
+                <i class="fas fa-eye me-2"></i>Test Get News Detail (ID: 1)
+            </button>
+            <button class="btn btn-secondary test-btn" onclick="testGetNewsCategories()">
+                <i class="fas fa-list me-2"></i>Test Get Categories
+            </button>
+            <div class="response-box" id="newsResponse">Chưa có response...</div>
+        </div>
+
+        <!-- Guides API Tests -->
+        <div class="test-section">
+            <div class="test-header">
+                <h3><i class="fas fa-book-medical me-2"></i>Guides API (Hướng dẫn)</h3>
+            </div>
+            
+            <div class="mb-3">
+                <span class="endpoint-badge badge-get">GET</span>
+                <code>/api/guides</code>
+            </div>
+            <button class="btn btn-primary test-btn" onclick="testGetGuides()">
+                <i class="fas fa-play me-2"></i>Test Get All Guides
+            </button>
+            <button class="btn btn-info test-btn" onclick="testGetGuidesByCategory('appointment')">
+                <i class="fas fa-filter me-2"></i>Test Get by Category (appointment)
+            </button>
+            <button class="btn btn-success test-btn" onclick="testGetGuideDetail(1)">
+                <i class="fas fa-eye me-2"></i>Test Get Guide Detail (ID: 1)
+            </button>
+            <button class="btn btn-secondary test-btn" onclick="testGetGuidesCategories()">
+                <i class="fas fa-list me-2"></i>Test Get Categories
+            </button>
+            <div class="response-box" id="guidesResponse">Chưa có response...</div>
+        </div>
+
+        <!-- Login Section (For Authentication) -->
+        <div class="test-section">
+            <div class="test-header">
+                <h3><i class="fas fa-sign-in-alt me-2"></i>Login (Đăng nhập để lấy token)</h3>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Quick Login - Reception (Tiếp tân)</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Email:</label>
+                        <input type="email" class="form-control" id="receptionEmail" value="reception@clinic.local" placeholder="example@hospital.com">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password:</label>
+                        <input type="password" class="form-control" id="receptionPassword" value="Reception@123">
+                    </div>
+                    <button class="btn btn-primary" onclick="loginAsReception()">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login as Reception
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <h5>Quick Login - Patient (Bệnh nhân)</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Email:</label>
+                        <input type="email" class="form-control" id="patientEmail" value="patient@email.com" placeholder="example@email.com">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password:</label>
+                        <input type="password" class="form-control" id="patientPassword" value="Patient@123">
+                    </div>
+                    <button class="btn btn-success" onclick="loginAsPatient()">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login as Patient
+                    </button>
+                </div>
+            </div>
+            <div class="response-box mt-3" id="loginResponse">Chưa có response...</div>
+        </div>
+
+        <!-- Appointments API Tests (Requires Authentication) -->
+        <div class="test-section">
+            <div class="test-header">
+                <h3><i class="fas fa-calendar-alt me-2"></i>Appointments API (Lịch hẹn) - Requires Auth</h3>
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Token hiện tại:</strong> <span id="tokenDisplay">Chưa có token - Vui lòng đăng nhập ở phía trên!</span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Bearer Token (tự động lấy sau khi login):</label>
+                <input type="text" class="form-control" id="authToken" placeholder="Token sẽ tự động điền sau khi đăng nhập..." readonly>
+            </div>
+
+            <div class="mb-3">
+                <span class="endpoint-badge badge-get">GET</span>
+                <code>/api/appointments</code>
+            </div>
+            <button class="btn btn-primary test-btn" onclick="testGetAppointments()">
+                <i class="fas fa-play me-2"></i>Test Get All Appointments
+            </button>
+            <button class="btn btn-success test-btn" onclick="testGetAppointmentById(1)">
+                <i class="fas fa-eye me-2"></i>Test Get Appointment Detail (ID: 1)
+            </button>
+            <button class="btn btn-info test-btn" onclick="testGetAppointmentHistory(1)">
+                <i class="fas fa-history me-2"></i>Test Get History (User ID: 1)
+            </button>
+            <div class="response-box" id="appointmentsResponse">Chưa có response...</div>
+        </div>
+
+        <!-- Summary -->
+        <div class="test-section">
+            <div class="test-header">
+                <h3><i class="fas fa-chart-bar me-2"></i>Test Summary</h3>
+            </div>
+            <div id="testSummary">
+                <p>Tổng số tests: <span id="totalTests">0</span></p>
+                <p>Thành công: <span class="success" id="successTests">0</span></p>
+                <p>Thất bại: <span class="error" id="failedTests">0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        let testResults = { total: 0, success: 0, failed: 0 };
+
+        function updateSummary() {
+            document.getElementById('totalTests').textContent = testResults.total;
+            document.getElementById('successTests').textContent = testResults.success;
+            document.getElementById('failedTests').textContent = testResults.failed;
+        }
+
+        function displayResponse(elementId, data, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString('vi-VN');
+            const status = isSuccess ? '<span class="success">✓ SUCCESS</span>' : '<span class="error">✗ ERROR</span>';
+            
+            element.innerHTML = `
+                <div>${status} - ${timestamp}</div>
+                <hr>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            
+            testResults.total++;
+            if (isSuccess) {
+                testResults.success++;
+            } else {
+                testResults.failed++;
+            }
+            updateSummary();
+        }
+
+        function getAuthHeaders() {
+            const token = document.getElementById('authToken').value;
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
+            };
+        }
+
+        function getTokenFromStorage() {
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                document.getElementById('authToken').value = token;
+                document.getElementById('tokenDisplay').textContent = token.substring(0, 50) + '...';
+                alert('✓ Đã lấy token từ localStorage!');
+            } else {
+                alert('✗ Không tìm thấy token. Vui lòng đăng nhập trước!');
+            }
+        }
+
+        // ========== Password Hash Helper ==========
+        async function hashPassword() {
+            const password = document.getElementById('passwordToHash').value;
+            if (!password) {
+                alert('Vui lòng nhập password!');
+                return;
+            }
+
+            try {
+                // Convert password to Uint8Array
+                const encoder = new TextEncoder();
+                const data = encoder.encode(password);
+                
+                // Hash using SHA-256
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                
+                // Convert to base64
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashBase64 = btoa(String.fromCharCode.apply(null, hashArray));
+                
+                // Display result
+                document.getElementById('hashResult').value = hashBase64;
+                
+                console.log('Password:', password);
+                console.log('SHA256 Hash (Base64):', hashBase64);
+            } catch (error) {
+                alert('Lỗi khi hash password: ' + error.message);
+                console.error('Hash error:', error);
+            }
+        }
+
+        function copyHash() {
+            const hashResult = document.getElementById('hashResult');
+            if (!hashResult.value) {
+                alert('Chưa có hash để copy!');
+                return;
+            }
+            
+            hashResult.select();
+            document.execCommand('copy');
+            alert('✓ Đã copy hash vào clipboard!');
+        }
+
+        // ========== Login Functions ==========
+        async function loginAsReception() {
+            const email = document.getElementById('receptionEmail').value;
+            const password = document.getElementById('receptionPassword').value;
+            await performLogin(email, password, 'Reception');
+        }
+
+        async function loginAsPatient() {
+            const email = document.getElementById('patientEmail').value;
+            const password = document.getElementById('patientPassword').value;
+            await performLogin(email, password, 'Patient');
+        }
+
+        async function performLogin(email, password, role) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.token) {
+                    // Lưu token vào localStorage
+                    localStorage.setItem('auth_token', data.token);
+                    localStorage.setItem('user_info', JSON.stringify(data.user));
+                    
+                    // Hiển thị token trong input
+                    document.getElementById('authToken').value = data.token;
+                    document.getElementById('tokenDisplay').textContent = data.token.substring(0, 50) + '...';
+                    
+                    displayResponse('loginResponse', {
+                        status: response.status,
+                        message: `✓ Login thành công với role: ${role}`,
+                        token: data.token.substring(0, 50) + '...',
+                        user: data.user
+                    }, true);
+
+                    // Show success notification
+                    alert(`✓ Login thành công! Token đã được lưu.\nRole: ${role}\nEmail: ${email}`);
+                } else {
+                    displayResponse('loginResponse', {
+                        status: response.status,
+                        error: data.message || 'Login failed',
+                        data: data
+                    }, false);
+                    alert(`✗ Login thất bại: ${data.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                displayResponse('loginResponse', { 
+                    error: error.message,
+                    note: 'Kiểm tra xem backend có đang chạy không?'
+                }, false);
+                alert(`✗ Lỗi kết nối: ${error.message}`);
+            }
+        }
+
+        // ========== Services API Tests ==========
+        async function testGetServices() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/services`);
+                const data = await response.json();
+                displayResponse('servicesResponse', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: data,
+                    count: data.length || 0
+                }, response.ok);
+            } catch (error) {
+                displayResponse('servicesResponse', { error: error.message }, false);
+            }
+        }
+
+        async function testGetServicesByCategory(category) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/services?category=${category}`);
+                const data = await response.json();
+                displayResponse('servicesResponse', {
+                    status: response.status,
+                    category: category,
+                    data: data,
+                    count: data.length || 0
+                }, response.ok);
+            } catch (error) {
+                displayResponse('servicesResponse', { error: error.message }, false);
+            }
+        }
+
+        async function testGetServiceCategories() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/services/categories`);
+                const data = await response.json();
+                displayResponse('servicesResponse', {
+                    status: response.status,
+                    data: data
+                }, response.ok);
+            } catch (error) {
+                displayResponse('servicesResponse', { error: error.message }, false);
+            }
+        }
+
+        // ========== News API Tests ==========
+        async function testGetNews() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/news?page=1&limit=10`);
+                const data = await response.json();
+                displayResponse('newsResponse', {
+                    status: response.status,
+                    data: data,
+                    count: data.length || 0
+                }, response.ok);
+            } catch (error) {
+                displayResponse('newsResponse', { error: error.message }, false);
+            }
+        }
+
+        async function testGetFeaturedNews() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/news/featured?limit=4`);
+                const data = await response.json();
+                displayResponse('newsResponse', {
+                    status: response.status,
+                    data: data,
+                    count: data.length || 0
+                }, response.ok);
+            } catch (error) {
+                displayResponse('newsResponse', { error: error.message }, false);
+            }
+        }
+
+        async function testGetNewsDetail(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/news/${id}`);
+                const data = await response.json();
+                displayResponse('newsResponse', {
+                    status: response.status,
+                    data: data
+                }, response.ok);
+            } catch (error) {
+                displayResponse('newsResponse', { error: error.message }, false);
+            }
+        }
+
+        async function testGetNewsCategories() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/news/categories`);
+                const data = await response.json();
+                displayResponse('newsResponse', {
+                    status: response.status,
+                    data: data
+                }, response.ok);
+            } catch (error) {
+                displayResponse('newsResponse', { error: error.message }, false);
+            }
+        }
+
+        // ========== Guides API Tests ==========
+        async function testGetGuides() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/guides`);
+                const data = await response.json();
+                displayResponse('guidesResponse', {
+                    status: response.status,
+                    data: data,
+                    count: data.length || 0
+                }, response.ok);
+            } catch (error) {
+                displayResponse('guidesResponse', { error: error.message }, false);
+            }
+        }
+
+        async function testGetGuidesByCategory(category) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/guides?category=${category}`);
+                const data = await response.json();
+                displayResponse('guidesResponse', {
+                    status: response.status,
+                    category: category,
+                    data: data,
+                    count: data.length || 0
+                }, response.ok);
+            } catch (error) {
+                displayResponse('guidesResponse', { error: error.message }, false);
+            }
+        }
+
+        async function testGetGuideDetail(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/guides/${id}`);
+                const data = await response.json();
+                displayResponse('guidesResponse', {
+                    status: response.status,
+                    data: data
+                }, response.ok);
+            } catch (error) {
+                displayResponse('guidesResponse', { error: error.message }, false);
+            }
+        }
+
+        async function testGetGuidesCategories() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/guides/categories`);
+                const data = await response.json();
+                displayResponse('guidesResponse', {
+                    status: response.status,
+                    data: data
+                }, response.ok);
+            } catch (error) {
+                displayResponse('guidesResponse', { error: error.message }, false);
+            }
+        }
+
+        // ========== Appointments API Tests ==========
+        async function testGetAppointments() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/appointments`, {
+                    headers: getAuthHeaders()
+                });
+                const data = await response.json();
+                displayResponse('appointmentsResponse', {
+                    status: response.status,
+                    data: data,
+                    count: data.length || 0
+                }, response.ok);
+            } catch (error) {
+                displayResponse('appointmentsResponse', { error: error.message }, false);
+            }
+        }
+
+        async function testGetAppointmentById(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/appointments/${id}`, {
+                    headers: getAuthHeaders()
+                });
+                const data = await response.json();
+                displayResponse('appointmentsResponse', {
+                    status: response.status,
+                    data: data
+                }, response.ok);
+            } catch (error) {
+                displayResponse('appointmentsResponse', { error: error.message }, false);
+            }
+        }
+
+        async function testGetAppointmentHistory(userId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/appointments/history/${userId}`, {
+                    headers: getAuthHeaders()
+                });
+                const data = await response.json();
+                displayResponse('appointmentsResponse', {
+                    status: response.status,
+                    data: data
+                }, response.ok);
+            } catch (error) {
+                displayResponse('appointmentsResponse', { error: error.message }, false);
+            }
+        }
+
+        // Auto-load token on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                document.getElementById('authToken').value = token;
+                document.getElementById('tokenDisplay').textContent = token.substring(0, 50) + '...';
+                console.log('✓ Token loaded from localStorage');
+            } else {
+                console.log('ℹ No token found. Please login first.');
+            }
+        });
+    </script>
+</body>
+</html>

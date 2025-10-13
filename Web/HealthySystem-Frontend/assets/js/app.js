@@ -629,7 +629,115 @@ window.loadAppointments = function() {
     }
 };
 
+// Load pricing preview on homepage
+async function loadPricingPreview() {
+    const pricingContainer = document.getElementById('pricing-preview');
+    if (!pricingContainer) return;
+
+    try {
+        const response = await apiService.getServices();
+        if (response.success && response.data) {
+            const servicesData = response.data;
+            
+            // Take first 3 categories
+            const previewCategories = servicesData.slice(0, 3);
+            
+            pricingContainer.innerHTML = previewCategories.map(category => `
+                <div class="col-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 style="color: var(--primary-color); margin-bottom: 15px;">
+                                ${getCategoryIcon(category.Category)} ${category.CategoryName}
+                            </h4>
+                            <ul style="list-style: none; padding: 0;">
+                                ${category.Services.slice(0, 4).map(service => `
+                                    <li style="padding: 8px 0; border-bottom: 1px solid #f0f2f5;">
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <span>${service.Name}</span>
+                                            <strong style="color: var(--primary-color);">
+                                                ${formatCurrency(service.DefaultPrice)}
+                                            </strong>
+                                        </div>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading pricing preview:', error);
+    }
+}
+
+// Load news on homepage
+async function loadNewsPreview() {
+    const newsContainer = document.getElementById('news-list');
+    if (!newsContainer) return;
+
+    try {
+        const response = await apiService.getFeaturedNews(4);
+        if (response.success && response.data) {
+            const newsList = response.data;
+            
+            newsContainer.innerHTML = `
+                <div class="row">
+                    ${newsList.map(news => `
+                        <div class="col-3">
+                            <div class="card" style="cursor: pointer;" onclick="window.location.href='news-detail.html?id=${news.Id}'">
+                                <img src="${news.Image}" alt="${news.Title}" style="width: 100%; height: 200px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/400x200?text=News'">
+                                <div class="card-body">
+                                    <span style="display: inline-block; padding: 4px 10px; background: #e8f5e9; color: #2e7d32; border-radius: 6px; font-size: 12px; margin-bottom: 10px;">
+                                        ${news.CategoryName}
+                                    </span>
+                                    <h4 style="font-size: 18px; margin-bottom: 10px; line-height: 1.4;">${news.Title}</h4>
+                                    <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">${news.Summary}</p>
+                                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: #6c757d; margin-top: 10px;">
+                                        <span><i class="fas fa-user-md"></i> ${news.Author}</span>
+                                        <span><i class="fas fa-eye"></i> ${news.Views}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading news preview:', error);
+    }
+}
+
+// Helper functions
+function getCategoryIcon(category) {
+    const icons = {
+        'consultation': '👨‍⚕️',
+        'lab': '🔬',
+        'imaging': '📷',
+        'procedure': '⚕️',
+        'medication': '💊',
+        'other': '📋'
+    };
+    return icons[category] || '📋';
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(amount);
+}
+
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     window.app = new HealthySystemApp();
+    
+    // Load homepage sections if on homepage
+    if (document.getElementById('pricing-preview')) {
+        loadPricingPreview();
+    }
+    if (document.getElementById('news-list')) {
+        loadNewsPreview();
+    }
 });

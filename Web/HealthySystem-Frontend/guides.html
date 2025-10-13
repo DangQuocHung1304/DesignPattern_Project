@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng dẫn khám bệnh - HealthySystem</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <style>
+        .guides-hero {
+            background: linear-gradient(135deg, #1565c0, #0d47a1);
+            color: white;
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .guides-hero h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+
+        .guides-categories {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin: -40px auto 40px;
+            max-width: 900px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .category-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .category-btn {
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .category-btn:hover {
+            border-color: #1565c0;
+            color: #1565c0;
+            transform: translateY(-2px);
+        }
+
+        .category-btn.active {
+            background: #1565c0;
+            color: white;
+            border-color: #1565c0;
+        }
+
+        .category-btn i {
+            display: block;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .guides-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .guide-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .guide-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+
+        .guide-header {
+            padding: 25px;
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-bottom: 3px solid #1565c0;
+        }
+
+        .guide-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .guide-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .guide-category-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #fff;
+            color: #1565c0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .guide-body {
+            padding: 25px;
+        }
+
+        .guide-summary {
+            color: #6c757d;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .guide-steps {
+            margin-top: 20px;
+        }
+
+        .guide-steps h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .steps-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .step-item {
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #1565c0;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: #1565c0;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .guide-notes {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 6px;
+        }
+
+        .guide-notes h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notes-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .notes-list li {
+            padding: 6px 0;
+            color: #856404;
+            font-size: 13px;
+        }
+
+        .notes-list li:before {
+            content: "⚠";
+            margin-right: 8px;
+        }
+
+        .toggle-content {
+            cursor: pointer;
+            color: #1565c0;
+            font-weight: 600;
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .toggle-content:hover {
+            text-decoration: underline;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1565c0;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo">HealthySystem</a>
+            <nav>
+                <ul class="nav">
+                    <li><a href="index.html"><i class="fas fa-home"></i> Trang chủ</a></li>
+                    <li><a href="doctors.html"><i class="fas fa-user-md"></i> Bác sĩ</a></li>
+                    <li><a href="pricing.html"><i class="fas fa-file-invoice-dollar"></i> Bảng giá</a></li>
+                    <li><a href="news.html"><i class="fas fa-newspaper"></i> Tin tức</a></li>
+                    <li id="auth-container">
+                        <a href="login.html" id="login-btn" class="auth-btn">
+                            <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                        </a>
+                        <div id="user-menu" class="user-menu" style="display: none;">
+                            <span id="user-display-name" class="user-name">
+                                <i class="fas fa-user-circle"></i> Tài khoản
+                            </span>
+                            <div class="user-dropdown">
+                                <a href="profile.html"><i class="fas fa-user"></i> Hồ sơ</a>
+                                <a href="guides.html" class="active"><i class="fas fa-book"></i> Hướng dẫn</a>
+                                <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="guides-hero">
+        <div class="container">
+            <h1><i class="fas fa-book-medical"></i> Hướng dẫn khám bệnh</h1>
+            <p>Hướng dẫn chi tiết giúp bạn sử dụng dịch vụ y tế dễ dàng hơn</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="py-5">
+        <div class="container">
+            <!-- Categories -->
+            <div class="guides-categories">
+                <div class="category-buttons" id="category-buttons">
+                    <button class="category-btn active" data-category="">
+                        <i class="fas fa-th-large"></i>
+                        <div>Tất cả</div>
+                    </button>
+                    <!-- Categories will be loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Guides Grid -->
+            <div id="guides-grid">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Đang tải hướng dẫn...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer py-4 bg-primary text-white text-center">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <h4><i class="fas fa-hospital"></i> HealthySystem</h4>
+                    <p><i class="fas fa-map-marker-alt"></i> 123 Đường Y Tế, Quận 1, TP.HCM</p>
+                    <p><i class="fas fa-phone"></i> Hotline: 1900-1234</p>
+                </div>
+            </div>
+            <hr style="margin: 1rem 0; opacity: 0.3;">
+            <p>&copy; 2025 HealthySystem. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script>
+        let allGuides = [];
+        let categories = [];
+        let currentCategory = '';
+
+        // Load categories
+        async function loadCategories() {
+            try {
+                const response = await apiService.getGuidesCategories();
+                if (response.success) {
+                    categories = response.data;
+                    renderCategoryButtons();
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        // Render category buttons
+        function renderCategoryButtons() {
+            const container = document.getElementById('category-buttons');
+            const allButton = container.querySelector('[data-category=""]');
+            
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn';
+                btn.setAttribute('data-category', cat.Code);
+                btn.innerHTML = `
+                    <i class="fas ${getCategoryIconClass(cat.Icon)}"></i>
+                    <div>${cat.Name}</div>
+                `;
+                btn.addEventListener('click', () => filterByCategory(cat.Code));
+                container.appendChild(btn);
+            });
+        }
+
+        // Filter by category
+        function filterByCategory(category) {
+            currentCategory = category;
+            
+            // Update active button
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.category-btn').classList.add('active');
+            
+            loadGuides();
+        }
+
+        // Load guides
+        async function loadGuides() {
+            const gridContainer = document.getElementById('guides-grid');
+            gridContainer.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Đang tải hướng dẫn...</p>
+                </div>
+            `;
+
+            try {
+                const response = await apiService.getGuides(currentCategory);
+                
+                if (response.success) {
+                    allGuides = response.data;
+                    renderGuides(allGuides);
+                }
+            } catch (error) {
+                console.error('Error loading guides:', error);
+                gridContainer.innerHTML = `
+                    <div class="no-guides">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>Không thể tải hướng dẫn</h3>
+                        <p>Vui lòng thử lại sau</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Render guides
+        function renderGuides(guides) {
+            const gridContainer = document.getElementById('guides-grid');
+            
+            if (!guides || guides.length === 0) {
+                gridContainer.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: #6c757d;">
+                        <i class="fas fa-folder-open" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                        <h3>Không có hướng dẫn nào</h3>
+                    </div>
+                `;
+                return;
+            }
+
+            gridContainer.innerHTML = `
+                <div class="guides-grid">
+                    ${guides.map((guide, index) => `
+                        <div class="guide-card">
+                            <div class="guide-header">
+                                <div class="guide-icon">${guide.Icon}</div>
+                                <h3 class="guide-title">${guide.Title}</h3>
+                                <span class="guide-category-badge">${guide.CategoryName}</span>
+                            </div>
+                            <div class="guide-body">
+                                <p class="guide-summary">${guide.Summary}</p>
+                                
+                                <div class="guide-steps" id="steps-${index}" style="display: none;">
+                                    <h4><i class="fas fa-list-ol"></i> Các bước thực hiện</h4>
+                                    <ul class="steps-list">
+                                        ${guide.Steps.map((step, stepIndex) => `
+                                            <li class="step-item">
+                                                <span class="step-number">${stepIndex + 1}</span>
+                                                ${step}
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+
+                                ${guide.Notes && guide.Notes.length > 0 ? `
+                                    <div class="guide-notes" id="notes-${index}" style="display: none;">
+                                        <h4><i class="fas fa-exclamation-triangle"></i> Lưu ý</h4>
+                                        <ul class="notes-list">
+                                            ${guide.Notes.map(note => `<li>${note}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+
+                                <div class="toggle-content" onclick="toggleGuideContent(${index})">
+                                    <span id="toggle-text-${index}">Xem chi tiết</span>
+                                    <i class="fas fa-chevron-down" id="toggle-icon-${index}"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Toggle guide content
+        function toggleGuideContent(index) {
+            const steps = document.getElementById(`steps-${index}`);
+            const notes = document.getElementById(`notes-${index}`);
+            const text = document.getElementById(`toggle-text-${index}`);
+            const icon = document.getElementById(`toggle-icon-${index}`);
+            
+            if (steps.style.display === 'none') {
+                steps.style.display = 'block';
+                if (notes) notes.style.display = 'block';
+                text.textContent = 'Thu gọn';
+                icon.className = 'fas fa-chevron-up';
+            } else {
+                steps.style.display = 'none';
+                if (notes) notes.style.display = 'none';
+                text.textContent = 'Xem chi tiết';
+                icon.className = 'fas fa-chevron-down';
+            }
+        }
+
+        // Helper function
+        function getCategoryIconClass(icon) {
+            const iconMap = {
+                '📝': 'fa-edit',
+                '📅': 'fa-calendar',
+                '🏥': 'fa-hospital',
+                '💳': 'fa-credit-card',
+                '🛡️': 'fa-shield-alt',
+                '❓': 'fa-question-circle'
+            };
+            return iconMap[icon] || 'fa-book';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCategories();
+            loadGuides();
+            authManager.init();
+        });
+    </script>
+</body>
+</html>

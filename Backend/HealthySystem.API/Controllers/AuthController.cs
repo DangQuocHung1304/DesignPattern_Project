@@ -4,6 +4,9 @@ using HealthySystem.API.Data;
 using HealthySystem.API.Models;
 using System.Security.Cryptography;
 using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
 
 namespace HealthySystem.API.Controllers
 {
@@ -12,10 +15,12 @@ namespace HealthySystem.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly HealthySystemDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(HealthySystemDbContext context)
+        public AuthController(HealthySystemDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]
@@ -118,12 +123,16 @@ namespace HealthySystem.API.Controllers
                     return Unauthorized(new { message = "Email hoặc mật khẩu không chính xác" });
                 }
 
+                // Generate JWT token
+                var token = GenerateJwtToken(user);
+
                 // Update last login
                 user.UpdatedAt = DateTimeOffset.UtcNow;
                 await _context.SaveChangesAsync();
 
                 return Ok(new { 
                     message = "Đăng nhập thành công",
+                    token = token,
                     user = new {
                         id = user.Id,
                         publicId = user.PublicId,
@@ -138,6 +147,35 @@ namespace HealthySystem.API.Controllers
                 Console.WriteLine($"Login error: {ex.Message}");
                 return StatusCode(500, new { message = "Có lỗi xảy ra trong quá trình đăng nhập", error = ex.Message });
             }
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var jwtSettings = _configuration.GetSection("JwtSettings");
+            var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured.");
+            var key = Encoding.UTF8.GetBytes(secretKey);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim("publicId", user.PublicId.ToString()),
+                new Claim("fullName", $"{user.FirstName} {user.LastName}")
+            };
+
+            var credentials = new SigningCredentials(
+                new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(Convert.ToDouble(jwtSettings["ExpirationHours"] ?? "24")),
+                signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         private string HashPassword(string password)

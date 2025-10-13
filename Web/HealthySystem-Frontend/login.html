@@ -280,10 +280,18 @@
                         // Disable form to prevent further submissions
                         loginForm.style.pointerEvents = 'none';
                         
-                        // Chuyển về trang chủ sau 1.5 giây
+                        // Redirect theo role của user
                         setTimeout(() => {
-                            console.log('Redirecting to index.html...');
-                            window.location.href = 'index.html';
+                            const userRole = result.user?.role || result.user?.Role;
+                            console.log('User role:', userRole);
+                            
+                            if (userRole === 'reception' || userRole === 'Reception') {
+                                console.log('Redirecting to reception dashboard...');
+                                window.location.href = 'reception-dashboard.html';
+                            } else {
+                                console.log('Redirecting to index.html...');
+                                window.location.href = 'index.html';
+                            }
                         }, 1500);
                     } else {
                         console.log('Login failed:', result.error);

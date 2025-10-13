@@ -279,6 +279,161 @@ class ApiService {
             return { success: true, data: [] };
         }
     }
+
+    // Services (Pricing)
+    async getServices(category = null) {
+        try {
+            const endpoint = category ? `/services?category=${category}` : '/services';
+            return await this.get(endpoint, false);
+        } catch (error) {
+            console.error('Error fetching services:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async getServiceCategories() {
+        try {
+            return await this.get('/services/categories', false);
+        } catch (error) {
+            console.error('Error fetching service categories:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // News
+    async getNews(page = 1, limit = 10, category = null) {
+        try {
+            let endpoint = `/news?page=${page}&limit=${limit}`;
+            if (category) {
+                endpoint += `&category=${category}`;
+            }
+            return await this.get(endpoint, false);
+        } catch (error) {
+            console.error('Error fetching news:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async getNewsDetail(newsId) {
+        try {
+            return await this.get(`/news/${newsId}`, false);
+        } catch (error) {
+            console.error('Error fetching news detail:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async getFeaturedNews(limit = 4) {
+        try {
+            return await this.get(`/news/featured?limit=${limit}`, false);
+        } catch (error) {
+            console.error('Error fetching featured news:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async getNewsCategories() {
+        try {
+            return await this.get('/news/categories', false);
+        } catch (error) {
+            console.error('Error fetching news categories:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Guides
+    async getGuides(category = null) {
+        try {
+            const endpoint = category ? `/guides?category=${category}` : '/guides';
+            return await this.get(endpoint, false);
+        } catch (error) {
+            console.error('Error fetching guides:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async getGuideDetail(guideId) {
+        try {
+            return await this.get(`/guides/${guideId}`, false);
+        } catch (error) {
+            console.error('Error fetching guide detail:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async getGuidesCategories() {
+        try {
+            return await this.get('/guides/categories', false);
+        } catch (error) {
+            console.error('Error fetching guides categories:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // ==================== APPOINTMENTS APIs ====================
+    
+    // Get all appointments for current user
+    async getAppointments() {
+        try {
+            return await this.get('/appointments', true);
+        } catch (error) {
+            console.error('Error fetching appointments:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Get appointment by ID
+    async getAppointmentById(appointmentId) {
+        try {
+            return await this.get(`/appointments/${appointmentId}`, true);
+        } catch (error) {
+            console.error('Error fetching appointment:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Create new appointment
+    async createAppointment(appointmentData) {
+        try {
+            return await this.post('/appointments', appointmentData, true);
+        } catch (error) {
+            console.error('Error creating appointment:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Update appointment status
+    async updateAppointmentStatus(appointmentId, status, notes = null) {
+        try {
+            return await this.put(`/appointments/${appointmentId}/status`, { 
+                status, 
+                notes 
+            }, true);
+        } catch (error) {
+            console.error('Error updating appointment status:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Cancel appointment
+    async cancelAppointment(appointmentId) {
+        try {
+            return await this.delete(`/appointments/${appointmentId}`, true);
+        } catch (error) {
+            console.error('Error cancelling appointment:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Get appointment history for a user
+    async getAppointmentHistory(userId) {
+        try {
+            return await this.get(`/appointments/history/${userId}`, true);
+        } catch (error) {
+            console.error('Error fetching appointment history:', error);
+            return { success: false, error: error.message };
+        }
+    }
 }
 
 // Tạo instance global
