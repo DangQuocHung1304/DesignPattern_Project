@@ -1,0 +1,57 @@
+Bước 1: IP máy tính và điện thoại phải cùng mạng
+Bước 2: Sử dụng Tunnel Mode - Tunnel sẽ tạo thành public URL, bỏ qua vấn đề network local
+
+Để sử dụng tunnel mode cho Expo, bạn chạy lệnh sau:
+
+cd Mobile/HealthySystemMobile
+npx expo start --tunnel
+
+
+Hoặc nếu đã đang trong thư mục project thì chỉ cần:
+
+npx expo start --tunnel
+
+Các mode của Expo go:
+# LAN mode (mặc định)
+npx expo start --lan
+
+# Localhost mode
+npx expo start --localhost  
+
+# Tunnel mode
+npx expo start --tunnel
+
+# Clear cache + tunnel
+npx expo start --tunnel -c
+
+Nếu các bước trên vẫn lỗi thì thử 2 bước tiếp theo
+
+Bước 3: Fix API Configuration
+Cập nhật file api.js:
+// Thay đổi từ HTTPS sang HTTP cho development
+const API_BASE_URL = __DEV__ 
+  ? 'http://192.168.1.xxx:5000/api'  // Thay xxx bằng IP máy tính của bạn
+  : 'https://localhost:7297/api';
+
+// Hoặc dùng điều kiện platform
+import { Platform } from 'react-native';
+
+const API_BASE_URL = Platform.OS === 'web' 
+  ? 'https://localhost:7297/api'
+  : 'http://192.168.1.100:5000/api'; // IP thực tế của máy tính
+
+
+Bước 4: Clear Cache
+# Clear Expo cache
+npx expo start -c
+
+# Clear npm cache
+npm start -- --reset-cache
+
+Bước 5: Sử dụng LAN Mode
+npx expo start --lan
+
+Bước 6: Kiểm tra Firewall Windows
+Mở Windows Security → Firewall & network protection
+Click Allow an app through firewall
+Tìm Node.js và cho phép cả Private và Public networks

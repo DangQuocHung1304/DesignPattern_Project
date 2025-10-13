@@ -32,9 +32,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Configure CORS
+// Configure CORS cho web và mobile
 builder.Services.AddCors(options =>
 {
+    options.AddPolicy("AllowWebAndMobile", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:3000",        // React web app
+                "http://localhost:5000",        // Cùng server
+                "http://localhost:5196",        // Default port
+                "https://localhost:7221",       // HTTPS port
+                "exp://localhost:8081",         // Expo dev
+                "exp://im09imo-anonymous-8081.exp.direct", // Tunnel
+                "capacitor://localhost",        // Capacitor
+                "ionic://localhost"             // Ionic
+            )
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+    
+    // Policy rộng rãi cho development
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
@@ -57,12 +75,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Không force HTTPS redirect để mobile dễ kết nối
+// app.UseHttpsRedirection();
 
-// Serve static files
+// Cấu hình serve static files cho web app
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+// Sử dụng CORS policy cho development
 app.UseCors("AllowAll");
 
 app.UseAuthentication();

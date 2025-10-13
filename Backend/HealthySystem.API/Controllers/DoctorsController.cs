@@ -61,19 +61,21 @@ namespace HealthySystem.API.Controllers
                 .Include(u => u.StaffProfile)
                 .Include(u => u.DoctorSpecialties)
                 .ThenInclude(ds => ds.Specialty)
+                .Include(u => u.DoctorRatings)
+                .ThenInclude(r => r.Patient)
                 .Select(u => new
                 {
                     Id = u.Id,
-                    PublicId = u.PublicId,
-                    FullName = u.FullName,
+                    PublicId = u.PublicId.ToString(),
+                    FullName = (u.FirstName + " " + u.LastName).Trim(),
                     Phone = u.Phone,
                     Email = u.Email,
                     Gender = u.Gender,
                     DateOfBirth = u.DateOfBirth,
-                    Title = u.StaffProfile!.Title,
-                    Department = u.StaffProfile.Department,
-                    Description = u.StaffProfile.Description,
-                    YearsOfExperience = u.StaffProfile.YearsOfExperience,
+                    Title = u.StaffProfile != null ? u.StaffProfile.Position : "Bác sĩ",
+                    Department = u.StaffProfile != null ? u.StaffProfile.Department : "Không xác định",
+                    Description = u.StaffProfile != null ? u.StaffProfile.Description : "",
+                    YearsOfExperience = u.StaffProfile != null ? u.StaffProfile.YearsOfExperience : 0,
                     Specialties = u.DoctorSpecialties.Select(ds => new
                     {
                         Id = ds.Specialty.Id,
@@ -86,9 +88,9 @@ namespace HealthySystem.API.Controllers
                     {
                         Id = r.Id,
                         RatingValue = r.RatingValue,
-                        ReviewText = r.ReviewText,
+                        ReviewText = r.ReviewText ?? "",
                         CreatedDate = r.CreatedDate,
-                        PatientName = r.Patient.FullName
+                        PatientName = r.Patient != null ? (r.Patient.FullName ?? "Ẩn danh") : "Ẩn danh"
                     }).ToList()
                 })
                 .FirstOrDefaultAsync();

@@ -1,0 +1,51 @@
+Kiểm tra xem port 5000 có bị chiếm không:
+Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue
+
+Bước 2: Khởi động Server API với cấu hình mới
+cd "Backend\HealthySystem.API"
+dotnet run --urls="http://0.0.0.0:5000"
+
+Nếu lệnh dotnet trên lỗi thì dùng lệnh này:
+dotnet run --project HealthySystem.API.csproj --urls="http://0.0.0.0:5000"
+hoặc
+cd Backend\HealthySystem.API && dotnet run --urls="http://0.0.0.0:5000"
+
+Bước 3: Xác nhận server đã khởi động thành công
+
+Bước 4: Kiểm tra các tính năng
+Invoke-RestMethod -Uri "http://localhost:5000/api/test/ping"
+
+
+📋 Các lệnh cần chạy theo thứ tự:
+# 1. Mở PowerShell và chuyển đến thư mục project
+cd "D:\2.CNPMNangCao\LyThuyet\Project"
+
+# 2. Kiểm tra và dọn dẹp process cũ (nếu có)
+Get-Process -Name "dotnet" -ErrorAction SilentlyContinue | Stop-Process -Force
+
+# 3. Chuyển vào thư mục API
+cd "Backend\HealthySystem.API"
+
+# 4. Khởi động server
+dotnet run --urls="http://0.0.0.0:5000"
+
+🎯 Server sẽ hiển thị:
+Now listening on: http://0.0.0.0:5000
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+
+🌐 Cách truy cập:
+Web App: Mở browser → http://localhost:5000
+API Documentation: http://localhost:5000/swagger
+API Test: http://localhost:5000/api/test/ping
+
+📱 Để khởi động Mobile App (terminal riêng):
+# Mở terminal mới
+cd "D:\2.CNPMNangCao\LyThuyet\Project\Mobile\HealthySystemMobile"
+npx expo start --tunnel -c
+
+🔧 Nếu gặp lỗi:
+Port bị chiếm: Get-NetTCPConnection -LocalPort 5000
+Process zombie: Get-Process dotnet | Stop-Process -Force
+Build error: dotnet clean && dotnet build
+
