@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using HealthySystem.API.Data;
 using HealthySystem.API.Models;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace HealthySystem.API.Controllers
 {
@@ -595,6 +597,120 @@ namespace HealthySystem.API.Controllers
         {
             return User.FindFirst(ClaimTypes.Role)?.Value ?? "";
         }
+
+        private string HashPassword(string password)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return Convert.ToBase64String(hashedBytes);
+            }
+        }
+
+        // POST: api/appointments/with-new-patient (Create walk-in patient and appointment)
+        [HttpPost("with-new-patient")]
+        [Authorize(Roles = "reception,admin")]
+        public async Task<ActionResult<object>> CreateAppointmentWithNewPatient([FromBody] CreateWalkInAppointmentRequest request)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+
+                // Validate doctor exists
+                var doctor = await _context.Users
+                    .Where(u => u.Role == "doctor" && u.PublicId.ToString() == request.DoctorPublicId)
+                    .FirstOrDefaultAsync();
+
+                if (doctor == null && !string.IsNullOrEmpty(request.DoctorPublicId))
+                {
+                    return NotFound(new { message = "Không tìm thấy bác sĩ với mã này" });
+                }
+
+                // Validate appointment time
+                if (request.AppointmentStart >= request.AppointmentEnd)
+                {
+                    return BadRequest(new { message = "Thời gian kết thúc phải sau thời gian bắt đầu" });
+                }
+
+                // Create new patient user (walk-in patient)
+                var newPatient = new User
+                {
+                    PublicId = Guid.NewGuid(),
+                    Email = $"{request.PatientPhone}@walkin.local", // Use phone as unique identifier
+                    Phone = request.PatientPhone,
+                    PasswordHash = HashPassword(Guid.NewGuid().ToString()), // Random password
+                    Role = "patient",
+                    Status = "active",
+                    FirstName = request.PatientName.Split(' ').First(),
+                    LastName = string.Join(" ", request.PatientName.Split(' ').Skip(1)),
+                    DateOfBirth = request.PatientDateOfBirth.HasValue ? DateOnly.FromDateTime(request.PatientDateOfBirth.Value) : null,
+                    Gender = request.PatientGender switch
+                    {
+                        "male" => "M",
+                        "female" => "F",
+                        _ => "O"
+                    },
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+
+                _context.Users.Add(newPatient);
+                await _context.SaveChangesAsync(); // Save to get user ID
+
+                // Create patient profile
+                var patientProfile = new PatientProfile
+                {
+                    UserId = newPatient.Id,
+                    Address = request.PatientAddress,
+                    InsuranceNumber = request.PatientInsuranceNumber,
+                    MedicalRecordNumber = $"MR-{DateTime.Now:yyyyMMdd}-{newPatient.Id:D6}",
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+
+                _context.PatientProfiles.Add(patientProfile);
+
+                // Create appointment
+                var appointment = new Appointment
+                {
+                    PatientId = newPatient.Id,
+                    DoctorId = doctor?.Id ?? 0, // 0 if no specific doctor
+                    CreatedBy = userId,
+                    AppointmentStart = new DateTimeOffset(request.AppointmentStart, TimeSpan.Zero),
+                    AppointmentEnd = new DateTimeOffset(request.AppointmentEnd, TimeSpan.Zero),
+                    Status = "scheduled",
+                    Source = "walk_in",
+                    Reason = request.Notes,
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+
+                _context.Appointments.Add(appointment);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Đã tạo hồ sơ bệnh nhân và đặt lịch hẹn thành công",
+                    patient = new
+                    {
+                        id = newPatient.Id,
+                        publicId = newPatient.PublicId,
+                        fullName = newPatient.FullName,
+                        phone = newPatient.Phone,
+                        email = newPatient.Email,
+                        medicalRecordNumber = patientProfile.MedicalRecordNumber
+                    },
+                    appointment = new
+                    {
+                        id = appointment.Id,
+                        appointmentStart = appointment.AppointmentStart,
+                        appointmentEnd = appointment.AppointmentEnd,
+                        status = appointment.Status
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi tạo lịch hẹn cho bệnh nhân mới", error = ex.Message });
+            }
+        }
     }
 
     // DTOs for request bodies
@@ -606,6 +722,24 @@ namespace HealthySystem.API.Controllers
         public DateTime AppointmentEnd { get; set; }
         public string? Notes { get; set; }
         public bool? IsEmergency { get; set; }
+    }
+
+    public class CreateWalkInAppointmentRequest
+    {
+        // Patient info
+        public string PatientName { get; set; } = "";
+        public string PatientPhone { get; set; } = "";
+        public string? PatientEmail { get; set; }
+        public DateTime? PatientDateOfBirth { get; set; }
+        public string PatientGender { get; set; } = ""; // male/female/other
+        public string PatientAddress { get; set; } = "";
+        public string? PatientInsuranceNumber { get; set; }
+
+        // Appointment info
+        public string? DoctorPublicId { get; set; }
+        public DateTime AppointmentStart { get; set; }
+        public DateTime AppointmentEnd { get; set; }
+        public string? Notes { get; set; }
     }
 
     public class UpdateAppointmentStatusRequest

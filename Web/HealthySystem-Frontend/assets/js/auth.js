@@ -40,10 +40,13 @@ class AuthManager {
                     console.log('AuthManager: Saved with CONFIG keys');
                 }
                 
-                // Also save to fallback keys for compatibility
+                // Also save to fallback keys for compatibility with login.html
                 localStorage.setItem('authToken', this.token);
                 localStorage.setItem('user', JSON.stringify(this.user));
-                console.log('AuthManager: Saved with fallback keys');
+                localStorage.setItem('userRole', this.user.role || this.user.Role);
+                localStorage.setItem('userName', `${this.user.firstName} ${this.user.lastName}` || this.user.fullName);
+                localStorage.setItem('userEmail', this.user.email);
+                console.log('AuthManager: Saved with fallback keys, role:', this.user.role || this.user.Role);
                 
                 // Set token for API service if method exists
                 if (apiService && apiService.setToken) {

@@ -245,7 +245,7 @@
 
     <!-- Create/Edit Appointment Modal -->
     <div class="modal fade" id="appointmentModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalTitle">
@@ -254,56 +254,214 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="appointmentForm">
-                        <input type="hidden" id="appointmentId">
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Mã bệnh nhân <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="patientPublicId" required 
-                                       placeholder="Nhập mã bệnh nhân" pattern="^BN-\d{3,}$">
-                                <div class="form-text">VD: BN-001</div>
-                                <div class="invalid-feedback">Mã bệnh nhân phải có dạng BN-XXX</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Mã bác sĩ <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="doctorPublicId" required 
-                                       placeholder="Nhập mã bác sĩ" pattern="^BS-\d{3,}$">
-                                <div class="form-text">VD: BS-001</div>
-                                <div class="invalid-feedback">Mã bác sĩ phải có dạng BS-XXX</div>
-                            </div>
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs mb-4" id="patientTypeTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="existing-patient-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#existing-patient" type="button" role="tab">
+                                <i class="fas fa-user-check me-2"></i>Bệnh nhân có tài khoản
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="new-patient-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#new-patient" type="button" role="tab">
+                                <i class="fas fa-user-plus me-2"></i>Bệnh nhân mới
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="patientTypeContent">
+                        <!-- Existing Patient Tab -->
+                        <div class="tab-pane fade show active" id="existing-patient" role="tabpanel">
+                            <form id="existingPatientForm">
+                                <input type="hidden" id="appointmentId">
+                                
+                                <h6 class="text-primary mb-3"><i class="fas fa-user me-2"></i>Thông tin bệnh nhân</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Mã bệnh nhân <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="patientPublicId" required 
+                                               placeholder="Nhập mã bệnh nhân (VD: BN-001)">
+                                        <div class="invalid-feedback">Vui lòng nhập mã bệnh nhân</div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <h6 class="text-primary mb-3"><i class="fas fa-stethoscope me-2"></i>Thông tin lịch hẹn</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Chuyên khoa <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="specialty" required>
+                                            <option value="">-- Chọn chuyên khoa --</option>
+                                            <option value="cardiology">Tim mạch</option>
+                                            <option value="neurology">Thần kinh</option>
+                                            <option value="orthopedics">Chấn thương chỉnh hình</option>
+                                            <option value="pediatrics">Nhi khoa</option>
+                                            <option value="dermatology">Da liễu</option>
+                                            <option value="ophthalmology">Mắt</option>
+                                            <option value="ent">Tai mũi họng</option>
+                                            <option value="general">Nội tổng quát</option>
+                                        </select>
+                                        <div class="invalid-feedback">Vui lòng chọn chuyên khoa</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Mã bác sĩ</label>
+                                        <input type="text" class="form-control" id="doctorPublicId" 
+                                               placeholder="Nhập mã bác sĩ (VD: BS-001) - Không bắt buộc">
+                                        <div class="form-text">Để trống nếu không có yêu cầu bác sĩ cụ thể</div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Ngày khám <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="appointmentDate" required>
+                                        <div class="invalid-feedback">Vui lòng chọn ngày khám</div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
+                                        <input type="time" class="form-control" id="startTime" required>
+                                        <div class="invalid-feedback">Vui lòng chọn giờ</div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
+                                        <input type="time" class="form-control" id="endTime" required>
+                                        <div class="invalid-feedback">Vui lòng chọn giờ</div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Lý do khám <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="reason" rows="2" required 
+                                              placeholder="Nhập lý do khám bệnh..."></textarea>
+                                    <div class="invalid-feedback">Vui lòng nhập lý do khám</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Ghi chú của tiếp tân</label>
+                                    <textarea class="form-control" id="notes" rows="2" 
+                                              placeholder="Ghi chú thêm (nếu có)..."></textarea>
+                                </div>
+                            </form>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Ngày khám <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="appointmentDate" required>
-                                <div class="invalid-feedback">Vui lòng chọn ngày khám</div>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
-                                <input type="time" class="form-control" id="startTime" required>
-                                <div class="invalid-feedback">Vui lòng chọn giờ</div>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
-                                <input type="time" class="form-control" id="endTime" required>
-                                <div class="invalid-feedback">Vui lòng chọn giờ</div>
-                            </div>
-                        </div>
+                        <!-- New Patient Tab -->
+                        <div class="tab-pane fade" id="new-patient" role="tabpanel">
+                            <form id="newPatientForm">
+                                <h6 class="text-primary mb-3"><i class="fas fa-user me-2"></i>Thông tin bệnh nhân mới</h6>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="newPatientName" required 
+                                               placeholder="Nhập họ tên">
+                                        <div class="invalid-feedback">Vui lòng nhập họ tên</div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                        <input type="tel" class="form-control" id="newPatientPhone" required 
+                                               placeholder="0xxxxxxxxx" pattern="[0-9]{10,11}">
+                                        <div class="invalid-feedback">Số điện thoại phải có 10-11 chữ số</div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="newPatientEmail" 
+                                               placeholder="email@example.com">
+                                        <div class="form-text">Không bắt buộc</div>
+                                    </div>
+                                </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Ghi chú</label>
-                            <textarea class="form-control" id="notes" rows="3" placeholder="Lý do khám, triệu chứng..."></textarea>
-                        </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Ngày sinh <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="newPatientDob" required>
+                                        <div class="invalid-feedback">Vui lòng chọn ngày sinh</div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Giới tính <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="newPatientGender" required>
+                                            <option value="">-- Chọn giới tính --</option>
+                                            <option value="male">Nam</option>
+                                            <option value="female">Nữ</option>
+                                            <option value="other">Khác</option>
+                                        </select>
+                                        <div class="invalid-feedback">Vui lòng chọn giới tính</div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Mã BHYT</label>
+                                        <input type="text" class="form-control" id="newPatientInsurance" 
+                                               placeholder="Nhập mã BHYT (nếu có)">
+                                        <div class="form-text">Không bắt buộc</div>
+                                    </div>
+                                </div>
 
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="isEmergency">
-                            <label class="form-check-label" for="isEmergency">
-                                Khẩn cấp
-                            </label>
+                                <div class="mb-3">
+                                    <label class="form-label">Địa chỉ <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="newPatientAddress" rows="2" required 
+                                              placeholder="Nhập địa chỉ đầy đủ"></textarea>
+                                    <div class="invalid-feedback">Vui lòng nhập địa chỉ</div>
+                                </div>
+
+                                <hr>
+
+                                <h6 class="text-primary mb-3"><i class="fas fa-stethoscope me-2"></i>Thông tin lịch hẹn</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Chuyên khoa <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="newPatientSpecialty" required>
+                                            <option value="">-- Chọn chuyên khoa --</option>
+                                            <option value="cardiology">Tim mạch</option>
+                                            <option value="neurology">Thần kinh</option>
+                                            <option value="orthopedics">Chấn thương chỉnh hình</option>
+                                            <option value="pediatrics">Nhi khoa</option>
+                                            <option value="dermatology">Da liễu</option>
+                                            <option value="ophthalmology">Mắt</option>
+                                            <option value="ent">Tai mũi họng</option>
+                                            <option value="general">Nội tổng quát</option>
+                                        </select>
+                                        <div class="invalid-feedback">Vui lòng chọn chuyên khoa</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Mã bác sĩ</label>
+                                        <input type="text" class="form-control" id="newPatientDoctorId" 
+                                               placeholder="Nhập mã bác sĩ (VD: BS-001) - Không bắt buộc">
+                                        <div class="form-text">Để trống nếu không có yêu cầu bác sĩ cụ thể</div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Ngày khám <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="newPatientAppointmentDate" required>
+                                        <div class="invalid-feedback">Vui lòng chọn ngày khám</div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
+                                        <input type="time" class="form-control" id="newPatientStartTime" required>
+                                        <div class="invalid-feedback">Vui lòng chọn giờ</div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
+                                        <input type="time" class="form-control" id="newPatientEndTime" required>
+                                        <div class="invalid-feedback">Vui lòng chọn giờ</div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Lý do khám <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="newPatientReason" rows="2" required 
+                                              placeholder="Nhập lý do khám bệnh..."></textarea>
+                                    <div class="invalid-feedback">Vui lòng nhập lý do khám</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Ghi chú của tiếp tân</label>
+                                    <textarea class="form-control" id="newPatientNotes" rows="2" 
+                                              placeholder="Ghi chú thêm (nếu có)..."></textarea>
+                                </div>
+                            </form>
                         </div>
-                    </form>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -330,6 +488,57 @@
                 </div>
                 <div class="modal-footer" id="viewAppointmentActions">
                     <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reschedule Appointment Modal -->
+    <div class="modal fade" id="rescheduleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-calendar-alt me-2"></i>Thay đổi lịch hẹn
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rescheduleForm">
+                        <input type="hidden" id="rescheduleAppointmentId">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Ngày khám mới <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="rescheduleDate" required>
+                            <div class="invalid-feedback">Vui lòng chọn ngày khám</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="rescheduleStartTime" required>
+                                <div class="invalid-feedback">Vui lòng chọn giờ</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="rescheduleEndTime" required>
+                                <div class="invalid-feedback">Vui lòng chọn giờ</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Lý do thay đổi <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="rescheduleReason" rows="3" required 
+                                      placeholder="Nhập lý do thay đổi lịch hẹn..."></textarea>
+                            <div class="invalid-feedback">Vui lòng nhập lý do thay đổi</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="submitReschedule()">
+                        <i class="fas fa-save me-2"></i>Xác nhận thay đổi
+                    </button>
                 </div>
             </div>
         </div>
@@ -579,32 +788,53 @@
 
         function openCreateModal() {
             document.getElementById('modalTitle').innerHTML = '<i class="fas fa-calendar-plus me-2"></i>Đặt lịch hẹn mới';
-            document.getElementById('appointmentForm').reset();
+            
+            // Reset both forms
+            document.getElementById('existingPatientForm').reset();
+            document.getElementById('newPatientForm').reset();
+            document.getElementById('existingPatientForm').classList.remove('was-validated');
+            document.getElementById('newPatientForm').classList.remove('was-validated');
             document.getElementById('appointmentId').value = '';
             
-            // Initialize form validator
-            if (!formValidator) {
-                formValidator = new FormValidator(document.getElementById('appointmentForm'));
-                formValidator.init();
-            } else {
-                formValidator.reset();
-            }
+            // Switch to first tab
+            const existingPatientTabButton = document.getElementById('existing-patient-tab');
+            const existingPatientPane = document.getElementById('existing-patient');
+            const newPatientPane = document.getElementById('new-patient');
             
-            // Set default date and min date (today)
+            existingPatientTabButton.classList.add('active');
+            document.getElementById('new-patient-tab').classList.remove('active');
+            existingPatientPane.classList.add('show', 'active');
+            newPatientPane.classList.remove('show', 'active');
+            
+            // Set default date and min date (today) for both tabs
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('appointmentDate').value = today;
             document.getElementById('appointmentDate').min = today;
+            document.getElementById('newPatientAppointmentDate').value = today;
+            document.getElementById('newPatientAppointmentDate').min = today;
             
             appointmentModal.show();
         }
 
         async function saveAppointment() {
-            // Validate form using FormValidator
-            if (!formValidator) {
-                formValidator = new FormValidator(document.getElementById('appointmentForm'));
-            }
+            // Check which tab is active
+            const existingPatientTab = document.getElementById('existing-patient');
+            const newPatientTab = document.getElementById('new-patient');
+            const isExistingPatient = existingPatientTab.classList.contains('show', 'active');
             
-            if (!formValidator.validateForm()) {
+            if (isExistingPatient) {
+                await saveExistingPatientAppointment();
+            } else {
+                await saveNewPatientAppointment();
+            }
+        }
+
+        async function saveExistingPatientAppointment() {
+            const form = document.getElementById('existingPatientForm');
+            
+            // Simple validation
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
                 notification.warning('Vui lòng kiểm tra lại thông tin!');
                 return;
             }
@@ -620,12 +850,13 @@
             }
 
             const appointmentData = {
-                patientPublicId: document.getElementById('patientPublicId').value,
-                doctorPublicId: document.getElementById('doctorPublicId').value,
+                patientPublicId: document.getElementById('patientPublicId').value.trim(),
+                doctorPublicId: document.getElementById('doctorPublicId').value.trim() || null,
+                specialty: document.getElementById('specialty').value,
                 appointmentStart: `${appointmentDate}T${startTime}:00`,
                 appointmentEnd: `${appointmentDate}T${endTime}:00`,
-                notes: document.getElementById('notes').value,
-                isEmergency: document.getElementById('isEmergency').checked
+                notes: `[Lý do khám] ${document.getElementById('reason').value}\n[Ghi chú tiếp tân] ${document.getElementById('notes').value || 'Không có'}`,
+                isEmergency: false
             };
 
             loading.show('Đang đặt lịch hẹn...');
@@ -638,8 +869,9 @@
                 if (result.success) {
                     notification.success('Đặt lịch hẹn thành công!');
                     appointmentModal.hide();
-                    formValidator.reset();
-                    loadAppointments(); // Reload list
+                    form.reset();
+                    form.classList.remove('was-validated');
+                    loadAppointments();
                 } else {
                     notification.error('Lỗi: ' + (result.error || 'Không thể đặt lịch hẹn'));
                 }
@@ -647,6 +879,68 @@
                 console.error('Error creating appointment:', error);
                 loading.hide();
                 notification.error('Đã xảy ra lỗi khi đặt lịch hẹn');
+            }
+        }
+
+        async function saveNewPatientAppointment() {
+            const form = document.getElementById('newPatientForm');
+            
+            // Simple validation
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                notification.warning('Vui lòng kiểm tra lại thông tin!');
+                return;
+            }
+
+            const appointmentDate = document.getElementById('newPatientAppointmentDate').value;
+            const startTime = document.getElementById('newPatientStartTime').value;
+            const endTime = document.getElementById('newPatientEndTime').value;
+
+            // Validate time
+            if (startTime >= endTime) {
+                notification.error('Giờ kết thúc phải sau giờ bắt đầu!');
+                return;
+            }
+
+            // Parse date of birth
+            const dobValue = document.getElementById('newPatientDob').value;
+            const patientDob = dobValue ? new Date(dobValue).toISOString() : null;
+
+            // Create appointment data for walk-in patient
+            const appointmentData = {
+                patientName: document.getElementById('newPatientName').value.trim(),
+                patientPhone: document.getElementById('newPatientPhone').value.trim(),
+                patientEmail: document.getElementById('newPatientEmail').value.trim() || null,
+                patientDateOfBirth: patientDob,
+                patientGender: document.getElementById('newPatientGender').value,
+                patientAddress: document.getElementById('newPatientAddress').value.trim(),
+                patientInsuranceNumber: document.getElementById('newPatientInsurance').value.trim() || null,
+                doctorPublicId: document.getElementById('newPatientDoctorId').value.trim() || null,
+                appointmentStart: `${appointmentDate}T${startTime}:00`,
+                appointmentEnd: `${appointmentDate}T${endTime}:00`,
+                notes: `[Chuyên khoa] ${document.getElementById('newPatientSpecialty').value}\n[Lý do khám] ${document.getElementById('newPatientReason').value}\n[Ghi chú tiếp tân] ${document.getElementById('newPatientNotes').value || 'Không có'}`
+            };
+
+            loading.show('Đang tạo hồ sơ và đặt lịch hẹn...');
+
+            try {
+                const result = await apiService.createAppointmentForNewPatient(appointmentData);
+                
+                loading.hide();
+                
+                if (result.success) {
+                    notification.success('Tạo hồ sơ và đặt lịch hẹn thành công!');
+                    appointmentModal.hide();
+                    form.reset();
+                    form.classList.remove('was-validated');
+                    loadAppointments();
+                } else {
+                    notification.error('Lỗi: ' + (result.error || 'Không thể tạo lịch hẹn'));
+                }
+            } catch (error) {
+                console.error('Error creating appointment for new patient:', error);
+                loading.hide();
+                notification.error('Đã xảy ra lỗi khi tạo lịch hẹn');
             }
         }
 
@@ -740,6 +1034,9 @@
                     
                     if (apt.status !== 'cancelled' && apt.status !== 'completed') {
                         actions += `
+                            <button type="button" class="btn btn-info" onclick="openRescheduleModal(${apt.id}, '${apt.appointmentStart}', '${apt.appointmentEnd}')">
+                                <i class="fas fa-calendar-alt me-2"></i>Thay đổi lịch
+                            </button>
                             <button type="button" class="btn btn-success" onclick="updateStatus(${apt.id}, 'confirmed')">
                                 <i class="fas fa-check me-2"></i>Xác nhận
                             </button>
@@ -756,6 +1053,85 @@
             } catch (error) {
                 console.error('Error viewing appointment:', error);
                 alert('Không thể xem chi tiết lịch hẹn');
+            }
+        }
+
+        function openRescheduleModal(appointmentId, currentStart, currentEnd) {
+            // Parse current date and time
+            const startDate = new Date(currentStart);
+            const endDate = new Date(currentEnd);
+            
+            // Set form values
+            document.getElementById('rescheduleAppointmentId').value = appointmentId;
+            document.getElementById('rescheduleDate').value = startDate.toISOString().split('T')[0];
+            document.getElementById('rescheduleStartTime').value = startDate.toTimeString().substring(0, 5);
+            document.getElementById('rescheduleEndTime').value = endDate.toTimeString().substring(0, 5);
+            document.getElementById('rescheduleReason').value = '';
+            
+            // Set min date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('rescheduleDate').min = today;
+            
+            // Hide view modal and show reschedule modal
+            viewAppointmentModal.hide();
+            
+            // Initialize reschedule modal if not already
+            if (!window.rescheduleModal) {
+                window.rescheduleModal = new bootstrap.Modal(document.getElementById('rescheduleModal'));
+            }
+            
+            rescheduleModal.show();
+        }
+
+        async function submitReschedule() {
+            const form = document.getElementById('rescheduleForm');
+            
+            // Simple validation
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                notification.warning('Vui lòng kiểm tra lại thông tin!');
+                return;
+            }
+
+            const appointmentId = document.getElementById('rescheduleAppointmentId').value;
+            const newDate = document.getElementById('rescheduleDate').value;
+            const newStartTime = document.getElementById('rescheduleStartTime').value;
+            const newEndTime = document.getElementById('rescheduleEndTime').value;
+            const reason = document.getElementById('rescheduleReason').value;
+
+            // Validate time
+            if (newStartTime >= newEndTime) {
+                notification.error('Giờ kết thúc phải sau giờ bắt đầu!');
+                return;
+            }
+
+            const rescheduleData = {
+                appointmentId: parseInt(appointmentId),
+                newAppointmentStart: `${newDate}T${newStartTime}:00`,
+                newAppointmentEnd: `${newDate}T${newEndTime}:00`,
+                reason: reason
+            };
+
+            loading.show('Đang thay đổi lịch hẹn...');
+
+            try {
+                const result = await apiService.rescheduleAppointment(rescheduleData);
+                
+                loading.hide();
+                
+                if (result.success) {
+                    notification.success('Đã thay đổi lịch hẹn thành công!');
+                    rescheduleModal.hide();
+                    form.reset();
+                    form.classList.remove('was-validated');
+                    loadAppointments();
+                } else {
+                    notification.error('Lỗi: ' + (result.error || 'Không thể thay đổi lịch hẹn'));
+                }
+            } catch (error) {
+                console.error('Error rescheduling appointment:', error);
+                loading.hide();
+                notification.error('Đã xảy ra lỗi khi thay đổi lịch hẹn');
             }
         }
 

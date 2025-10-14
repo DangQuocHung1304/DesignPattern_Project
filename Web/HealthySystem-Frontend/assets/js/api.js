@@ -402,6 +402,16 @@ class ApiService {
         }
     }
 
+    // Create appointment for walk-in patient (new patient without account)
+    async createAppointmentForNewPatient(appointmentData) {
+        try {
+            return await this.post('/appointments/with-new-patient', appointmentData, true);
+        } catch (error) {
+            console.error('Error creating appointment for new patient:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
     // Update appointment status
     async updateAppointmentStatus(appointmentId, status, notes = null) {
         try {
@@ -421,6 +431,21 @@ class ApiService {
             return await this.delete(`/appointments/${appointmentId}`, true);
         } catch (error) {
             console.error('Error cancelling appointment:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Reschedule appointment
+    async rescheduleAppointment(rescheduleData) {
+        try {
+            const { appointmentId, newAppointmentStart, newAppointmentEnd, reason } = rescheduleData;
+            return await this.put(`/appointments/${appointmentId}/reschedule`, {
+                newAppointmentStart,
+                newAppointmentEnd,
+                reason
+            }, true);
+        } catch (error) {
+            console.error('Error rescheduling appointment:', error);
             return { success: false, error: error.message };
         }
     }
