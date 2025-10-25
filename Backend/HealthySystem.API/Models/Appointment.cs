@@ -11,7 +11,10 @@ namespace HealthySystem.API.Models
         public long Id { get; set; }
 
         [Column("patient_id")]
-        public long PatientId { get; set; }
+        public long? PatientId { get; set; }  // Nullable - for registered patients
+
+        [Column("walk_in_patient_id")]
+        public long? WalkInPatientId { get; set; }  // Nullable - for walk-in patients
 
         [Column("doctor_id")]
         public long DoctorId { get; set; }
@@ -66,7 +69,10 @@ namespace HealthySystem.API.Models
 
         // Navigation properties
         [ForeignKey(nameof(PatientId))]
-        public User Patient { get; set; } = null!;
+        public User? Patient { get; set; }  // Nullable - for registered patients
+
+        [ForeignKey(nameof(WalkInPatientId))]
+        public WalkInPatient? WalkInPatient { get; set; }  // Nullable - for walk-in patients
 
         [ForeignKey(nameof(DoctorId))]
         public User Doctor { get; set; } = null!;

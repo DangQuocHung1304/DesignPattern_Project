@@ -169,6 +169,12 @@ export default function HomeScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Đang tải...</Text>
+        </View>
+      ) : (
+        <>
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -254,6 +260,8 @@ export default function HomeScreen() {
           {doctors.map((doctor, index) => renderDoctorCard(doctor, index))}
         </View>
       </View>
+        </>
+      )}
     </ScrollView>
   );
 }
@@ -262,6 +270,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    minHeight: 200,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 10,
   },
   header: {
     flexDirection: 'row',

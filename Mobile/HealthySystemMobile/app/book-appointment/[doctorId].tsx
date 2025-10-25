@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -44,23 +44,22 @@ export default function BookAppointmentScreen() {
     '15:00', '15:30', '16:00', '16:30', '17:00'
   ];
 
-  useEffect(() => {
-    fetchDoctorDetails();
-  }, [doctorId]);
-
-  const fetchDoctorDetails = async () => {
+  const fetchDoctorDetails = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get(`/doctors/${doctorId}`);
       setDoctor(response.data);
-    } catch (error) {
-      console.error('Error fetching doctor:', error);
+    } catch {
       Alert.alert('Lỗi', 'Không thể tải thông tin bác sĩ');
       router.back();
     } finally {
       setLoading(false);
     }
-  };
+  }, [doctorId]);
+
+  useEffect(() => {
+    fetchDoctorDetails();
+  }, [fetchDoctorDetails]);
 
   const handleDateChange = (event: any, date?: Date) => {
     setShowDatePicker(Platform.OS === 'ios');

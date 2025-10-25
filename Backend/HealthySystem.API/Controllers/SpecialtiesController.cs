@@ -27,7 +27,7 @@ namespace HealthySystem.API.Controllers
 
         // GET: api/specialties/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<Specialty>> GetSpecialty(int id)
+        public async Task<ActionResult<Specialty>> GetSpecialty(long id)
         {
             var specialty = await _context.Specialties
                 .FirstOrDefaultAsync(s => s.Id == id);
@@ -42,7 +42,7 @@ namespace HealthySystem.API.Controllers
 
         // GET: api/specialties/{id}/doctors
         [HttpGet("{id}/doctors")]
-        public async Task<ActionResult<IEnumerable<object>>> GetDoctorsBySpecialty(int id)
+        public async Task<ActionResult<IEnumerable<object>>> GetDoctorsBySpecialty(long id)
         {
             var doctors = await _context.DoctorSpecialties
                 .Where(ds => ds.SpecialtyId == id)

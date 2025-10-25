@@ -43,6 +43,7 @@ namespace HealthySystem.API.Controllers
 
             var appointments = await query
                 .Include(a => a.Patient)
+                .Include(a => a.WalkInPatient)  // NEW: Include walk-in patients
                 .Include(a => a.Doctor)
                 .ThenInclude(d => d.StaffProfile)
                 .Include(a => a.Doctor)
@@ -57,14 +58,24 @@ namespace HealthySystem.API.Controllers
                     Status = a.Status,
                     Notes = a.Notes,
                     IsEmergency = a.IsEmergency,
-                    Patient = new
+                    // Support both registered patients and walk-in patients
+                    Patient = a.Patient != null ? new
                     {
                         Id = a.Patient.Id,
                         PublicId = a.Patient.PublicId,
                         FullName = a.Patient.FullName,
-                        Phone = a.Patient.Phone,
-                        Email = a.Patient.Email
-                    },
+                        Phone = a.Patient.Phone ?? "",
+                        Email = a.Patient.Email ?? "",
+                        IsWalkIn = false
+                    } : a.WalkInPatient != null ? new
+                    {
+                        Id = a.WalkInPatient.Id,
+                        PublicId = a.WalkInPatient.PublicId,
+                        FullName = a.WalkInPatient.FullName,
+                        Phone = a.WalkInPatient.Phone ?? "",
+                        Email = a.WalkInPatient.Email ?? "",
+                        IsWalkIn = true
+                    } : null,
                     Doctor = new
                     {
                         Id = a.Doctor.Id,
@@ -89,14 +100,15 @@ namespace HealthySystem.API.Controllers
         // GET: api/appointments/{id}
         [HttpGet("{id}")]
         [Authorize]
-        public async Task<ActionResult<object>> GetAppointment(int id)
+        public async Task<ActionResult<object>> GetAppointment(long id)
         {
             var userId = GetCurrentUserId();
             var userRole = GetCurrentUserRole();
 
             var appointment = await _context.Appointments
                 .Include(a => a.Patient)
-                .ThenInclude(p => p.PatientProfile)
+                .ThenInclude(p => p!.PatientProfile)  // FIX: Nullable
+                .Include(a => a.WalkInPatient)  // NEW: Walk-in patients
                 .Include(a => a.Doctor)
                 .ThenInclude(d => d.StaffProfile)
                 .Include(a => a.Doctor)
@@ -128,17 +140,29 @@ namespace HealthySystem.API.Controllers
                 Status = appointment.Status,
                 Notes = appointment.Notes,
                 IsEmergency = appointment.IsEmergency,
-                Patient = new
+                Patient = appointment.Patient != null ? new
                 {
                     Id = appointment.Patient.Id,
                     PublicId = appointment.Patient.PublicId,
                     FullName = appointment.Patient.FullName,
-                    Phone = appointment.Patient.Phone,
-                    Email = appointment.Patient.Email,
+                    Phone = appointment.Patient.Phone ?? "",
+                    Email = appointment.Patient.Email ?? "",
                     Gender = appointment.Patient.Gender,
                     DateOfBirth = appointment.Patient.DateOfBirth,
-                    MedicalRecordNumber = appointment.Patient.PatientProfile?.MedicalRecordNumber
-                },
+                    MedicalRecordNumber = appointment.Patient.PatientProfile?.MedicalRecordNumber,
+                    IsWalkIn = false
+                } : appointment.WalkInPatient != null ? new
+                {
+                    Id = appointment.WalkInPatient.Id,
+                    PublicId = appointment.WalkInPatient.PublicId,
+                    FullName = appointment.WalkInPatient.FullName,
+                    Phone = appointment.WalkInPatient.Phone ?? "",
+                    Email = appointment.WalkInPatient.Email ?? "",
+                    Gender = appointment.WalkInPatient.Gender,
+                    DateOfBirth = appointment.WalkInPatient.DateOfBirth,
+                    MedicalRecordNumber = appointment.WalkInPatient.MedicalRecordNumber,
+                    IsWalkIn = true
+                } : null,
                 Doctor = new
                 {
                     Id = appointment.Doctor.Id,
@@ -227,6 +251,7 @@ namespace HealthySystem.API.Controllers
             // Return the created appointment with related data
             var createdAppointment = await _context.Appointments
                 .Include(a => a.Patient)
+                .Include(a => a.WalkInPatient)  // NEW
                 .Include(a => a.Doctor)
                 .ThenInclude(d => d.StaffProfile)
                 .Where(a => a.Id == appointment.Id)
@@ -238,12 +263,19 @@ namespace HealthySystem.API.Controllers
                     Status = a.Status,
                     Notes = a.Notes,
                     IsEmergency = a.IsEmergency,
-                    Patient = new
+                    Patient = a.Patient != null ? new
                     {
                         Id = a.Patient.Id,
                         PublicId = a.Patient.PublicId,
-                        FullName = a.Patient.FullName
-                    },
+                        FullName = a.Patient.FullName,
+                        IsWalkIn = false
+                    } : a.WalkInPatient != null ? new
+                    {
+                        Id = a.WalkInPatient.Id,
+                        PublicId = a.WalkInPatient.PublicId,
+                        FullName = a.WalkInPatient.FullName,
+                        IsWalkIn = true
+                    } : null,
                     Doctor = new
                     {
                         Id = a.Doctor.Id,
@@ -261,7 +293,7 @@ namespace HealthySystem.API.Controllers
         // PUT: api/appointments/{id}/status
         [HttpPut("{id}/status")]
         [Authorize]
-        public async Task<IActionResult> UpdateAppointmentStatus(int id, [FromBody] UpdateAppointmentStatusRequest request)
+        public async Task<IActionResult> UpdateAppointmentStatus(long id, [FromBody] UpdateAppointmentStatusRequest request)
         {
             var userId = GetCurrentUserId();
             var userRole = GetCurrentUserRole();
@@ -295,7 +327,7 @@ namespace HealthySystem.API.Controllers
         // DELETE: api/appointments/{id}
         [HttpDelete("{id}")]
         [Authorize]
-        public async Task<IActionResult> CancelAppointment(int id)
+        public async Task<IActionResult> CancelAppointment(long id)
         {
             var userId = GetCurrentUserId();
             var userRole = GetCurrentUserRole();
@@ -517,6 +549,105 @@ namespace HealthySystem.API.Controllers
             }
         }
 
+        // PUT: api/appointments/{id}/reschedule (Reception/Staff reschedules appointment)
+        [HttpPut("{id}/reschedule")]
+        [Authorize(Roles = "reception,admin")]
+        public async Task<IActionResult> RescheduleAppointment(long id, [FromBody] RescheduleAppointmentRequest request)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var appointment = await _context.Appointments
+                    .Include(a => a.Patient)
+                    .Include(a => a.WalkInPatient)
+                    .Include(a => a.Doctor)
+                    .FirstOrDefaultAsync(a => a.Id == id);
+
+                if (appointment == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy lịch hẹn" });
+                }
+
+                // Validate appointment can be rescheduled
+                if (appointment.Status == "completed" || appointment.Status == "cancelled")
+                {
+                    return BadRequest(new { message = "Không thể thay đổi lịch hẹn đã hoàn thành hoặc đã hủy" });
+                }
+
+                // Validate new time
+                if (request.NewAppointmentStart >= request.NewAppointmentEnd)
+                {
+                    return BadRequest(new { message = "Thời gian kết thúc phải sau thời gian bắt đầu" });
+                }
+
+                if (request.NewAppointmentStart < DateTime.UtcNow)
+                {
+                    return BadRequest(new { message = "Không thể đặt lịch trong quá khứ" });
+                }
+
+                // Check for doctor availability at new time
+                var hasConflict = await _context.Appointments
+                    .AnyAsync(a => 
+                        a.Id != id &&
+                        a.DoctorId == appointment.DoctorId &&
+                        a.Status != "cancelled" &&
+                        a.AppointmentStart < request.NewAppointmentEnd &&
+                        request.NewAppointmentStart < a.AppointmentEnd
+                    );
+
+                if (hasConflict)
+                {
+                    return BadRequest(new { message = "Bác sĩ đã có lịch hẹn trùng vào thời gian này" });
+                }
+
+                // Update appointment
+                var oldStart = appointment.AppointmentStart;
+                var oldEnd = appointment.AppointmentEnd;
+                var oldStatus = appointment.Status;
+                
+                appointment.AppointmentStart = request.NewAppointmentStart;
+                appointment.AppointmentEnd = request.NewAppointmentEnd;
+                appointment.Status = "confirmed"; // Reception confirms the new schedule
+                appointment.UpdatedAt = DateTimeOffset.UtcNow;
+
+                // Create history record
+                var history = new AppointmentHistory
+                {
+                    AppointmentId = id,
+                    ChangedBy = userId,
+                    OldStatus = oldStatus,
+                    NewStatus = appointment.Status,
+                    OldStart = oldStart,
+                    NewStart = request.NewAppointmentStart,
+                    OldEnd = oldEnd,
+                    NewEnd = request.NewAppointmentEnd,
+                    Comment = request.Reason ?? "Tiếp tân thay đổi lịch hẹn",
+                    ChangedAt = DateTimeOffset.UtcNow
+                };
+                _context.AppointmentHistory.Add(history);
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Đã thay đổi lịch hẹn thành công",
+                    appointment = new
+                    {
+                        id = appointment.Id,
+                        oldStart = oldStart,
+                        newStart = request.NewAppointmentStart,
+                        oldEnd = oldEnd,
+                        newEnd = request.NewAppointmentEnd,
+                        status = appointment.Status
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi thay đổi lịch hẹn", error = ex.Message });
+            }
+        }
+
         // DELETE: api/appointments/{id}/doctor-cancel (Doctor cancels appointment)
         [HttpDelete("{id}/doctor-cancel")]
         [Authorize(Roles = "doctor")]
@@ -616,14 +747,21 @@ namespace HealthySystem.API.Controllers
             {
                 var userId = GetCurrentUserId();
 
-                // Validate doctor exists
-                var doctor = await _context.Users
-                    .Where(u => u.Role == "doctor" && u.PublicId.ToString() == request.DoctorPublicId)
-                    .FirstOrDefaultAsync();
+                // Note: We now ALLOW duplicate phone numbers for walk-in patients
+                // Multiple family members can share one phone number
 
-                if (doctor == null && !string.IsNullOrEmpty(request.DoctorPublicId))
+                // Validate doctor exists if provided
+                User? doctor = null;
+                if (!string.IsNullOrEmpty(request.DoctorPublicId))
                 {
-                    return NotFound(new { message = "Không tìm thấy bác sĩ với mã này" });
+                    doctor = await _context.Users
+                        .Where(u => u.Role == "doctor" && u.PublicId.ToString() == request.DoctorPublicId)
+                        .FirstOrDefaultAsync();
+
+                    if (doctor == null)
+                    {
+                        return NotFound(new { message = "Không tìm thấy bác sĩ với mã này" });
+                    }
                 }
 
                 // Validate appointment time
@@ -632,17 +770,26 @@ namespace HealthySystem.API.Controllers
                     return BadRequest(new { message = "Thời gian kết thúc phải sau thời gian bắt đầu" });
                 }
 
-                // Create new patient user (walk-in patient)
-                var newPatient = new User
+                // If no doctor specified, find first available doctor
+                if (doctor == null)
+                {
+                    doctor = await _context.Users
+                        .Where(u => u.Role == "doctor" && u.Status == "active")
+                        .FirstOrDefaultAsync();
+                    
+                    if (doctor == null)
+                    {
+                        return BadRequest(new { message = "Không có bác sĩ nào trong hệ thống. Vui lòng thêm bác sĩ trước." });
+                    }
+                }
+
+                // Create new walk-in patient (NOT a registered user)
+                var walkInPatient = new WalkInPatient
                 {
                     PublicId = Guid.NewGuid(),
-                    Email = $"{request.PatientPhone}@walkin.local", // Use phone as unique identifier
-                    Phone = request.PatientPhone,
-                    PasswordHash = HashPassword(Guid.NewGuid().ToString()), // Random password
-                    Role = "patient",
-                    Status = "active",
-                    FirstName = request.PatientName.Split(' ').First(),
-                    LastName = string.Join(" ", request.PatientName.Split(' ').Skip(1)),
+                    FullName = request.PatientName,
+                    Phone = request.PatientPhone, // ALLOWED to be duplicate!
+                    Email = !string.IsNullOrWhiteSpace(request.PatientEmail) ? request.PatientEmail : null,
                     DateOfBirth = request.PatientDateOfBirth.HasValue ? DateOnly.FromDateTime(request.PatientDateOfBirth.Value) : null,
                     Gender = request.PatientGender switch
                     {
@@ -650,32 +797,42 @@ namespace HealthySystem.API.Controllers
                         "female" => "F",
                         _ => "O"
                     },
-                    CreatedAt = DateTimeOffset.UtcNow
-                };
-
-                _context.Users.Add(newPatient);
-                await _context.SaveChangesAsync(); // Save to get user ID
-
-                // Create patient profile
-                var patientProfile = new PatientProfile
-                {
-                    UserId = newPatient.Id,
                     Address = request.PatientAddress,
                     InsuranceNumber = request.PatientInsuranceNumber,
-                    MedicalRecordNumber = $"MR-{DateTime.Now:yyyyMMdd}-{newPatient.Id:D6}",
-                    CreatedAt = DateTimeOffset.UtcNow
+                    MedicalRecordNumber = $"WI-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper()}",
+                    CreatedBy = userId,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    Notes = request.Notes
                 };
 
-                _context.PatientProfiles.Add(patientProfile);
+                _context.WalkInPatients.Add(walkInPatient);
+                await _context.SaveChangesAsync(); // Save walk-in patient
+                
+                // Get the ID back (needed because appointments table has triggers)
+                // When table has triggers, EF doesn't use OUTPUT clause so ID might not be populated
+                var savedWalkInPatient = await _context.WalkInPatients
+                    .Where(w => w.PublicId == walkInPatient.PublicId)
+                    .FirstOrDefaultAsync();
+                
+                if (savedWalkInPatient == null)
+                {
+                    return StatusCode(500, new { message = "Không thể tạo bệnh nhân walk-in" });
+                }
+                
+                walkInPatient = savedWalkInPatient;
 
-                // Create appointment
+                // Create appointment linked to walk-in patient
+                var appointmentStart = new DateTimeOffset(request.AppointmentStart, TimeSpan.Zero);
+                var appointmentEnd = new DateTimeOffset(request.AppointmentEnd, TimeSpan.Zero);
+                
                 var appointment = new Appointment
                 {
-                    PatientId = newPatient.Id,
-                    DoctorId = doctor?.Id ?? 0, // 0 if no specific doctor
+                    WalkInPatientId = walkInPatient.Id, // Link to walk-in patient, NOT patient_id
+                    PatientId = null, // NULL for walk-in patients
+                    DoctorId = doctor.Id,
                     CreatedBy = userId,
-                    AppointmentStart = new DateTimeOffset(request.AppointmentStart, TimeSpan.Zero),
-                    AppointmentEnd = new DateTimeOffset(request.AppointmentEnd, TimeSpan.Zero),
+                    AppointmentStart = appointmentStart,
+                    AppointmentEnd = appointmentEnd,
                     Status = "scheduled",
                     Source = "walk_in",
                     Reason = request.Notes,
@@ -684,31 +841,50 @@ namespace HealthySystem.API.Controllers
 
                 _context.Appointments.Add(appointment);
                 await _context.SaveChangesAsync();
+                
+                // Query back to get generated ID (trigger prevents OUTPUT clause)
+                var savedAppointment = await _context.Appointments
+                    .Where(a => a.WalkInPatientId == walkInPatient.Id 
+                             && a.DoctorId == doctor.Id
+                             && a.AppointmentStart == appointmentStart
+                             && a.AppointmentEnd == appointmentEnd)
+                    .OrderByDescending(a => a.Id)
+                    .FirstOrDefaultAsync();
+                
+                if (savedAppointment == null)
+                {
+                    return StatusCode(500, new { message = "Không thể tạo lịch hẹn" });
+                }
+                
+                appointment = savedAppointment;
 
                 return Ok(new
                 {
-                    message = "Đã tạo hồ sơ bệnh nhân và đặt lịch hẹn thành công",
-                    patient = new
+                    message = "Đã tạo hồ sơ bệnh nhân walk-in và đặt lịch hẹn thành công",
+                    walkInPatient = new
                     {
-                        id = newPatient.Id,
-                        publicId = newPatient.PublicId,
-                        fullName = newPatient.FullName,
-                        phone = newPatient.Phone,
-                        email = newPatient.Email,
-                        medicalRecordNumber = patientProfile.MedicalRecordNumber
+                        id = walkInPatient.Id,
+                        publicId = walkInPatient.PublicId,
+                        fullName = walkInPatient.FullName,
+                        phone = walkInPatient.Phone,
+                        email = walkInPatient.Email,
+                        medicalRecordNumber = walkInPatient.MedicalRecordNumber
                     },
                     appointment = new
                     {
                         id = appointment.Id,
                         appointmentStart = appointment.AppointmentStart,
                         appointmentEnd = appointment.AppointmentEnd,
-                        status = appointment.Status
+                        status = appointment.Status,
+                        doctorName = $"{doctor.FirstName} {doctor.LastName}"
                     }
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Lỗi khi tạo lịch hẹn cho bệnh nhân mới", error = ex.Message });
+                var innerMessage = ex.InnerException?.Message ?? "";
+                var fullError = $"{ex.Message} | Inner: {innerMessage}";
+                return StatusCode(500, new { message = "Lỗi khi tạo lịch hẹn cho bệnh nhân walk-in", error = fullError, stackTrace = ex.StackTrace });
             }
         }
     }

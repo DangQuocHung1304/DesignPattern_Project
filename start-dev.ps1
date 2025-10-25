@@ -29,7 +29,7 @@ Write-Host "✅ Đã dừng`n" -ForegroundColor Green
 
 # 4. Khởi động API Server
 Write-Host "🚀 Khởi động API Server..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$PWD'; dotnet run --project Backend\HealthySystem.API\HealthySystem.API.csproj --urls=http://0.0.0.0:5000"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$PWD\Backend\HealthySystem.API'; dotnet run --launch-profile unified"
 Write-Host "⏳ Đợi server khởi động (10 giây)..." -ForegroundColor Gray
 Start-Sleep -Seconds 10
 

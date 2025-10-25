@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test API Error Handling</title>
+</head>
+<body>
+    <h1>Test API Error Handling</h1>
+    <button onclick="testValidToken()">Test Valid Token</button>
+    <button onclick="testExpiredToken()">Test Expired Token</button>
+    <button onclick="testNoToken()">Test No Token</button>
+    <div id="result"></div>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script>
+        const resultDiv = document.getElementById('result');
+
+        async function testValidToken() {
+            resultDiv.innerHTML = '<p>Testing with valid token...</p>';
+            
+            // Login first
+            const loginResult = await apiService.login('reception@clinic.local', 'Reception@123');
+            
+            if (loginResult.success) {
+                resultDiv.innerHTML += '<p style="color: green">✅ Login successful</p>';
+                
+                // Test get appointments
+                const result = await apiService.getAppointments();
+                
+                if (result.success) {
+                    resultDiv.innerHTML += `<p style="color: green">✅ Get appointments successful: ${result.data.length} items</p>`;
+                } else {
+                    resultDiv.innerHTML += `<p style="color: red">❌ Get appointments failed: ${result.error} (Status: ${result.status})</p>`;
+                }
+            } else {
+                resultDiv.innerHTML += '<p style="color: red">❌ Login failed</p>';
+            }
+        }
+
+        async function testExpiredToken() {
+            resultDiv.innerHTML = '<p>Testing with expired token...</p>';
+            
+            // Set an expired token
+            localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDAwMDAwMDB9.fake');
+            
+            const result = await apiService.getAppointments();
+            
+            if (result.success) {
+                resultDiv.innerHTML += '<p style="color: red">❌ Should have failed with expired token</p>';
+            } else {
+                resultDiv.innerHTML += `<p style="color: orange">⚠️ Failed as expected: ${result.error} (Status: ${result.status})</p>`;
+                
+                if (result.status === 401) {
+                    resultDiv.innerHTML += '<p style="color: green">✅ Correctly detected 401 Unauthorized</p>';
+                } else {
+                    resultDiv.innerHTML += '<p style="color: red">❌ Status code not 401: ' + result.status + '</p>';
+                }
+            }
+        }
+
+        async function testNoToken() {
+            resultDiv.innerHTML = '<p>Testing without token...</p>';
+            
+            // Remove token
+            localStorage.removeItem('token');
+            
+            const result = await apiService.getAppointments();
+            
+            if (result.success) {
+                resultDiv.innerHTML += '<p style="color: red">❌ Should have failed without token</p>';
+            } else {
+                resultDiv.innerHTML += `<p style="color: orange">⚠️ Failed as expected: ${result.error} (Status: ${result.status})</p>`;
+                
+                if (result.status === 401) {
+                    resultDiv.innerHTML += '<p style="color: green">✅ Correctly detected 401 Unauthorized</p>';
+                } else {
+                    resultDiv.innerHTML += '<p style="color: red">❌ Status code not 401: ' + result.status + '</p>';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

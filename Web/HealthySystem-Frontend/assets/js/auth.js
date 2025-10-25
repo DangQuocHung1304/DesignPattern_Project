@@ -144,6 +144,11 @@ class AuthManager {
         const authLink = document.getElementById('auth-link');
         const appointmentsSection = document.getElementById('appointments');
         
+        // Check if authLink exists (not all pages have it)
+        if (!authLink) {
+            return; // Exit early if element doesn't exist
+        }
+        
         if (this.isAuthenticated()) {
             // Show user info
             authLink.textContent = `👤 ${this.user.fullName}`;
@@ -496,3 +501,24 @@ document.head.insertAdjacentHTML('beforeend', authStyles);
 
 // Create global auth manager instance
 const authManager = new AuthManager();
+
+// Export functions to global scope for inline event handlers
+window.isAuthenticated = function() {
+    return authManager.isAuthenticated();
+};
+
+window.getCurrentUser = function() {
+    return authManager.getCurrentUser();
+};
+
+window.getUser = function() {
+    return authManager.user;
+};
+
+window.getUserRole = function() {
+    return authManager.getUserRole();
+};
+
+window.logout = function() {
+    return authManager.logout();
+};

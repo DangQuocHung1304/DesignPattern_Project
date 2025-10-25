@@ -30,6 +30,7 @@ namespace HealthySystem.API.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Rating> Ratings { get; set; }
         public DbSet<AppointmentHistory> AppointmentHistory { get; set; }
+        public DbSet<WalkInPatient> WalkInPatients { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,6 +54,8 @@ namespace HealthySystem.API.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Configure Appointment relationships
+            // NOTE: Removed all triggers - validation now done in application code
+            
             modelBuilder.Entity<Appointment>()
                 .HasOne(a => a.Patient)
                 .WithMany(u => u.PatientAppointments)
@@ -146,6 +149,28 @@ namespace HealthySystem.API.Data
 
             modelBuilder.Entity<Appointment>()
                 .HasIndex(a => a.Status);
+
+            // Walk-in patient relationship
+            modelBuilder.Entity<Appointment>()
+                .HasOne(a => a.WalkInPatient)
+                .WithMany(w => w.Appointments)
+                .HasForeignKey(a => a.WalkInPatientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Appointment>()
+                .HasIndex(a => a.WalkInPatientId);
+
+            // WalkInPatient indexes
+            modelBuilder.Entity<WalkInPatient>()
+                .HasIndex(w => w.Phone);
+
+            modelBuilder.Entity<WalkInPatient>()
+                .HasIndex(w => w.PublicId)
+                .IsUnique();
+
+            modelBuilder.Entity<WalkInPatient>()
+                .HasIndex(w => w.MedicalRecordNumber)
+                .IsUnique();
 
             modelBuilder.Entity<Invoice>()
                 .HasIndex(i => i.PatientId);

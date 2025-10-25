@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Reschedule Button</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+    <div class="container my-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-bug me-2"></i>Test Reschedule Button Event</h5>
+            </div>
+            <div class="card-body">
+                <h6>Instructions:</h6>
+                <ol>
+                    <li>Mở Console (F12)</li>
+                    <li>Click nút "Thay đổi lịch" bên dưới</li>
+                    <li>Kiểm tra console log output</li>
+                </ol>
+
+                <hr>
+
+                <div id="testActions" class="d-flex gap-2">
+                    <!-- Button will be injected here -->
+                </div>
+
+                <hr>
+
+                <div id="logOutput" class="bg-dark text-light p-3 rounded" style="font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto;">
+                    <div class="text-success">📋 Console Log Output:</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reschedule Modal -->
+    <div class="modal fade" id="rescheduleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-calendar-alt me-2"></i>Thay đổi lịch hẹn
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="alert alert-success">✅ Modal opened successfully!</p>
+                    <p><strong>Appointment ID:</strong> <span id="displayAptId"></span></p>
+                    <p><strong>Start Time:</strong> <span id="displayStartTime"></span></p>
+                    <p><strong>End Time:</strong> <span id="displayEndTime"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Override console.log to capture output
+        const logDiv = document.getElementById('logOutput');
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg).join(' ');
+            logDiv.innerHTML += `<div class="text-success">✅ ${new Date().toLocaleTimeString()}: ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg).join(' ');
+            logDiv.innerHTML += `<div class="text-danger">❌ ${new Date().toLocaleTimeString()}: ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+
+        // Test data
+        const testAppointment = {
+            id: 123,
+            appointmentStart: '2025-10-26T14:30:00',
+            appointmentEnd: '2025-10-26T15:30:00'
+        };
+
+        // Inject button (simulating innerHTML like in real code)
+        const actions = `
+            <button type="button" class="btn btn-secondary">Đóng</button>
+            <button type="button" 
+                    class="btn btn-info" 
+                    id="btnReschedule"
+                    data-appointment-id="${testAppointment.id}"
+                    data-start="${testAppointment.appointmentStart}"
+                    data-end="${testAppointment.appointmentEnd}">
+                <i class="fas fa-calendar-alt me-2"></i>Thay đổi lịch
+            </button>
+            <button type="button" class="btn btn-success">
+                <i class="fas fa-check me-2"></i>Xác nhận
+            </button>
+            <button type="button" class="btn btn-danger">
+                <i class="fas fa-times me-2"></i>Hủy lịch
+            </button>
+        `;
+
+        document.getElementById('testActions').innerHTML = actions;
+        console.log('📌 Button injected via innerHTML');
+
+        // Method 1: Direct addEventListener (like old code)
+        console.log('🔧 Method 1: Direct addEventListener');
+        setTimeout(() => {
+            const btnReschedule = document.getElementById('btnReschedule');
+            if (btnReschedule) {
+                console.log('✅ Button found!');
+                btnReschedule.addEventListener('click', function() {
+                    const aptId = this.getAttribute('data-appointment-id');
+                    const startTime = this.getAttribute('data-start');
+                    const endTime = this.getAttribute('data-end');
+                    console.log('🔄 Reschedule button clicked (Method 1):', { aptId, startTime, endTime });
+                    openRescheduleModal(aptId, startTime, endTime);
+                });
+                console.log('✅ Event listener added!');
+            } else {
+                console.error('❌ Button not found!');
+            }
+        }, 100);
+
+        // Method 2: Clone node (like new code)
+        console.log('🔧 Method 2: Clone node + addEventListener');
+        setTimeout(() => {
+            const btnReschedule = document.getElementById('btnReschedule');
+            if (btnReschedule) {
+                console.log('✅ Button found (Method 2)!');
+                
+                // Clone to remove old listeners
+                const newBtn = btnReschedule.cloneNode(true);
+                btnReschedule.parentNode.replaceChild(newBtn, btnReschedule);
+                
+                newBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const aptId = this.getAttribute('data-appointment-id');
+                    const startTime = this.getAttribute('data-start');
+                    const endTime = this.getAttribute('data-end');
+                    
+                    console.log('🔄 Reschedule button clicked (Method 2 - CLONED):', { aptId, startTime, endTime });
+                    openRescheduleModal(aptId, startTime, endTime);
+                });
+                
+                console.log('✅ Event listener added to cloned button!');
+            } else {
+                console.error('❌ Button not found (Method 2)!');
+            }
+        }, 150);
+
+        // Open reschedule modal function
+        function openRescheduleModal(appointmentId, currentStart, currentEnd) {
+            console.log('🎯 openRescheduleModal called:', { appointmentId, currentStart, currentEnd });
+            
+            // Display data in modal
+            document.getElementById('displayAptId').textContent = appointmentId;
+            document.getElementById('displayStartTime').textContent = currentStart;
+            document.getElementById('displayEndTime').textContent = currentEnd;
+            
+            // Show modal
+            const rescheduleModal = new bootstrap.Modal(document.getElementById('rescheduleModal'));
+            rescheduleModal.show();
+            
+            console.log('✅ Modal shown successfully!');
+        }
+
+        console.log('🚀 Page loaded. Click the "Thay đổi lịch" button to test!');
+    </script>
+</body>
+</html>

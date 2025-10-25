@@ -78,7 +78,7 @@ namespace HealthySystem.API.Controllers
 
         // GET: api/services/{id} - Lấy thông tin chi tiết 1 dịch vụ
         [HttpGet("{id}")]
-        public async Task<ActionResult<object>> GetService(int id)
+        public async Task<ActionResult<object>> GetService(long id)
         {
             try
             {

@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // API Base URL - Cấu hình thống nhất cho cả web và mobile
 const API_BASE_URL = __DEV__ 
-  ? 'http://192.168.68.119:5000/api'  // Development - IP máy tính cho mobile (updated)
+  ? 'https://nonevadingly-epidermal-vaughn.ngrok-free.dev/api'  // Development - IP máy tính cho mobile (updated)
   : 'http://localhost:5000/api';    // Production - cùng server
 
 // Chú ý: Mobile cần sử dụng IP thật của máy, web có thể dùng localhost
@@ -13,7 +13,7 @@ console.log('API Base URL:', API_BASE_URL);
 // Tạo axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // Tăng timeout lên 30 giây
   headers: {
     'Content-Type': 'application/json',
   },
@@ -47,12 +47,23 @@ api.interceptors.response.use(
   },
   (error) => {
     console.error('❌ API Error:', error.message);
+    console.error('❌ API Error Code:', error.code);
+    console.error('❌ API Error Config:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      baseURL: error.config?.baseURL,
+    });
     
     // Xử lý các lỗi mạng phổ biến
     if (error.code === 'NETWORK_ERROR' || error.code === 'ERR_NETWORK') {
-      console.error('Lỗi mạng: Không thể kết nối đến server. Vui lòng kiểm tra kết nối internet và đảm bảo server đang chạy.');
+      console.error('Lỗi mạng: Không thể kết nối đến server. Vui lòng kiểm tra:');
+      console.error('1. Điện thoại và máy tính có cùng WiFi không?');
+      console.error('2. Backend có đang chạy không?');
+      console.error('3. IP address có đúng không?', API_BASE_URL);
     } else if (error.code === 'ECONNREFUSED') {
-      console.error('Lỗi kết nối: Server từ chối kết nối. Vui lòng kiểm tra địa chỉ API và cổng server.');
+      console.error('Lỗi kết nối: Server từ chối kết nối.');
+    } else if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+      console.error('Lỗi timeout: Request mất quá nhiều thời gian.');
     } else if (error.response) {
       console.error(`Server error: ${error.response.status} - ${error.response.statusText}`);
     }
