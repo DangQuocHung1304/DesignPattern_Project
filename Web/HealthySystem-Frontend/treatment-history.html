@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quá Trình Điều Trị - HealthySystem</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --success-color: #1cc88a;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --info-color: #36b9cc;
+            --light-bg: #f8f9fc;
+            --border-color: #e3e6f0;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #224abe 100%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #224abe 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .page-header .breadcrumb {
+            background: transparent;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-header .breadcrumb-item,
+        .page-header .breadcrumb-item a {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .page-header .breadcrumb-item.active {
+            color: white;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .nav-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+            border: none;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .treatment-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .treatment-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .treatment-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .treatment-title {
+            flex: 1;
+        }
+
+        .treatment-title h5 {
+            margin: 0 0 0.5rem 0;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .treatment-meta {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .treatment-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .treatment-meta-item i {
+            color: var(--primary-color);
+        }
+
+        .treatment-status {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .treatment-body {
+            padding: 1.5rem;
+        }
+
+        .treatment-description {
+            color: #495057;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .diagnosis-box {
+            background: #fff3cd;
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        .diagnosis-box strong {
+            color: #856404;
+        }
+
+        .progress-section {
+            margin: 1.5rem 0;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .progress-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .progress {
+            height: 20px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--info-color) 100%);
+            border-radius: 10px;
+            transition: width 0.6s ease;
+        }
+
+        .medications-section {
+            margin-top: 1.5rem;
+        }
+
+        .medications-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .medications-title i {
+            color: var(--danger-color);
+        }
+
+        .medication-item {
+            background: #f8f9fa;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .medication-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.3rem;
+        }
+
+        .medication-details {
+            font-size: 0.9rem;
+            color: #6c757d;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .medication-details span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .outcome-box {
+            background: #d4edda;
+            border-left: 4px solid var(--success-color);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+
+        .outcome-box strong {
+            color: #155724;
+        }
+
+        .treatment-footer {
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-view-details {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view-details:hover {
+            background: #224abe;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(78, 115, 223, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h4 {
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #adb5bd;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary-color);
+        }
+
+        /* Treatment Detail Modal */
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #224abe 100%);
+            color: white;
+        }
+
+        .modal-header .btn-close {
+            filter: invert(1);
+        }
+
+        .detail-section {
+            margin-bottom: 2rem;
+        }
+
+        .detail-section-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .info-row {
+            display: flex;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            width: 180px;
+            flex-shrink: 0;
+        }
+
+        .info-value {
+            color: #495057;
+            flex: 1;
+        }
+
+        .treatment-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 8px;
+            border-left: 3px solid var(--info-color);
+        }
+
+        .treatment-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .treatment-item-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .item-type-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .type-medication {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .type-procedure {
+            background: #dfe6e9;
+            color: #2d3436;
+        }
+
+        .type-therapy {
+            background: #a29bfe;
+            color: #6c5ce7;
+        }
+
+        .type-followup {
+            background: #74b9ff;
+            color: #0984e3;
+        }
+
+        @media (max-width: 768px) {
+            .treatment-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .treatment-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .info-row {
+                flex-direction: column;
+                gap: 0.3rem;
+            }
+
+            .info-label {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="profile.html">
+                <i class="fas fa-heartbeat"></i> HealthySystem
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="profile.html">
+                            <i class="fas fa-user"></i> Hồ sơ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="treatment-history.html">
+                            <i class="fas fa-procedures"></i> Điều trị
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="appointments.html">
+                            <i class="fas fa-calendar-check"></i> Lịch hẹn
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1><i class="fas fa-procedures me-2"></i>Quá Trình Điều Trị</h1>
+                </div>
+                <div class="col-md-6">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-md-end">
+                            <li class="breadcrumb-item"><a href="profile.html">Trang chủ</a></li>
+                            <li class="breadcrumb-item active">Điều trị</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mb-5">
+        <!-- Tabs -->
+        <ul class="nav nav-tabs" id="treatmentTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="current-tab" data-bs-toggle="tab" data-bs-target="#current" type="button">
+                    <i class="fas fa-heartbeat me-2"></i>Đang điều trị
+                    <span class="badge bg-primary ms-2" id="currentCount">0</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button">
+                    <i class="fas fa-history me-2"></i>Lịch sử
+                    <span class="badge bg-secondary ms-2" id="historyCount">0</span>
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="treatmentTabContent">
+            <!-- Current Treatments -->
+            <div class="tab-pane fade show active" id="current" role="tabpanel">
+                <div id="currentTreatmentsLoading" class="loading-spinner">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Đang tải liệu trình điều trị...</p>
+                </div>
+                <div id="currentTreatmentsContainer"></div>
+            </div>
+
+            <!-- Treatment History -->
+            <div class="tab-pane fade" id="history" role="tabpanel">
+                <div id="historyTreatmentsLoading" class="loading-spinner" style="display: none;">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Đang tải lịch sử điều trị...</p>
+                </div>
+                <div id="historyTreatmentsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Treatment Detail Modal -->
+    <div class="modal fade" id="treatmentDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-medical me-2"></i>Chi Tiết Liệu Trình Điều Trị
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="treatmentDetailContent">
+                    <!-- Content will be loaded dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let currentUserId = null;
+
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token') || localStorage.getItem('healthysystem_token');
+            const userStr = localStorage.getItem('user') || localStorage.getItem('healthysystem_user');
+            
+            if (!token || !userStr) {
+                console.warn('No authentication found, redirecting to home...');
+                window.location.href = 'index.html';
+                return false;
+            }
+
+            try {
+                const user = JSON.parse(userStr);
+                currentUserId = user.id;
+                console.log('Authentication OK, User ID:', currentUserId);
+                return true;
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+                window.location.href = 'index.html';
+                return false;
+            }
+        }
+
+        // Logout
+        document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('healthysystem_token');
+            localStorage.removeItem('healthysystem_user');
+            window.location.href = 'index.html';
+        });
+
+        // Format date
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Chưa xác định';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('vi-VN', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+
+        // Render current treatments
+        function renderCurrentTreatments(treatments) {
+            const container = document.getElementById('currentTreatmentsContainer');
+            document.getElementById('currentTreatmentsLoading').style.display = 'none';
+            document.getElementById('currentCount').textContent = treatments.length;
+
+            if (treatments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-heartbeat"></i>
+                        <h4>Không có liệu trình điều trị nào đang diễn ra</h4>
+                        <p>Bạn hiện tại không có liệu trình điều trị nào đang hoạt động.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = treatments.map(treatment => `
+                <div class="treatment-card">
+                    <div class="treatment-header">
+                        <div class="treatment-title">
+                            <h5>${treatment.name}</h5>
+                            <div class="treatment-meta">
+                                <div class="treatment-meta-item">
+                                    <i class="fas fa-user-md"></i>
+                                    <span>${treatment.doctor}</span>
+                                </div>
+                                <div class="treatment-meta-item">
+                                    <i class="fas fa-stethoscope"></i>
+                                    <span>${treatment.specialization}</span>
+                                </div>
+                                <div class="treatment-meta-item">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>${formatDate(treatment.startDate)} - ${formatDate(treatment.endDate)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="treatment-status status-active">
+                            <i class="fas fa-circle-notch fa-spin me-1"></i>Đang điều trị
+                        </span>
+                    </div>
+                    <div class="treatment-body">
+                        ${treatment.diagnosis ? `
+                            <div class="diagnosis-box">
+                                <strong><i class="fas fa-notes-medical me-2"></i>Chẩn đoán:</strong> ${treatment.diagnosis}
+                            </div>
+                        ` : ''}
+                        
+                        <p class="treatment-description">${treatment.description || 'Không có mô tả'}</p>
+                        
+                        <div class="progress-section">
+                            <div class="progress-header">
+                                <span class="progress-label">Tiến độ điều trị</span>
+                                <span class="progress-value">${treatment.progress}%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: ${treatment.progress}%" 
+                                     aria-valuenow="${treatment.progress}" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${treatment.medications && treatment.medications.length > 0 ? `
+                            <div class="medications-section">
+                                <div class="medications-title">
+                                    <i class="fas fa-pills"></i>
+                                    <span>Thuốc đang sử dụng (${treatment.medications.length})</span>
+                                </div>
+                                ${treatment.medications.map(med => `
+                                    <div class="medication-item">
+                                        <div class="medication-name">${med.name}</div>
+                                        <div class="medication-details">
+                                            ${med.dosage ? `<span><i class="fas fa-prescription-bottle"></i> ${med.dosage}</span>` : ''}
+                                            ${med.frequency ? `<span><i class="fas fa-clock"></i> ${med.frequency}</span>` : ''}
+                                            ${med.instructions ? `<span><i class="fas fa-info-circle"></i> ${med.instructions}</span>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${treatment.notes ? `
+                            <div class="mt-3">
+                                <strong><i class="fas fa-sticky-note me-2"></i>Ghi chú:</strong>
+                                <p class="text-muted mb-0">${treatment.notes}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="treatment-footer">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>Cập nhật bởi bác sĩ điều trị
+                        </small>
+                        <button class="btn btn-view-details" onclick="viewTreatmentDetail(${treatment.id})">
+                            <i class="fas fa-eye me-2"></i>Xem chi tiết
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render treatment history
+        function renderTreatmentHistory(treatments) {
+            const container = document.getElementById('historyTreatmentsContainer');
+            document.getElementById('historyTreatmentsLoading').style.display = 'none';
+            document.getElementById('historyCount').textContent = treatments.length;
+
+            if (treatments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <h4>Chưa có lịch sử điều trị</h4>
+                        <p>Bạn chưa hoàn thành liệu trình điều trị nào.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = treatments.map(treatment => `
+                <div class="treatment-card">
+                    <div class="treatment-header">
+                        <div class="treatment-title">
+                            <h5>${treatment.name}</h5>
+                            <div class="treatment-meta">
+                                <div class="treatment-meta-item">
+                                    <i class="fas fa-user-md"></i>
+                                    <span>${treatment.doctor}</span>
+                                </div>
+                                <div class="treatment-meta-item">
+                                    <i class="fas fa-stethoscope"></i>
+                                    <span>${treatment.specialization}</span>
+                                </div>
+                                <div class="treatment-meta-item">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>${formatDate(treatment.startDate)} - ${formatDate(treatment.endDate)}</span>
+                                </div>
+                                ${treatment.completedDate ? `
+                                    <div class="treatment-meta-item">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Hoàn thành: ${formatDate(treatment.completedDate)}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <span class="treatment-status status-completed">
+                            <i class="fas fa-check-circle me-1"></i>Hoàn thành
+                        </span>
+                    </div>
+                    <div class="treatment-body">
+                        <p class="treatment-description">${treatment.description || 'Không có mô tả'}</p>
+                        
+                        ${treatment.outcome ? `
+                            <div class="outcome-box">
+                                <strong><i class="fas fa-star me-2"></i>Kết quả điều trị:</strong>
+                                <p class="mb-0 mt-2">${treatment.outcome}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="treatment-footer">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            Hoàn thành ${formatDate(treatment.completedDate)}
+                        </small>
+                        <button class="btn btn-view-details" onclick="viewTreatmentDetail(${treatment.id})">
+                            <i class="fas fa-eye me-2"></i>Xem chi tiết
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // View treatment detail
+        async function viewTreatmentDetail(treatmentId) {
+            const modal = new bootstrap.Modal(document.getElementById('treatmentDetailModal'));
+            const content = document.getElementById('treatmentDetailContent');
+            
+            content.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                    <p class="mt-3">Đang tải chi tiết...</p>
+                </div>
+            `;
+            
+            modal.show();
+
+            try {
+                // Kiểm tra cả 2 token keys
+                const token = localStorage.getItem('token') || localStorage.getItem('healthysystem_token');
+                
+                if (!token) {
+                    console.error('No token found');
+                    throw new Error('Unauthorized');
+                }
+
+                const response = await fetch(`${API_URL}/treatments/${treatmentId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error:', response.status, errorText);
+                    throw new Error('Failed to load treatment details');
+                }
+
+                const result = await response.json();
+                const treatment = result.data;
+
+                content.innerHTML = `
+                    <div class="detail-section">
+                        <h6 class="detail-section-title">Thông tin chung</h6>
+                        <div class="info-row">
+                            <div class="info-label">Tên liệu trình:</div>
+                            <div class="info-value"><strong>${treatment.name}</strong></div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Bác sĩ điều trị:</div>
+                            <div class="info-value">${treatment.doctor.name} - ${treatment.doctor.specialization}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Chuyên khoa:</div>
+                            <div class="info-value">${treatment.doctor.department || 'Chưa cập nhật'}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Thời gian:</div>
+                            <div class="info-value">${formatDate(treatment.startDate)} - ${formatDate(treatment.endDate)}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Trạng thái:</div>
+                            <div class="info-value">
+                                <span class="treatment-status ${treatment.status === 'active' ? 'status-active' : 'status-completed'}">
+                                    ${treatment.status === 'active' ? 'Đang điều trị' : 'Hoàn thành'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Tiến độ:</div>
+                            <div class="info-value">
+                                <div class="progress" style="width: 200px;">
+                                    <div class="progress-bar" style="width: ${treatment.progress}%">${treatment.progress}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${treatment.diagnosis ? `
+                        <div class="detail-section">
+                            <h6 class="detail-section-title">Chẩn đoán</h6>
+                            <div class="diagnosis-box">
+                                ${treatment.diagnosis}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${treatment.description ? `
+                        <div class="detail-section">
+                            <h6 class="detail-section-title">Mô tả</h6>
+                            <p>${treatment.description}</p>
+                        </div>
+                    ` : ''}
+
+                    ${treatment.items && treatment.items.length > 0 ? `
+                        <div class="detail-section">
+                            <h6 class="detail-section-title">Chi tiết điều trị (${treatment.items.length} mục)</h6>
+                            ${treatment.items.map(item => `
+                                <div class="treatment-item">
+                                    <div class="treatment-item-header">
+                                        <span class="treatment-item-name">${item.name}</span>
+                                        <span class="item-type-badge type-${item.type}">
+                                            ${getItemTypeLabel(item.type)}
+                                        </span>
+                                    </div>
+                                    ${item.dosage ? `<div class="mb-1"><strong>Liều lượng:</strong> ${item.dosage}</div>` : ''}
+                                    ${item.frequency ? `<div class="mb-1"><strong>Tần suất:</strong> ${item.frequency}</div>` : ''}
+                                    ${item.duration ? `<div class="mb-1"><strong>Thời gian:</strong> ${item.duration}</div>` : ''}
+                                    ${item.instructions ? `<div class="mb-1"><strong>Hướng dẫn:</strong> ${item.instructions}</div>` : ''}
+                                    ${item.scheduleDate ? `<div class="mb-1"><strong>Ngày hẹn:</strong> ${formatDate(item.scheduleDate)}</div>` : ''}
+                                    ${item.completed ? `
+                                        <div class="mt-2">
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>Đã hoàn thành ${item.completedAt ? '- ' + formatDate(item.completedAt) : ''}
+                                            </span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+
+                    ${treatment.outcome ? `
+                        <div class="detail-section">
+                            <h6 class="detail-section-title">Kết quả điều trị</h6>
+                            <div class="outcome-box">
+                                ${treatment.outcome}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${treatment.notes ? `
+                        <div class="detail-section">
+                            <h6 class="detail-section-title">Ghi chú</h6>
+                            <p class="text-muted">${treatment.notes}</p>
+                        </div>
+                    ` : ''}
+                `;
+            } catch (error) {
+                console.error('Error loading treatment details:', error);
+                content.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Không thể tải chi tiết liệu trình điều trị. Vui lòng thử lại sau.
+                    </div>
+                `;
+            }
+        }
+
+        // Get item type label
+        function getItemTypeLabel(type) {
+            const labels = {
+                'medication': 'Thuốc',
+                'procedure': 'Thủ thuật',
+                'therapy': 'Liệu pháp',
+                'followup': 'Tái khám'
+            };
+            return labels[type] || type;
+        }
+
+        // Load current treatments
+        async function loadCurrentTreatments() {
+            try {
+                // Kiểm tra cả 2 token keys
+                const token = localStorage.getItem('token') || localStorage.getItem('healthysystem_token');
+                
+                if (!token) {
+                    console.error('No token found');
+                    throw new Error('Unauthorized');
+                }
+
+                const response = await fetch(`${API_URL}/treatments/current/${currentUserId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error:', response.status, errorText);
+                    throw new Error('Failed to load treatments');
+                }
+
+                const result = await response.json();
+                renderCurrentTreatments(result.data || []);
+            } catch (error) {
+                console.error('Error loading current treatments:', error);
+                document.getElementById('currentTreatmentsLoading').style.display = 'none';
+                document.getElementById('currentTreatmentsContainer').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Không thể tải danh sách liệu trình điều trị. Vui lòng thử lại sau.
+                    </div>
+                `;
+            }
+        }
+
+        // Load treatment history
+        async function loadTreatmentHistory() {
+            document.getElementById('historyTreatmentsLoading').style.display = 'block';
+            
+            try {
+                // Kiểm tra cả 2 token keys
+                const token = localStorage.getItem('token') || localStorage.getItem('healthysystem_token');
+                
+                if (!token) {
+                    console.error('No token found');
+                    throw new Error('Unauthorized');
+                }
+
+                const response = await fetch(`${API_URL}/treatments/history/${currentUserId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error:', response.status, errorText);
+                    throw new Error('Failed to load history');
+                }
+
+                const result = await response.json();
+                renderTreatmentHistory(result.data || []);
+            } catch (error) {
+                console.error('Error loading treatment history:', error);
+                document.getElementById('historyTreatmentsLoading').style.display = 'none';
+                document.getElementById('historyTreatmentsContainer').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Không thể tải lịch sử điều trị. Vui lòng thử lại sau.
+                    </div>
+                `;
+            }
+        }
+
+        // Tab change event
+        document.getElementById('history-tab').addEventListener('shown.bs.tab', function () {
+            if (document.getElementById('historyTreatmentsContainer').innerHTML === '') {
+                loadTreatmentHistory();
+            }
+        });
+
+        // Initialize
+        if (checkAuth()) {
+            loadCurrentTreatments();
+        }
+    </script>
+</body>
+</html>

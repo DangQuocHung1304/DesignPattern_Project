@@ -1,0 +1,60 @@
+feat(sprint5): implement treatment history feature (US-01)
+
+Implemented complete treatment history and progress tracking system for patients.
+
+## Features
+- View active treatments with progress tracking
+- View completed treatment history with outcomes
+- View detailed treatment information with medications
+- Progress bars and status indicators
+- Responsive UI with tabs and modals
+
+## Database Changes
+- Created `treatments` table (19 columns)
+- Created `treatment_items` table (13 columns)
+- Added indexes and foreign key constraints
+- Inserted sample data for testing (4 treatments, 17 items)
+
+## Backend Changes
+- Created Treatment.cs and TreatmentItem.cs models
+- Updated HealthySystemDbContext with new DbSets
+- Implemented TreatmentsController with 4 REST endpoints:
+  * GET /api/treatments/current/{userId} - Active treatments
+  * GET /api/treatments/history/{userId} - Completed treatments
+  * GET /api/treatments/{id} - Treatment details
+  * PUT /api/treatments/{id}/progress - Update progress (doctor only)
+- Added JWT authentication and authorization
+- Implemented Entity Framework Include queries for related data
+
+## Frontend Changes
+- Created treatment-history.html (1000 lines)
+  * Two-tab interface (Current/History)
+  * Treatment cards with progress visualization
+  * Medication lists with dosage and frequency
+  * Detail modal with full treatment information
+  * Responsive design for mobile
+- Created test-api.html for API testing
+- Created auto-login-treatment.html for quick testing
+
+## Documentation
+- SPRINT5_SUMMARY.md - Complete implementation guide
+- TEST_REPORT.md - Detailed test results
+- FINAL_REPORT.md - Deployment checklist
+- USER_ACCEPTANCE_CHECKLIST.md - User testing guide
+- README.md - Sprint overview
+- verify-system.ps1 - Automated verification script
+
+## Testing
+- All 4 API endpoints tested and working
+- Sample data verified in database
+- Frontend UI tested with auto-login
+- Build successful with no errors
+
+## Known Issues
+- Doctor info returns null (non-critical navigation property issue)
+
+## Story Points
+US-01: 2 points ✅ COMPLETED
+
+Resolves #US-01
+Sprint: Sprint 5 (22/10 - 27/10/2025)

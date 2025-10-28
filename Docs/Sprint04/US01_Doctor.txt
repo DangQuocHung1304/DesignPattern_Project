@@ -1,0 +1,21 @@
+THÔNG TIN CÓ THỂ CẬP NHẬT BỞI BÁC SĨ
+
+I. THÔNG TIN CÁ NHÂN CƠ BẢN
+- Ảnh đại diện/Chân dung (Avatar/Photo)
+- Số điện thoại (Phone Number)
+- Địa chỉ Email (Email Address)
+- Địa chỉ liên hệ (Contact Address)
+- Mật khẩu (Password)
+
+II. THÔNG TIN NGHIỆP VỤ CHUYÊN MÔN
+- Chuyên khoa (Specialization)
+- Bằng cấp/Học vị cao nhất (Highest Degree/Academic Title)
+- Kinh nghiệm làm việc/Tiểu sử chuyên môn (Work Experience/Professional Bio)
+- Lĩnh vực thế mạnh/Quan tâm (Key Competencies/Areas of Interest)
+- Thông tin về các chứng chỉ/giấy phép hành nghề (Certificates/Practicing License Information)
+
+III. THÔNG TIN LỊCH LÀM VIỆC VÀ LIÊN HỆ KHÁC
+- Thời gian làm việc/Lịch cá nhân (Working Schedule/Personal Calendar)
+- Thông tin liên lạc khẩn cấp (Emergency Contact Information)
+
+LƯU Ý: Các thông tin cốt lõi (Họ tên, Ngày sinh, Mã số bác sĩ, v.v.) thường do Quản trị viên (Admin) quản lý và cập nhật.
