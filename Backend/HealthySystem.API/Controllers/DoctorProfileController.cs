@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HealthySystem.API.Data;
 using HealthySystem.API.Models;
-using BCrypt.Net;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace HealthySystem.API.Controllers
 {
@@ -221,7 +222,7 @@ namespace HealthySystem.API.Controllers
                 }
 
                 // Verify current password
-                bool isCurrentPasswordValid = BCrypt.Net.BCrypt.Verify(request.CurrentPassword, doctor.PasswordHash);
+                bool isCurrentPasswordValid = VerifyPassword(request.CurrentPassword, doctor.PasswordHash);
                 
                 if (!isCurrentPasswordValid)
                 {
@@ -229,7 +230,7 @@ namespace HealthySystem.API.Controllers
                 }
 
                 // Hash and update new password
-                doctor.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+                doctor.PasswordHash = HashPassword(request.NewPassword);
                 doctor.UpdatedAt = DateTimeOffset.UtcNow;
 
                 await _context.SaveChangesAsync();
@@ -241,6 +242,27 @@ namespace HealthySystem.API.Controllers
                 _logger.LogError(ex, "Error updating password");
                 return StatusCode(500, new { message = "Đã xảy ra lỗi khi cập nhật mật khẩu" });
             }
+        }
+
+        /// <summary>
+        /// Hash password using SHA256
+        /// </summary>
+        private string HashPassword(string password)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return Convert.ToBase64String(hashedBytes);
+            }
+        }
+
+        /// <summary>
+        /// Verify password against stored hash
+        /// </summary>
+        private bool VerifyPassword(string password, string storedHash)
+        {
+            var hash = HashPassword(password);
+            return hash == storedHash;
         }
     }
 

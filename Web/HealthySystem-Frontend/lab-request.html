@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yêu cầu xét nghiệm - Healthy System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #16a085;
+            --secondary-color: #27ae60;
+        }
+
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background: white;
+            border-bottom: 2px solid #f0f0f0;
+            padding: 1.25rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .test-category {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .test-category-title {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .test-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .test-item:hover {
+            border-color: var(--primary-color);
+            background: #f0fdf4;
+        }
+
+        .test-item.selected {
+            border-color: var(--primary-color);
+            background: #e6f7ff;
+        }
+
+        .test-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 1rem;
+            cursor: pointer;
+        }
+
+        .test-info {
+            flex: 1;
+        }
+
+        .test-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+
+        .test-code {
+            color: #8c8c8c;
+            font-size: 0.85rem;
+        }
+
+        .test-details {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-secondary {
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .search-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .patient-info-card {
+            background: linear-gradient(135deg, #e6f7ff 0%, #f0f9ff 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #1890ff;
+        }
+
+        .encounter-select {
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 2px solid #e8e8e8;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .selected-tests-summary {
+            background: #f6ffed;
+            border: 2px solid #b7eb8f;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .badge-selected {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .alert-info {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            color: #096dd9;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0"><i class="fas fa-vial me-2"></i>Yêu cầu xét nghiệm</h2>
+                    <p class="mb-0 mt-2 opacity-75">Tạo yêu cầu xét nghiệm cho bệnh nhân</p>
+                </div>
+                <button class="btn btn-light" onclick="window.location.href='doctor-dashboard.html'">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Search Patient Section -->
+        <div class="search-section">
+            <h5 class="mb-3"><i class="fas fa-search me-2"></i>Bước 1: Tìm bệnh nhân và chọn phiên khám</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Tìm bệnh nhân (theo SĐT hoặc tên)</label>
+                    <div class="input-group mb-3">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Nhập SĐT hoặc tên bệnh nhân...">
+                        <button class="btn btn-primary" onclick="searchPatient()">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Info -->
+            <div id="patientInfoSection" style="display: none;">
+                <div class="patient-info-card">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-user-injured me-2"></i>Thông tin bệnh nhân</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Họ tên:</strong> <span id="patientName"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Ngày sinh:</strong> <span id="patientDOB"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>SĐT:</strong> <span id="patientPhone"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <label class="form-label fw-bold">Chọn phiên khám</label>
+                    <select id="encounterSelect" class="encounter-select">
+                        <option value="">-- Chọn phiên khám --</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Selection Section -->
+        <div id="testSelectionSection" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-flask me-2"></i>Bước 2: Chọn xét nghiệm cần thực hiện
+                </div>
+                <div class="card-body">
+                    <!-- Blood Tests -->
+                    <div class="test-category">
+                        <div class="test-category-title">
+                            <i class="fas fa-tint me-2"></i>Xét nghiệm máu
+                        </div>
+                        <div class="test-item" onclick="toggleTest(this, 'CBC')">
+                            <input type="checkbox" id="test_CBC">
+                            <div class="test-info">
+                                <div class="test-name">Công thức máu (Complete Blood Count)</div>
+                                <div class="test-code">Mã: CBC</div>
+                                <div class="test-details">Đơn vị: 10^9/L | Chỉ số bình thường: 4.5-11.0</div>
+                            </div>
+                        </div>
+
+                        <div class="test-item" onclick="toggleTest(this, 'GLUCOSE')">
+                            <input type="checkbox" id="test_GLUCOSE">
+                            <div class="test-info">
+                                <div class="test-name">Đường huyết (Blood Glucose)</div>
+                                <div class="test-code">Mã: GLUCOSE</div>
+                                <div class="test-details">Đơn vị: mg/dL | Chỉ số bình thường: 70-110</div>
+                            </div>
+                        </div>
+
+                        <div class="test-item" onclick="toggleTest(this, 'HBA1C')">
+                            <input type="checkbox" id="test_HBA1C">
+                            <div class="test-info">
+                                <div class="test-name">HbA1C (Hemoglobin A1C)</div>
+                                <div class="test-code">Mã: HBA1C</div>
+                                <div class="test-details">Đơn vị: % | Chỉ số bình thường: 4.0-5.6</div>
+                            </div>
+                        </div>
+
+                        <div class="test-item" onclick="toggleTest(this, 'LIPID_PANEL')">
+                            <input type="checkbox" id="test_LIPID_PANEL">
+                            <div class="test-info">
+                                <div class="test-name">Mỡ máu (Lipid Panel)</div>
+                                <div class="test-code">Mã: LIPID_PANEL</div>
+                                <div class="test-details">Đơn vị: mg/dL | Cholesterol < 200, LDL < 100, HDL > 40</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Liver & Kidney Tests -->
+                    <div class="test-category">
+                        <div class="test-category-title">
+                            <i class="fas fa-heartbeat me-2"></i>Chức năng gan - thận
+                        </div>
+                        <div class="test-item" onclick="toggleTest(this, 'LIVER_FUNC')">
+                            <input type="checkbox" id="test_LIVER_FUNC">
+                            <div class="test-info">
+                                <div class="test-name">Chức năng gan (Liver Function)</div>
+                                <div class="test-code">Mã: LIVER_FUNC</div>
+                                <div class="test-details">Đơn vị: U/L | ALT: 7-56, AST: 10-40</div>
+                            </div>
+                        </div>
+
+                        <div class="test-item" onclick="toggleTest(this, 'KIDNEY_FUNC')">
+                            <input type="checkbox" id="test_KIDNEY_FUNC">
+                            <div class="test-info">
+                                <div class="test-name">Chức năng thận (Kidney Function)</div>
+                                <div class="test-code">Mã: KIDNEY_FUNC</div>
+                                <div class="test-details">Đơn vị: mg/dL | Creatinine: 0.5-1.2, BUN: 7-20</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Urine Tests -->
+                    <div class="test-category">
+                        <div class="test-category-title">
+                            <i class="fas fa-flask me-2"></i>Xét nghiệm nước tiểu
+                        </div>
+                        <div class="test-item" onclick="toggleTest(this, 'URINALYSIS')">
+                            <input type="checkbox" id="test_URINALYSIS">
+                            <div class="test-info">
+                                <div class="test-name">Tổng phân tích nước tiểu (Urinalysis)</div>
+                                <div class="test-code">Mã: URINALYSIS</div>
+                                <div class="test-details">Kiểm tra pH, protein, glucose, ketones, blood</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Tests Summary -->
+                    <div id="selectedTestsSummary" class="selected-tests-summary" style="display: none;">
+                        <strong><i class="fas fa-check-circle me-2"></i>Đã chọn:</strong>
+                        <div id="selectedTestsList" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Note Section -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-sticky-note me-2"></i>Bước 3: Ghi chú (tùy chọn)
+                </div>
+                <div class="card-body">
+                    <textarea id="noteInput" class="form-control" rows="4" 
+                        placeholder="Nhập ghi chú về lý do xét nghiệm, triệu chứng, chẩn đoán sơ bộ...&#10;Ví dụ: Bệnh nhân có triệu chứng mệt mỏi, chóng mặt, nghi ngờ thiếu máu. Cần kiểm tra công thức máu và đường huyết."></textarea>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center mb-4">
+                <button class="btn btn-secondary me-3" onclick="resetForm()">
+                    <i class="fas fa-redo me-2"></i>Làm mới
+                </button>
+                <button class="btn btn-primary" onclick="submitLabRequest()">
+                    <i class="fas fa-paper-plane me-2"></i>Gửi yêu cầu xét nghiệm
+                </button>
+            </div>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="alertContainer"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        
+        // Get token from localStorage using correct key
+        let token = localStorage.getItem('healthysystem_token') || localStorage.getItem('token');
+        let selectedTests = [];
+        let currentPatient = null;
+
+        // Test configurations
+        const testConfigs = {
+            'CBC': { units: '10^9/L', normalRange: '4.5-11.0' },
+            'GLUCOSE': { units: 'mg/dL', normalRange: '70-110' },
+            'HBA1C': { units: '%', normalRange: '4.0-5.6' },
+            'LIPID_PANEL': { units: 'mg/dL', normalRange: 'Chol<200, LDL<100, HDL>40' },
+            'LIVER_FUNC': { units: 'U/L', normalRange: 'ALT:7-56, AST:10-40' },
+            'KIDNEY_FUNC': { units: 'mg/dL', normalRange: 'Creatinine:0.5-1.2, BUN:7-20' },
+            'URINALYSIS': { units: '', normalRange: 'pH:4.5-8.0' }
+        };
+
+        // Check authentication
+        if (!token) {
+            alert('⚠️ Vui lòng đăng nhập để sử dụng chức năng này!');
+            window.location.href = 'login.html';
+        }
+
+        // Verify user role (doctor only)
+        const userData = localStorage.getItem('healthysystem_user') || localStorage.getItem('user');
+        if (userData) {
+            try {
+                const user = JSON.parse(userData);
+                if (user.role !== 'doctor') {
+                    alert('❌ Chỉ bác sĩ mới có quyền sử dụng chức năng này!');
+                    window.location.href = 'index.html';
+                }
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+            }
+        }
+
+        // Search patient
+        async function searchPatient() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            if (!searchTerm) {
+                showAlert('Vui lòng nhập SĐT hoặc tên bệnh nhân', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/patients/search?searchTerm=${encodeURIComponent(searchTerm)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.patients && result.patients.length > 0) {
+                    currentPatient = result.patients[0];
+                    displayPatientInfo(currentPatient);
+                    await loadEncounters(currentPatient.id);
+                } else {
+                    showAlert('Không tìm thấy bệnh nhân', 'warning');
+                    document.getElementById('patientInfoSection').style.display = 'none';
+                    document.getElementById('testSelectionSection').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error searching patient:', error);
+                showAlert('Lỗi khi tìm kiếm bệnh nhân: ' + error.message, 'danger');
+            }
+        }
+
+        // Display patient info
+        function displayPatientInfo(patient) {
+            document.getElementById('patientName').textContent = patient.fullName;
+            document.getElementById('patientDOB').textContent = formatDate(patient.dateOfBirth);
+            document.getElementById('patientPhone').textContent = patient.phoneNumber || 'N/A';
+            document.getElementById('patientInfoSection').style.display = 'block';
+        }
+
+        // Load encounters
+        async function loadEncounters(patientId) {
+            try {
+                const response = await fetch(`${API_URL}/patients/${patientId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const patient = await response.json();
+                const encounters = patient.appointmentHistory || [];
+                
+                const select = document.getElementById('encounterSelect');
+                select.innerHTML = '<option value="">-- Chọn phiên khám --</option>';
+                
+                if (encounters.length > 0) {
+                    encounters.forEach(enc => {
+                        const option = document.createElement('option');
+                        option.value = enc.id;
+                        option.textContent = `${formatDateTime(enc.startTime)} - ${enc.chiefComplaint || 'Khám tổng quát'}`;
+                        select.appendChild(option);
+                    });
+
+                    select.onchange = function() {
+                        if (this.value) {
+                            document.getElementById('testSelectionSection').style.display = 'block';
+                        } else {
+                            document.getElementById('testSelectionSection').style.display = 'none';
+                        }
+                    };
+                } else {
+                    showAlert('Bệnh nhân chưa có phiên khám nào. Vui lòng tạo phiên khám trước.', 'info');
+                }
+            } catch (error) {
+                console.error('Error loading encounters:', error);
+                showAlert('Lỗi khi tải danh sách phiên khám', 'danger');
+            }
+        }
+
+        // Toggle test selection
+        function toggleTest(element, testCode) {
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            element.classList.toggle('selected');
+
+            if (checkbox.checked) {
+                if (!selectedTests.includes(testCode)) {
+                    selectedTests.push(testCode);
+                }
+            } else {
+                selectedTests = selectedTests.filter(t => t !== testCode);
+            }
+
+            updateSelectedTestsSummary();
+        }
+
+        // Update selected tests summary
+        function updateSelectedTestsSummary() {
+            const summary = document.getElementById('selectedTestsSummary');
+            const list = document.getElementById('selectedTestsList');
+
+            if (selectedTests.length > 0) {
+                summary.style.display = 'block';
+                list.innerHTML = selectedTests.map(code => 
+                    `<span class="badge-selected">${code}</span>`
+                ).join('');
+            } else {
+                summary.style.display = 'none';
+            }
+        }
+
+        // Submit lab request
+        async function submitLabRequest() {
+            const encounterId = document.getElementById('encounterSelect').value;
+            const note = document.getElementById('noteInput').value.trim();
+
+            if (!encounterId) {
+                showAlert('Vui lòng chọn phiên khám', 'warning');
+                return;
+            }
+
+            if (selectedTests.length === 0) {
+                showAlert('Vui lòng chọn ít nhất một xét nghiệm', 'warning');
+                return;
+            }
+
+            const testItems = selectedTests.map(testCode => ({
+                testCode: testCode,
+                units: testConfigs[testCode].units,
+                normalRange: testConfigs[testCode].normalRange
+            }));
+
+            const requestBody = {
+                encounterId: parseInt(encounterId),
+                note: note || null,
+                testItems: testItems
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/labrequests`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showAlert(
+                        `✅ ${result.message}<br>` +
+                        `Mã yêu cầu: #${result.data.Id}<br>` +
+                        `Bệnh nhân: ${result.data.PatientName}<br>` +
+                        `Số xét nghiệm: ${result.data.TestCount}`,
+                        'success'
+                    );
+                    
+                    // Reset form after 2 seconds
+                    setTimeout(() => {
+                        resetForm();
+                    }, 2000);
+                } else {
+                    showAlert('❌ ' + result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Error submitting lab request:', error);
+                showAlert('Lỗi khi gửi yêu cầu: ' + error.message, 'danger');
+            }
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('noteInput').value = '';
+            document.getElementById('patientInfoSection').style.display = 'none';
+            document.getElementById('testSelectionSection').style.display = 'none';
+            selectedTests = [];
+            currentPatient = null;
+
+            // Uncheck all tests
+            document.querySelectorAll('.test-item').forEach(item => {
+                item.classList.remove('selected');
+                item.querySelector('input[type="checkbox"]').checked = false;
+            });
+
+            updateSelectedTestsSummary();
+        }
+
+        // Show alert
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            container.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        // Format datetime
+        function formatDateTime(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleString('vi-VN');
+        }
+    </script>
+</body>
+</html>
