@@ -352,3 +352,129 @@ Thumbs.db
 # Backup files
 *.bak
 *.backup
+
+# ============================================
+# 🔒 SECURITY: SENSITIVE FILES - DO NOT COMMIT
+# ============================================
+
+# Firebase Credentials (CRITICAL - Contains private keys)
+serviceAccountKey.json
+**/serviceAccountKey.json
+firebase-adminsdk-*.json
+**/firebase-adminsdk-*.json
+
+# Firebase Config (Contains API keys)
+firebase-config.js
+**/firebase-config.js
+.firebaserc
+
+# Environment files (May contain passwords, API keys)
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+*.env
+
+# ASP.NET Configuration files (Contains DB connection strings with passwords)
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.json
+**/appsettings.json
+**/appsettings.*.json
+
+# Connection strings files
+connectionstrings.json
+**/connectionstrings.json
+secrets.json
+**/secrets.json
+
+# Database exports (May contain sensitive patient data)
+Migration/sql-exports/
+**/sql-exports/
+*.sql.json
+export-*.json
+
+# SQL Scripts with data (May contain passwords in connection strings)
+*-with-data.sql
+*_backup_*.sql
+
+# Migration logs (May expose database structure)
+Migration/*.log
+migration-*.log
+
+# User secrets (ASP.NET Core User Secrets)
+secrets/
+**/secrets/
+
+# SSH keys
+*.pem
+*.key
+*.ppk
+id_rsa
+id_rsa.pub
+
+# SSL certificates
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# Password files
+passwords.txt
+credentials.txt
+*password*.txt
+*credential*.txt
+
+# API keys and tokens
+api-keys.txt
+tokens.txt
+*.token
+
+# ============================================
+# 🗂️ PROJECT SPECIFIC
+# ============================================
+
+# Node modules (Firebase Admin SDK dependencies)
+node_modules/
+**/node_modules/
+package-lock.json
+
+# Firebase cache
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Temporary migration files
+Migration/*.tmp
+Migration/temp/
+Archive/*.tmp
+
+# Old backup files
+*.old
+*_old.*
+*_backup.*
+
+# Log files
+*.log
+logs/
+**/logs/
+
+# ============================================
+# 📝 NOTES FOR DEVELOPERS
+# ============================================
+# ⚠️  NEVER commit these files:
+# 1. serviceAccountKey.json - Contains Firebase Admin private key
+# 2. appsettings.json - Contains SQL Server connection string with password
+# 3. firebase-config.js - Contains Firebase API keys
+# 4. sql-exports/ folder - Contains exported patient data (PII/PHI)
+# 5. Any .env files - May contain secrets
+#
+# 📌 How to handle sensitive files:
+# - Use environment variables for production
+# - Share credentials through secure channels (1Password, LastPass, etc.)
+# - Use .env.example as template without actual values
+# - Document required configs in README.md
+# ============================================
