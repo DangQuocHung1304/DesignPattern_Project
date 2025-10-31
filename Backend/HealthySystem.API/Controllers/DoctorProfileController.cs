@@ -30,7 +30,7 @@ namespace HealthySystem.API.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst("userId")?.Value;
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userIdClaim) || !long.TryParse(userIdClaim, out long userId))
                 {
                     return Unauthorized(new { message = "Không tìm thấy thông tin người dùng" });
@@ -90,7 +90,7 @@ namespace HealthySystem.API.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst("userId")?.Value;
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userIdClaim) || !long.TryParse(userIdClaim, out long userId))
                 {
                     return Unauthorized(new { message = "Không tìm thấy thông tin người dùng" });
@@ -194,7 +194,7 @@ namespace HealthySystem.API.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst("userId")?.Value;
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userIdClaim) || !long.TryParse(userIdClaim, out long userId))
                 {
                     return Unauthorized(new { message = "Không tìm thấy thông tin người dùng" });

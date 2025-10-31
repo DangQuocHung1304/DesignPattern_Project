@@ -411,7 +411,16 @@
 
             try {
                 // Call API to search patients
-                const response = await fetch(`${API_URL}/users/search?type=${searchType}&keyword=${encodeURIComponent(keyword)}`, {
+                // Backend exposes: GET /api/patients/search?searchTerm=... and GET /api/patients/{patientId}
+                let endpoint = '';
+                if (searchType === 'id') {
+                    // search by numeric patient id (or public id if numeric not provided)
+                    endpoint = `${API_URL}/patients/${encodeURIComponent(keyword)}`;
+                } else {
+                    endpoint = `${API_URL}/patients/search?searchTerm=${encodeURIComponent(keyword)}`;
+                }
+
+                const response = await fetch(endpoint, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -423,7 +432,8 @@
                 }
 
                 const result = await response.json();
-                const patients = result.data || [];
+                // PatientsController returns { count, patients } for search
+                const patients = result.patients || result.data || [];
 
                 loadingSpinner.style.display = 'none';
 
@@ -497,11 +507,20 @@
             document.getElementById('searchResults').innerHTML = '';
             document.getElementById('patientDetails').style.display = 'block';
 
-            // Load patient info
-            await loadPatientInfo(patientId, token);
+            // Load patient info (bao gồm appointment history)
+            const patientData = await loadPatientInfo(patientId, token);
             
-            // Load appointments history
-            await loadAppointmentsHistory(patientId, token);
+            // Load appointments history from patient data
+            if (patientData && patientData.appointmentHistory) {
+                displayAppointmentsHistory(patientData.appointmentHistory);
+            } else {
+                document.getElementById('appointmentsHistory').innerHTML = `
+                    <div class="empty-state" style="padding: 2rem;">
+                        <i class="fas fa-calendar-times" style="font-size: 2rem;"></i>
+                        <p class="mt-2">Chưa có lịch hẹn nào</p>
+                    </div>
+                `;
+            }
             
             // Load treatments
             await loadTreatments(patientId, token);
@@ -510,7 +529,7 @@
         // Load patient info
         async function loadPatientInfo(patientId, token) {
             try {
-                const response = await fetch(`${API_URL}/users/${patientId}`, {
+                const response = await fetch(`${API_URL}/patients/${patientId}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -519,15 +538,15 @@
 
                 if (!response.ok) throw new Error('Failed to load patient info');
 
-                const result = await response.json();
-                const patient = result.data;
+                // Backend trả về object trực tiếp, không có wrapper .data
+                const patient = await response.json();
 
                 document.getElementById('patientAvatar').textContent = getInitials(patient.firstName, patient.lastName);
                 
                 document.getElementById('patientInfo').innerHTML = `
                     <div class="info-row">
                         <div class="info-label">Họ và tên:</div>
-                        <div class="info-value"><strong>${patient.lastName} ${patient.firstName}</strong></div>
+                        <div class="info-value"><strong>${patient.fullName || patient.lastName + ' ' + patient.firstName}</strong></div>
                     </div>
                     <div class="info-row">
                         <div class="info-label">Email:</div>
@@ -539,17 +558,32 @@
                     </div>
                     <div class="info-row">
                         <div class="info-label">Ngày sinh:</div>
-                        <div class="info-value">${patient.dob ? new Date(patient.dob).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</div>
+                        <div class="info-value">${patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</div>
                     </div>
                     <div class="info-row">
                         <div class="info-label">Giới tính:</div>
-                        <div class="info-value">${patient.gender === 'male' ? 'Nam' : patient.gender === 'female' ? 'Nữ' : 'Khác'}</div>
+                        <div class="info-value">${patient.gender === 'M' ? 'Nam' : patient.gender === 'F' ? 'Nữ' : 'Khác'}</div>
                     </div>
                     <div class="info-row">
                         <div class="info-label">Địa chỉ:</div>
-                        <div class="info-value">${patient.address || 'Chưa cập nhật'}</div>
+                        <div class="info-value">${patient.profile?.address || 'Chưa cập nhật'}</div>
                     </div>
+                    ${patient.profile?.allergies ? `
+                    <div class="info-row">
+                        <div class="info-label">Dị ứng:</div>
+                        <div class="info-value text-danger"><i class="fas fa-exclamation-triangle me-1"></i>${patient.profile.allergies}</div>
+                    </div>
+                    ` : ''}
+                    ${patient.profile?.chronicConditions ? `
+                    <div class="info-row">
+                        <div class="info-label">Bệnh mãn tính:</div>
+                        <div class="info-value text-warning"><i class="fas fa-heartbeat me-1"></i>${patient.profile.chronicConditions}</div>
+                    </div>
+                    ` : ''}
                 `;
+                
+                // Return patient data để sử dụng appointment history
+                return patient;
             } catch (error) {
                 console.error('Error loading patient info:', error);
                 document.getElementById('patientInfo').innerHTML = `
@@ -558,59 +592,38 @@
                         Không thể tải thông tin bệnh nhân
                     </div>
                 `;
+                return null;
             }
         }
 
-        // Load appointments history
-        async function loadAppointmentsHistory(patientId, token) {
-            try {
-                const response = await fetch(`${API_URL}/appointments/patient/${patientId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) throw new Error('Failed to load appointments');
-
-                const result = await response.json();
-                const appointments = result.data || [];
-
-                if (appointments.length === 0) {
-                    document.getElementById('appointmentsHistory').innerHTML = `
-                        <div class="empty-state" style="padding: 2rem;">
-                            <i class="fas fa-calendar-times" style="font-size: 2rem;"></i>
-                            <p class="mt-2">Chưa có lịch hẹn nào</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                document.getElementById('appointmentsHistory').innerHTML = appointments.map(apt => `
-                    <div class="treatment-item">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <h6 class="mb-1">${new Date(apt.appointmentDate).toLocaleDateString('vi-VN')}</h6>
-                                <small class="text-muted">${apt.appointmentTime}</small>
-                            </div>
-                            <span class="appointment-badge">
-                                ${apt.status === 'scheduled' ? 'Đã hẹn' : 
-                                  apt.status === 'confirmed' ? 'Đã xác nhận' : 
-                                  apt.status === 'completed' ? 'Hoàn thành' : 'Đã hủy'}
-                            </span>
-                        </div>
-                        ${apt.reason ? `<p class="mb-0 text-muted"><small>${apt.reason}</small></p>` : ''}
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Error loading appointments:', error);
+        // Display appointments history (sử dụng data từ patient endpoint)
+        function displayAppointmentsHistory(appointments) {
+            if (!appointments || appointments.length === 0) {
                 document.getElementById('appointmentsHistory').innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Không thể tải lịch sử khám bệnh
+                    <div class="empty-state" style="padding: 2rem;">
+                        <i class="fas fa-calendar-times" style="font-size: 2rem;"></i>
+                        <p class="mt-2">Chưa có lịch hẹn nào</p>
                     </div>
                 `;
+                return;
             }
+
+            document.getElementById('appointmentsHistory').innerHTML = appointments.map(apt => `
+                <div class="treatment-item">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1">${new Date(apt.appointmentDate).toLocaleDateString('vi-VN')} ${new Date(apt.appointmentDate).toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})}</h6>
+                            <small class="text-muted">Bác sĩ: ${apt.doctorName || 'N/A'}</small>
+                        </div>
+                        <span class="appointment-badge">
+                            ${apt.status === 'scheduled' ? 'Đã hẹn' : 
+                              apt.status === 'confirmed' ? 'Đã xác nhận' : 
+                              apt.status === 'completed' ? 'Hoàn thành' : 'Đã hủy'}
+                        </span>
+                    </div>
+                    ${apt.reason ? `<p class="mb-0 text-muted"><small>${apt.reason}</small></p>` : ''}
+                </div>
+            `).join('');
         }
 
         // Load treatments

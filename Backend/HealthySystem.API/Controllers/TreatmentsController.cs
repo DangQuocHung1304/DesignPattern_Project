@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using HealthySystem.API.Data;
 using HealthySystem.API.Models;
 using System.Security.Claims;
 
@@ -9,30 +11,73 @@ namespace HealthySystem.API.Controllers
     [Route("api/[controller]")]
     public class TreatmentsController : ControllerBase
     {
+        private readonly HealthySystemDbContext _context;
         private readonly ILogger<TreatmentsController> _logger;
 
-        public TreatmentsController(ILogger<TreatmentsController> logger)
+        public TreatmentsController(HealthySystemDbContext context, ILogger<TreatmentsController> logger)
         {
+            _context = context;
             _logger = logger;
         }
 
         /// <summary>
-        /// Get current treatments for a user
+        /// Get current treatments for a user (active treatments)
+        /// US-01 Sprint 5: Xem quá trình điều trị bệnh
         /// </summary>
         [HttpGet("current/{userId}")]
         [Authorize]
-        public async Task<IActionResult> GetCurrentTreatments(int userId)
+        public async Task<IActionResult> GetCurrentTreatments(long userId)
         {
             try
             {
                 var currentUserId = GetCurrentUserId();
-                if (currentUserId == null || currentUserId != userId)
+                if (currentUserId == null)
                 {
-                    return Unauthorized();
+                    return Unauthorized(new { success = false, message = "Unauthorized access" });
                 }
 
-                // For demo purposes, return mock treatments
-                var treatments = GetMockCurrentTreatments();
+                // Allow patients to view their own treatments
+                // Allow doctors to view any patient's treatments
+                var currentUserRole = User.FindFirst(ClaimTypes.Role)?.Value;
+                if (currentUserId != userId && currentUserRole != "doctor" && currentUserRole != "admin")
+                {
+                    return Unauthorized(new { success = false, message = "Bạn không có quyền xem thông tin này" });
+                }
+
+                var treatments = await _context.Treatments
+                    .Include(t => t.Doctor)
+                        .ThenInclude(d => d.StaffProfile)
+                    .Include(t => t.Doctor.DoctorSpecialties)
+                        .ThenInclude(ds => ds.Specialty)
+                    .Include(t => t.TreatmentItems)
+                    .Where(t => t.PatientId == userId && t.Status == "active")
+                    .OrderByDescending(t => t.StartDate)
+                    .Select(t => new
+                    {
+                        id = t.Id,
+                        name = t.Name,
+                        doctor = t.Doctor.FirstName + " " + t.Doctor.LastName,
+                        specialization = t.Doctor.DoctorSpecialties.FirstOrDefault() != null 
+                            ? t.Doctor.DoctorSpecialties.FirstOrDefault()!.Specialty.Name 
+                            : "Chưa có chuyên khoa",
+                        startDate = t.StartDate.ToString("yyyy-MM-dd"),
+                        endDate = t.EndDate.HasValue ? t.EndDate.Value.ToString("yyyy-MM-dd") : null,
+                        status = t.Status,
+                        progress = t.Progress,
+                        description = t.Description,
+                        diagnosis = t.Diagnosis,
+                        notes = t.Notes,
+                        medications = t.TreatmentItems
+                            .Where(ti => ti.ItemType == "medication")
+                            .Select(ti => new
+                            {
+                                name = ti.ItemName,
+                                dosage = ti.Dosage,
+                                frequency = ti.Frequency,
+                                instructions = ti.Instructions
+                            }).ToList()
+                    })
+                    .ToListAsync();
                 
                 return Ok(new
                 {
@@ -42,7 +87,7 @@ namespace HealthySystem.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting current treatments");
+                _logger.LogError(ex, "Error getting current treatments for user {UserId}", userId);
                 return StatusCode(500, new
                 {
                     success = false,
@@ -52,22 +97,53 @@ namespace HealthySystem.API.Controllers
         }
 
         /// <summary>
-        /// Get treatment history for a user
+        /// Get treatment history for a user (completed treatments)
+        /// US-01 Sprint 5: Xem lịch sử điều trị
         /// </summary>
         [HttpGet("history/{userId}")]
         [Authorize]
-        public async Task<IActionResult> GetTreatmentHistory(int userId)
+        public async Task<IActionResult> GetTreatmentHistory(long userId)
         {
             try
             {
                 var currentUserId = GetCurrentUserId();
-                if (currentUserId == null || currentUserId != userId)
+                if (currentUserId == null)
                 {
-                    return Unauthorized();
+                    return Unauthorized(new { success = false, message = "Unauthorized access" });
                 }
 
-                // For demo purposes, return mock treatment history
-                var treatmentHistory = GetMockTreatmentHistory();
+                // Allow patients to view their own treatments
+                // Allow doctors to view any patient's treatments
+                var currentUserRole = User.FindFirst(ClaimTypes.Role)?.Value;
+                if (currentUserId != userId && currentUserRole != "doctor" && currentUserRole != "admin")
+                {
+                    return Unauthorized(new { success = false, message = "Bạn không có quyền xem thông tin này" });
+                }
+
+                var treatmentHistory = await _context.Treatments
+                    .Include(t => t.Doctor)
+                        .ThenInclude(d => d.StaffProfile)
+                    .Include(t => t.Doctor.DoctorSpecialties)
+                        .ThenInclude(ds => ds.Specialty)
+                    .Where(t => t.PatientId == userId && t.Status == "completed")
+                    .OrderByDescending(t => t.CompletedAt)
+                    .Select(t => new
+                    {
+                        id = t.Id,
+                        name = t.Name,
+                        doctor = t.Doctor.FirstName + " " + t.Doctor.LastName,
+                        specialization = t.Doctor.DoctorSpecialties.FirstOrDefault() != null 
+                            ? t.Doctor.DoctorSpecialties.FirstOrDefault()!.Specialty.Name 
+                            : "Chưa có chuyên khoa",
+                        startDate = t.StartDate.ToString("yyyy-MM-dd"),
+                        endDate = t.EndDate.HasValue ? t.EndDate.Value.ToString("yyyy-MM-dd") : null,
+                        completedDate = t.CompletedAt.HasValue ? t.CompletedAt.Value.ToString("yyyy-MM-dd") : null,
+                        status = t.Status,
+                        progress = t.Progress,
+                        description = t.Description,
+                        outcome = t.Outcome
+                    })
+                    .ToListAsync();
                 
                 return Ok(new
                 {
@@ -77,7 +153,7 @@ namespace HealthySystem.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting treatment history");
+                _logger.LogError(ex, "Error getting treatment history for user {UserId}", userId);
                 return StatusCode(500, new
                 {
                     success = false,
@@ -87,22 +163,29 @@ namespace HealthySystem.API.Controllers
         }
 
         /// <summary>
-        /// Get treatment details
+        /// Get treatment details by ID
+        /// US-01 Sprint 5: Xem chi tiết liệu trình điều trị
         /// </summary>
         [HttpGet("{treatmentId}")]
         [Authorize]
-        public async Task<IActionResult> GetTreatmentDetails(int treatmentId)
+        public async Task<IActionResult> GetTreatmentDetails(long treatmentId)
         {
             try
             {
                 var userId = GetCurrentUserId();
                 if (userId == null)
                 {
-                    return Unauthorized();
+                    return Unauthorized(new { success = false, message = "Unauthorized access" });
                 }
 
-                // For demo purposes, return mock treatment details
-                var treatment = GetMockTreatmentDetails(treatmentId);
+                var treatment = await _context.Treatments
+                    .Include(t => t.Doctor)
+                        .ThenInclude(d => d.StaffProfile)
+                    .Include(t => t.Doctor.DoctorSpecialties)
+                        .ThenInclude(ds => ds.Specialty)
+                    .Include(t => t.TreatmentItems)
+                    .Where(t => t.Id == treatmentId)
+                    .FirstOrDefaultAsync();
                 
                 if (treatment == null)
                 {
@@ -113,15 +196,61 @@ namespace HealthySystem.API.Controllers
                     });
                 }
 
+                // Check if user is authorized to view this treatment
+                if (treatment.PatientId != userId)
+                {
+                    // TODO: Allow doctors to view their patients' treatments
+                    return Forbid();
+                }
+
+                var result = new
+                {
+                    id = treatment.Id,
+                    name = treatment.Name,
+                    description = treatment.Description,
+                    diagnosis = treatment.Diagnosis,
+                    doctor = new
+                    {
+                        id = treatment.Doctor.Id,
+                        name = treatment.Doctor.FirstName + " " + treatment.Doctor.LastName,
+                        title = treatment.Doctor.StaffProfile?.Title,
+                        department = treatment.Doctor.StaffProfile?.Department,
+                        specialization = treatment.Doctor.DoctorSpecialties.FirstOrDefault() != null 
+                            ? treatment.Doctor.DoctorSpecialties.FirstOrDefault()!.Specialty.Name 
+                            : "Chưa có chuyên khoa"
+                    },
+                    startDate = treatment.StartDate.ToString("yyyy-MM-dd"),
+                    endDate = treatment.EndDate.HasValue ? treatment.EndDate.Value.ToString("yyyy-MM-dd") : null,
+                    completedDate = treatment.CompletedAt.HasValue ? treatment.CompletedAt.Value.ToString("yyyy-MM-dd") : null,
+                    status = treatment.Status,
+                    progress = treatment.Progress,
+                    outcome = treatment.Outcome,
+                    notes = treatment.Notes,
+                    items = treatment.TreatmentItems.Select(ti => new
+                    {
+                        id = ti.Id,
+                        type = ti.ItemType,
+                        name = ti.ItemName,
+                        dosage = ti.Dosage,
+                        frequency = ti.Frequency,
+                        duration = ti.Duration,
+                        instructions = ti.Instructions,
+                        scheduleDate = ti.ScheduleDate.HasValue ? ti.ScheduleDate.Value.ToString("yyyy-MM-dd") : null,
+                        completed = ti.Completed,
+                        completedAt = ti.CompletedAt.HasValue ? ti.CompletedAt.Value.ToString("yyyy-MM-dd HH:mm") : null,
+                        notes = ti.Notes
+                    }).ToList()
+                };
+
                 return Ok(new
                 {
                     success = true,
-                    data = treatment
+                    data = result
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting treatment details");
+                _logger.LogError(ex, "Error getting treatment details for treatment {TreatmentId}", treatmentId);
                 return StatusCode(500, new
                 {
                     success = false,
@@ -131,11 +260,11 @@ namespace HealthySystem.API.Controllers
         }
 
         /// <summary>
-        /// Update treatment progress
+        /// Update treatment progress (Doctor only)
         /// </summary>
         [HttpPut("{treatmentId}/progress")]
-        [Authorize]
-        public async Task<IActionResult> UpdateTreatmentProgress(int treatmentId, [FromBody] UpdateProgressRequest request)
+        [Authorize(Roles = "doctor")]
+        public async Task<IActionResult> UpdateTreatmentProgress(long treatmentId, [FromBody] UpdateProgressRequest request)
         {
             try
             {
@@ -143,6 +272,23 @@ namespace HealthySystem.API.Controllers
                 if (userId == null)
                 {
                     return Unauthorized();
+                }
+
+                var treatment = await _context.Treatments.FindAsync(treatmentId);
+                
+                if (treatment == null)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "Không tìm thấy liệu trình điều trị"
+                    });
+                }
+
+                // Only the treating doctor can update progress
+                if (treatment.DoctorId != userId)
+                {
+                    return Forbid();
                 }
 
                 // Validate progress
@@ -155,13 +301,30 @@ namespace HealthySystem.API.Controllers
                     });
                 }
 
-                // For demo purposes, simulate successful update
-                await Task.Delay(100);
+                treatment.Progress = request.Progress;
+                treatment.Notes = request.Notes ?? treatment.Notes;
+                treatment.UpdatedAt = DateTimeOffset.UtcNow;
+
+                // Auto-complete if progress reaches 100%
+                if (request.Progress >= 100 && treatment.Status == "active")
+                {
+                    treatment.Status = "completed";
+                    treatment.CompletedAt = DateTimeOffset.UtcNow;
+                    treatment.Outcome = request.Notes;
+                }
+
+                await _context.SaveChangesAsync();
 
                 return Ok(new
                 {
                     success = true,
-                    message = "Cập nhật tiến độ liệu trình thành công"
+                    message = "Cập nhật tiến độ điều trị thành công",
+                    data = new
+                    {
+                        id = treatment.Id,
+                        progress = treatment.Progress,
+                        status = treatment.Status
+                    }
                 });
             }
             catch (Exception ex)
@@ -170,109 +333,19 @@ namespace HealthySystem.API.Controllers
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "Không thể cập nhật tiến độ liệu trình"
+                    message = "Không thể cập nhật tiến độ điều trị"
                 });
             }
         }
 
-        private int? GetCurrentUserId()
+        private long? GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (int.TryParse(userIdClaim, out int userId))
+            if (string.IsNullOrEmpty(userIdClaim) || !long.TryParse(userIdClaim, out long userId))
             {
-                return userId;
+                return null;
             }
-            return null;
-        }
-
-        private List<object> GetMockCurrentTreatments()
-        {
-            return new List<object>
-            {
-                new
-                {
-                    id = 1,
-                    name = "Điều trị cao huyết áp",
-                    doctor = "BS. Nguyễn Thị Lan",
-                    specialization = "Tim mạch",
-                    startDate = "2024-11-01",
-                    endDate = "2025-02-01",
-                    status = "active",
-                    progress = 65,
-                    description = "Liệu trình điều trị cao huyết áp bằng thuốc và thay đổi lối sống",
-                    medications = new[]
-                    {
-                        new { name = "Amlodipine 5mg", dosage = "1 viên/ngày, sau ăn sáng", duration = "3 tháng" },
-                        new { name = "Losartan 50mg", dosage = "1 viên/ngày, trước ăn tối", duration = "3 tháng" }
-                    },
-                    nextAppointment = "2024-12-30",
-                    notes = "Theo dõi huyết áp hàng ngày, tập thể dục nhẹ"
-                },
-                new
-                {
-                    id = 2,
-                    name = "Vật lý trị liệu cột sống",
-                    doctor = "BS. Trần Văn Dũng",
-                    specialization = "Cơ xương khớp",
-                    startDate = "2024-12-01",
-                    endDate = "2025-01-15",
-                    status = "active",
-                    progress = 30,
-                    description = "Liệu trình vật lý trị liệu cho đau lưng mãn tính",
-                    medications = new[]
-                    {
-                        new { name = "Diclofenac gel", dosage = "Thoa 2-3 lần/ngày", duration = "2 tuần" }
-                    },
-                    nextAppointment = "2024-12-28",
-                    notes = "Tập các bài tập được hướng dẫn 3 lần/tuần"
-                }
-            };
-        }
-
-        private List<object> GetMockTreatmentHistory()
-        {
-            return new List<object>
-            {
-                new
-                {
-                    id = 3,
-                    name = "Điều trị viêm dạ dày",
-                    doctor = "BS. Trần Văn Minh",
-                    specialization = "Tiêu hóa",
-                    startDate = "2024-08-01",
-                    endDate = "2024-10-01",
-                    status = "completed",
-                    progress = 100,
-                    description = "Liệu trình điều trị viêm dạ dày mãn tính",
-                    completedDate = "2024-10-01",
-                    outcome = "Khỏi hoàn toàn, không còn triệu chứng"
-                },
-                new
-                {
-                    id = 4,
-                    name = "Điều trị dị ứng da",
-                    doctor = "BS. Lê Thị Hương",
-                    specialization = "Da liễu",
-                    startDate = "2024-06-15",
-                    endDate = "2024-08-15",
-                    status = "completed",
-                    progress = 100,
-                    description = "Liệu trình điều trị dị ứng da và viêm da cơ địa",
-                    completedDate = "2024-08-10",
-                    outcome = "Cải thiện 90%, da không còn ngứa và đỏ"
-                }
-            };
-        }
-
-        private object? GetMockTreatmentDetails(int treatmentId)
-        {
-            var allTreatments = GetMockCurrentTreatments().Concat(GetMockTreatmentHistory()).ToList();
-            
-            return allTreatments.FirstOrDefault(t => 
-            {
-                var treatment = t as dynamic;
-                return treatment?.id == treatmentId;
-            });
+            return userId;
         }
     }
 
