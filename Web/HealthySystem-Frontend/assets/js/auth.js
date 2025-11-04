@@ -110,15 +110,22 @@ class AuthManager {
         this.token = null;
         this.user = null;
         
-        // Clear localStorage - remove both CONFIG keys and fallback keys
+        // Clear ALL possible auth data keys
         if (typeof CONFIG !== 'undefined' && CONFIG.STORAGE_KEYS) {
-            localStorage.removeItem(CONFIG.STORAGE_KEYS.TOKEN);
-            localStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
+            localStorage.removeItem(CONFIG.STORAGE_KEYS.TOKEN);  // healthysystem_token
+            localStorage.removeItem(CONFIG.STORAGE_KEYS.USER);   // healthysystem_user
         }
         
-        // Also remove fallback keys
+        // Also remove ALL fallback keys
         localStorage.removeItem('authToken');
+        localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userEmail');
+        
+        // Clear session storage
+        sessionStorage.clear();
         
         // Clear API service token
         apiService.setToken(null);

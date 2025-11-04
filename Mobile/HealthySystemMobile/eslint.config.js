@@ -6,5 +6,10 @@ module.exports = defineConfig([
   expoConfig,
   {
     ignores: ['dist/*'],
+    rules: {
+      // Disable import resolution errors for TypeScript files
+      'import/no-unresolved': 'off',
+      'import/extensions': 'off',
+    },
   },
 ]);

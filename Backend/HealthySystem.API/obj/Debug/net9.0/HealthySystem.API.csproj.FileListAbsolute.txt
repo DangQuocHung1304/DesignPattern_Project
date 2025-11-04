@@ -182,3 +182,4 @@ D:\2.CNPMNangCao\LyThuyet\Project\Backend\HealthySystem.API\obj\Debug\net9.0\com
 D:\2.CNPMNangCao\LyThuyet\Project\Backend\HealthySystem.API\obj\Debug\net9.0\compressed\rflpbuceur-23xbt9lent.gz
 D:\2.CNPMNangCao\LyThuyet\Project\Backend\HealthySystem.API\obj\Debug\net9.0\compressed\0wvyt0mwyq-u85c5eta72.gz
 D:\2.CNPMNangCao\LyThuyet\Project\Backend\HealthySystem.API\obj\Debug\net9.0\compressed\9ttao6etu8-sz4eqpxi0p.gz
+D:\2.CNPMNangCao\LyThuyet\Project\Backend\HealthySystem.API\bin\Debug\net9.0\BCrypt.Net-Next.dll

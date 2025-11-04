@@ -488,6 +488,17 @@ class ApiService {
             return { success: false, error: error.message };
         }
     }
+
+    // Get doctor's appointments (for doctor dashboard)
+    async getDoctorAppointments() {
+        try {
+            // This will call GET /api/appointments which filters by doctor if logged in as doctor
+            return await this.get('/appointments', true);
+        } catch (error) {
+            console.error('Error fetching doctor appointments:', error);
+            return { success: false, error: error.message };
+        }
+    }
 }
 
 // Tạo instance global

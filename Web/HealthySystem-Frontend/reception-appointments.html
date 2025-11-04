@@ -184,10 +184,14 @@
         <div class="filter-card">
             <div class="row align-items-end">
                 <div class="col-md-3 mb-3">
-                    <label class="form-label">Tìm kiếm</label>
+                    <label class="form-label">Tìm kiếm tên</label>
                     <input type="text" class="form-control" id="searchInput" placeholder="Tên bệnh nhân, bác sĩ...">
                 </div>
                 <div class="col-md-3 mb-3">
+                    <label class="form-label">Số điện thoại</label>
+                    <input type="text" class="form-control" id="phoneSearch" placeholder="0901234567">
+                </div>
+                <div class="col-md-2 mb-3">
                     <label class="form-label">Trạng thái</label>
                     <select class="form-select" id="statusFilter">
                         <option value="">Tất cả</option>
@@ -196,6 +200,15 @@
                         <option value="pending">Chờ xác nhận</option>
                         <option value="cancelled">Đã hủy</option>
                         <option value="completed">Hoàn thành</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">Khung giờ</label>
+                    <select class="form-select" id="timeSlotFilter">
+                        <option value="">Cả ngày</option>
+                        <option value="morning">Sáng (6h-12h)</option>
+                        <option value="afternoon">Chiều (12h-18h)</option>
+                        <option value="evening">Tối (18h-22h)</option>
                     </select>
                 </div>
                 <div class="col-md-3 mb-3">
@@ -747,22 +760,53 @@
 
         function applyFilters() {
             const search = document.getElementById('searchInput').value.toLowerCase();
+            const phoneSearch = document.getElementById('phoneSearch').value.toLowerCase().trim();
             const status = document.getElementById('statusFilter').value;
+            const timeSlot = document.getElementById('timeSlotFilter').value;
             const fromDate = document.getElementById('fromDate').value;
             const toDate = document.getElementById('toDate').value;
 
             filteredAppointments = allAppointments.filter(apt => {
-                // Search filter
+                // Search filter (name)
                 if (search) {
                     const searchMatch = 
                         apt.patient?.fullName?.toLowerCase().includes(search) ||
+                        apt.walkInPatient?.fullName?.toLowerCase().includes(search) ||
                         apt.doctor?.fullName?.toLowerCase().includes(search) ||
                         apt.notes?.toLowerCase().includes(search);
                     if (!searchMatch) return false;
                 }
 
+                // Phone search filter (US-02 requirement)
+                if (phoneSearch) {
+                    const patientPhone = apt.patient?.phone?.toLowerCase() || '';
+                    const walkInPhone = apt.walkInPatient?.phone?.toLowerCase() || '';
+                    const phoneMatch = patientPhone.includes(phoneSearch) || walkInPhone.includes(phoneSearch);
+                    if (!phoneMatch) return false;
+                }
+
                 // Status filter
                 if (status && apt.status !== status) return false;
+
+                // Time slot filter (US-02 requirement: Lọc theo khung giờ)
+                if (timeSlot) {
+                    const aptDate = new Date(apt.appointmentStart);
+                    const hour = aptDate.getHours();
+                    
+                    let timeMatch = false;
+                    switch(timeSlot) {
+                        case 'morning':
+                            timeMatch = hour >= 6 && hour < 12;
+                            break;
+                        case 'afternoon':
+                            timeMatch = hour >= 12 && hour < 18;
+                            break;
+                        case 'evening':
+                            timeMatch = hour >= 18 && hour < 22;
+                            break;
+                    }
+                    if (!timeMatch) return false;
+                }
 
                 // Date range filter
                 if (fromDate) {
@@ -782,12 +826,15 @@
 
         function resetFilters() {
             document.getElementById('searchInput').value = '';
+            document.getElementById('phoneSearch').value = '';
             document.getElementById('statusFilter').value = '';
+            document.getElementById('timeSlotFilter').value = '';
             document.getElementById('fromDate').value = '';
             document.getElementById('toDate').value = '';
             
             filteredAppointments = allAppointments;
             displayAppointments(filteredAppointments);
+            notification.info('Đã đặt lại bộ lọc');
         }
 
         function openCreateModal() {
