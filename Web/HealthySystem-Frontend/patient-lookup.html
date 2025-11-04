@@ -892,29 +892,31 @@
 
                 if (!response.ok) throw new Error('Failed to load medical history');
 
-                const history = await response.json();
+                const result = await response.json();
+                const history = result.data || result;
                 
                 // Show stats and tabs
                 document.getElementById('medicalStats').style.display = 'flex';
                 document.getElementById('medicalHistoryTabs').style.display = 'flex';
 
                 // Update statistics
-                document.getElementById('totalEncounters').textContent = history.statistics.totalEncounters;
-                document.getElementById('totalLabTests').textContent = history.statistics.totalLabTests;
-                document.getElementById('totalImagingTests').textContent = history.statistics.totalImagingTests;
-                document.getElementById('totalTreatments').textContent = `${history.statistics.activeTreatments}/${history.statistics.completedTreatments}`;
+                const stats = history.Statistics || history.statistics;
+                document.getElementById('totalEncounters').textContent = stats.TotalEncounters || stats.totalEncounters || 0;
+                document.getElementById('totalLabTests').textContent = stats.TotalLabTests || stats.totalLabTests || 0;
+                document.getElementById('totalImagingTests').textContent = stats.TotalImagingTests || stats.totalImagingTests || 0;
+                document.getElementById('totalTreatments').textContent = `${stats.ActiveTreatments || stats.activeTreatments || 0}/${stats.CompletedTreatments || stats.completedTreatments || 0}`;
 
                 // Display encounters (timeline view)
-                displayEncounters(history.encounters);
+                displayEncounters(history.Encounters || history.encounters);
 
-                // Display lab results
-                displayLabResults(history.labResults);
+                // Display lab results (from encounters)
+                displayLabResults(history.Encounters || history.encounters);
 
-                // Display imaging results
-                displayImagingResults(history.imagingResults);
+                // Display imaging results (from encounters)
+                displayImagingResults(history.Encounters || history.encounters);
 
-                // Display treatments
-                displayTreatmentsTab(history.treatments);
+                // Display treatments from database
+                displayTreatmentsTab(history.Treatments || history.treatments);
 
             } catch (error) {
                 console.error('Error loading medical history:', error);
@@ -1034,11 +1036,30 @@
             `).join('');
         }
 
-        // Display lab results
-        function displayLabResults(labResults) {
+        // Display lab results (extracted from encounters)
+        function displayLabResults(encounters) {
             const content = document.getElementById('labResultsContent');
             
-            if (!labResults || labResults.length === 0) {
+            // Extract all lab requests with results from encounters
+            const labData = [];
+            if (encounters && encounters.length > 0) {
+                encounters.forEach(encounter => {
+                    if (encounter.LabRequests && encounter.LabRequests.length > 0) {
+                        encounter.LabRequests.forEach(labReq => {
+                            labData.push({
+                                encounterDate: encounter.EncounterDate || encounter.encounterDate,
+                                testName: labReq.TestName || labReq.testName,
+                                hasResults: labReq.HasResults || labReq.hasResults,
+                                results: labReq.Results || labReq.results || [],
+                                status: (labReq.HasResults || labReq.hasResults) ? 'completed' : 'pending',
+                                requestDate: labReq.RequestedAt || labReq.requestedAt
+                            });
+                        });
+                    }
+                });
+            }
+            
+            if (labData.length === 0) {
                 content.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-vial"></i>
@@ -1049,7 +1070,7 @@
                 return;
             }
 
-            content.innerHTML = labResults.map(lab => `
+            content.innerHTML = labData.map(lab => `
                 <div class="timeline-item">
                     <div class="timeline-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
                         <i class="fas fa-flask"></i>
@@ -1057,49 +1078,62 @@
                     <div class="timeline-content">
                         <div class="timeline-date">
                             <i class="fas fa-calendar me-1"></i>
-                            ${new Date(lab.resultDate || lab.requestDate).toLocaleDateString('vi-VN')}
+                            ${new Date(lab.requestDate || lab.encounterDate).toLocaleDateString('vi-VN')}
                         </div>
                         <h6 class="timeline-title">${lab.testName}</h6>
                         
-                        <span class="result-badge ${lab.status === 'completed' ? 'result-normal' : lab.status === 'pending' ? 'result-pending' : 'result-abnormal'}">
-                            ${lab.status === 'completed' ? 'Hoàn thành' : lab.status === 'pending' ? 'Chờ kết quả' : 'Đang xử lý'}
+                        <span class="result-badge ${lab.status === 'completed' ? 'result-normal' : 'result-pending'}">
+                            ${lab.status === 'completed' ? 'Hoàn thành' : 'Chờ kết quả'}
                         </span>
 
-                        ${lab.results && lab.results.length > 0 ? `
+                        ${lab.hasResults && lab.results && lab.results.length > 0 ? `
                             <div class="mt-3">
                                 ${lab.results.map(result => `
-                                    <div class="test-result-item ${result.isAbnormal ? 'abnormal' : ''}">
+                                    <div class="test-result-item ${result.IsAbnormal || result.isAbnormal ? 'abnormal' : ''}">
                                         <div>
-                                            <strong>${result.parameterName}</strong>
-                                            <div class="text-muted small">${result.normalRange || 'N/A'}</div>
+                                            <strong>${result.ParameterName || result.parameterName}</strong>
+                                            <div class="text-muted small">${result.NormalRange || result.normalRange || 'N/A'}</div>
                                         </div>
                                         <div class="text-end">
-                                            <strong class="${result.isAbnormal ? 'text-warning' : 'text-success'}">
-                                                ${result.value} ${result.unit || ''}
+                                            <strong class="${result.IsAbnormal || result.isAbnormal ? 'text-warning' : 'text-success'}">
+                                                ${result.Value || result.value} ${result.Unit || result.unit || ''}
                                             </strong>
-                                            ${result.isAbnormal ? '<i class="fas fa-exclamation-triangle text-warning ms-1"></i>' : ''}
+                                            ${result.IsAbnormal || result.isAbnormal ? '<i class="fas fa-exclamation-triangle text-warning ms-1"></i>' : ''}
                                         </div>
                                     </div>
                                 `).join('')}
                             </div>
                         ` : '<p class="text-muted mt-2">Chưa có kết quả</p>'}
-
-                        ${lab.interpretation ? `
-                            <div class="mt-2 p-2 bg-light rounded">
-                                <strong>Nhận xét:</strong>
-                                <p class="mb-0 small">${lab.interpretation}</p>
-                            </div>
-                        ` : ''}
                     </div>
                 </div>
             `).join('');
         }
 
-        // Display imaging results
-        function displayImagingResults(imagingResults) {
+        // Display imaging results (extracted from encounters)
+        function displayImagingResults(encounters) {
             const content = document.getElementById('imagingResultsContent');
             
-            if (!imagingResults || imagingResults.length === 0) {
+            // Extract all imaging requests with results from encounters
+            const imagingData = [];
+            if (encounters && encounters.length > 0) {
+                encounters.forEach(encounter => {
+                    if (encounter.ImagingRequests && encounter.ImagingRequests.length > 0) {
+                        encounter.ImagingRequests.forEach(imgReq => {
+                            imagingData.push({
+                                encounterDate: encounter.EncounterDate || encounter.encounterDate,
+                                imagingType: imgReq.ImagingType || imgReq.imagingType,
+                                hasResults: imgReq.HasResults || imgReq.hasResults,
+                                results: imgReq.Results || imgReq.results || [],
+                                status: (imgReq.HasResults || imgReq.hasResults) ? 'completed' : 'pending',
+                                requestDate: imgReq.RequestedAt || imgReq.requestedAt,
+                                bodyPart: imgReq.BodyPart || imgReq.bodyPart
+                            });
+                        });
+                    }
+                });
+            }
+            
+            if (imagingData.length === 0) {
                 content.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-x-ray"></i>
@@ -1110,7 +1144,9 @@
                 return;
             }
 
-            content.innerHTML = imagingResults.map(img => `
+            content.innerHTML = imagingData.map(img => {
+                const result = img.results && img.results.length > 0 ? img.results[0] : null;
+                return `
                 <div class="timeline-item">
                     <div class="timeline-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
                         <i class="fas fa-x-ray"></i>
@@ -1118,12 +1154,12 @@
                     <div class="timeline-content">
                         <div class="timeline-date">
                             <i class="fas fa-calendar me-1"></i>
-                            ${new Date(img.resultDate || img.requestDate).toLocaleDateString('vi-VN')}
+                            ${new Date(img.requestDate || img.encounterDate).toLocaleDateString('vi-VN')}
                         </div>
                         <h6 class="timeline-title">${img.imagingType}</h6>
                         
-                        <span class="result-badge ${img.status === 'completed' ? 'result-normal' : img.status === 'pending' ? 'result-pending' : 'result-abnormal'}">
-                            ${img.status === 'completed' ? 'Hoàn thành' : img.status === 'pending' ? 'Chờ kết quả' : 'Đang xử lý'}
+                        <span class="result-badge ${img.status === 'completed' ? 'result-normal' : 'result-pending'}">
+                            ${img.status === 'completed' ? 'Hoàn thành' : 'Chờ kết quả'}
                         </span>
 
                         ${img.bodyPart ? `
@@ -1132,25 +1168,25 @@
                             </div>
                         ` : ''}
 
-                        ${img.findings ? `
+                        ${result && (result.Findings || result.findings) ? `
                             <div class="mt-2">
                                 <strong>Kết quả:</strong>
-                                <p class="mb-1 text-muted">${img.findings}</p>
+                                <p class="mb-1 text-muted">${result.Findings || result.findings}</p>
                             </div>
-                        ` : '<p class="text-muted mt-2">Chưa có kết quả</p>'}
+                        ` : img.hasResults ? '<p class="text-muted mt-2">Đã có kết quả</p>' : '<p class="text-muted mt-2">Chưa có kết quả</p>'}
 
-                        ${img.impression ? `
+                        ${result && (result.Impression || result.impression) ? `
                             <div class="mt-2 p-2 bg-light rounded">
                                 <strong>Kết luận:</strong>
-                                <p class="mb-0 small">${img.impression}</p>
+                                <p class="mb-0 small">${result.Impression || result.impression}</p>
                             </div>
                         ` : ''}
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
-        // Display treatments in tab
+        // Display treatments in tab (from database treatments table)
         function displayTreatmentsTab(treatments) {
             const content = document.getElementById('treatmentsContent');
             
@@ -1165,47 +1201,75 @@
                 return;
             }
 
-            content.innerHTML = treatments.map(treatment => `
+            content.innerHTML = treatments.map(treatment => {
+                // Handle both camelCase and PascalCase from API
+                const id = treatment.Id || treatment.id;
+                const name = treatment.Name || treatment.name;
+                const doctorName = treatment.DoctorName || treatment.doctorName;
+                const diagnosis = treatment.Diagnosis || treatment.diagnosis;
+                const description = treatment.Description || treatment.description;
+                const startDate = treatment.StartDate || treatment.startDate;
+                const endDate = treatment.EndDate || treatment.endDate;
+                const status = treatment.Status || treatment.status;
+                const progress = treatment.Progress || treatment.progress || 0;
+                const outcome = treatment.Outcome || treatment.outcome;
+                const itemsCount = treatment.ItemsCount || treatment.itemsCount || 0;
+                
+                return `
                 <div class="timeline-item">
-                    <div class="timeline-icon" style="background: ${treatment.status === 'active' ? 'linear-gradient(135deg, #43e97b, #38f9d7)' : 'linear-gradient(135deg, #8c8c8c, #b8b8b8)'};">
+                    <div class="timeline-icon" style="background: ${status === 'active' ? 'linear-gradient(135deg, #43e97b, #38f9d7)' : 'linear-gradient(135deg, #8c8c8c, #b8b8b8)'};">
                         <i class="fas fa-pills"></i>
                     </div>
                     <div class="timeline-content">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
-                                <h6 class="timeline-title mb-1">${treatment.name}</h6>
-                                <small class="text-muted">${treatment.diagnosis || 'Chưa có chẩn đoán'}</small>
+                                <h6 class="timeline-title mb-1">${name}</h6>
+                                <small class="text-muted">
+                                    ${doctorName ? `<i class="fas fa-user-md me-1"></i>BS. ${doctorName}` : ''}
+                                </small>
+                                ${diagnosis ? `<div class="mt-1"><small class="text-muted"><strong>Chẩn đoán:</strong> ${diagnosis}</small></div>` : ''}
                             </div>
-                            <span class="badge-status ${treatment.status === 'active' ? 'badge-active' : 'badge-completed'}">
-                                ${treatment.status === 'active' ? 'Đang điều trị' : 'Hoàn thành'}
+                            <span class="badge-status ${status === 'active' ? 'badge-active' : 'badge-completed'}">
+                                ${status === 'active' ? 'Đang điều trị' : status === 'completed' ? 'Hoàn thành' : 'Đã hủy'}
                             </span>
                         </div>
 
-                        ${treatment.description ? `
-                            <p class="mb-2 text-muted small">${treatment.description}</p>
+                        ${description ? `
+                            <div class="mb-2 p-2 bg-light rounded">
+                                <small>${description}</small>
+                            </div>
                         ` : ''}
 
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <small class="text-muted">
                                 <i class="fas fa-calendar me-1"></i>
-                                ${new Date(treatment.startDate).toLocaleDateString('vi-VN')} 
-                                ${treatment.endDate ? '- ' + new Date(treatment.endDate).toLocaleDateString('vi-VN') : ''}
+                                ${new Date(startDate).toLocaleDateString('vi-VN')} 
+                                ${endDate ? '- ' + new Date(endDate).toLocaleDateString('vi-VN') : '(Đang điều trị)'}
                             </small>
-                            <small><strong>${treatment.progress}%</strong></small>
+                            <small><strong>${progress}%</strong></small>
                         </div>
 
                         <div class="progress-bar-custom">
-                            <div class="progress-bar-fill" style="width: ${treatment.progress}%; background: ${treatment.status === 'active' ? 'linear-gradient(90deg, #43e97b, #38f9d7)' : 'linear-gradient(90deg, #8c8c8c, #b8b8b8)'};"></div>
+                            <div class="progress-bar-fill" style="width: ${progress}%; background: ${status === 'active' ? 'linear-gradient(90deg, #43e97b, #38f9d7)' : 'linear-gradient(90deg, #8c8c8c, #b8b8b8)'};"></div>
                         </div>
 
-                        ${treatment.outcome ? `
+                        ${itemsCount > 0 ? `
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-list me-1"></i>
+                                    ${itemsCount} thủ thuật/dịch vụ
+                                </small>
+                            </div>
+                        ` : ''}
+
+                        ${outcome ? `
                             <p class="mt-2 mb-0 text-success small">
-                                <i class="fas fa-check-circle me-1"></i>${treatment.outcome}
+                                <i class="fas fa-check-circle me-1"></i><strong>Kết quả:</strong> ${outcome}
                             </p>
                         ` : ''}
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         // Display appointments history (legacy - không còn dùng)
