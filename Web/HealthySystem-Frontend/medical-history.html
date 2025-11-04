@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử bệnh - Healthy System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #16a085;
+            --secondary-color: #27ae60;
+            --info-color: #3498db;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .search-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .patient-info-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stat-card.primary { border-left-color: var(--primary-color); }
+        .stat-card.info { border-left-color: var(--info-color); }
+        .stat-card.warning { border-left-color: var(--warning-color); }
+        .stat-card.danger { border-left-color: var(--danger-color); }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: #8c8c8c;
+            font-size: 0.9rem;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #e8e8e8;
+            margin-bottom: 2rem;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: #666;
+            font-weight: 500;
+            padding: 1rem 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+            border-color: transparent;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            background: transparent;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 3rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e8e8e8;
+        }
+
+        .timeline-item {
+            position: relative;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+
+        .timeline-item:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            transform: translateX(5px);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.5rem;
+            top: 1.5rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #e8e8e8;
+        }
+
+        .timeline-date {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .encounter-card {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .badge-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-completed { background: #d4edda; color: #155724; }
+        .badge-active { background: #fff3cd; color: #856404; }
+        .badge-pending { background: #cce5ff; color: #004085; }
+        .badge-cancelled { background: #f8d7da; color: #721c24; }
+
+        .test-result-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #e8e8e8;
+        }
+
+        .test-result-item.abnormal {
+            border-left-color: var(--danger-color);
+            background: #fff5f5;
+        }
+
+        .test-code {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .test-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .test-value.abnormal {
+            color: var(--danger-color);
+        }
+
+        .test-range {
+            color: #8c8c8c;
+            font-size: 0.85rem;
+        }
+
+        .treatment-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .progress-bar-custom {
+            height: 8px;
+            border-radius: 4px;
+            background: #e8e8e8;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #8c8c8c;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .btn-detail {
+            background: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-detail:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3rem;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0"><i class="fas fa-file-medical me-2"></i>Lịch sử bệnh</h2>
+                    <p class="mb-0 mt-2 opacity-75">Xem lịch sử khám bệnh, xét nghiệm và điều trị</p>
+                </div>
+                <button class="btn btn-light" onclick="window.location.href='doctor-dashboard.html'">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Search Patient -->
+        <div class="search-card">
+            <h5 class="mb-3"><i class="fas fa-search me-2"></i>Tìm bệnh nhân</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Nhập SĐT hoặc tên bệnh nhân...">
+                        <button class="btn btn-primary" onclick="searchPatient()">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patient Info Banner -->
+        <div id="patientBanner" style="display: none;">
+            <div class="patient-info-banner">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4 class="mb-2" id="patientName"></h4>
+                        <div class="row">
+                            <div class="col-auto">
+                                <i class="fas fa-calendar me-1"></i>
+                                <span id="patientDOB"></span>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-venus-mars me-1"></i>
+                                <span id="patientGender"></span>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-phone me-1"></i>
+                                <span id="patientPhone"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-light" onclick="printHistory()">
+                            <i class="fas fa-print me-2"></i>In lịch sử
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-grid" id="statsGrid"></div>
+
+            <!-- Tabs -->
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#encounters-tab">
+                        <i class="fas fa-stethoscope me-2"></i>Phiên khám
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#lab-tab">
+                        <i class="fas fa-flask me-2"></i>Xét nghiệm
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#imaging-tab">
+                        <i class="fas fa-x-ray me-2"></i>Chẩn đoán hình ảnh
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#treatments-tab">
+                        <i class="fas fa-heartbeat me-2"></i>Điều trị
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Encounters Tab -->
+                <div class="tab-pane fade show active" id="encounters-tab">
+                    <div id="encountersContent"></div>
+                </div>
+
+                <!-- Lab Results Tab -->
+                <div class="tab-pane fade" id="lab-tab">
+                    <div id="labContent"></div>
+                </div>
+
+                <!-- Imaging Results Tab -->
+                <div class="tab-pane fade" id="imaging-tab">
+                    <div id="imagingContent"></div>
+                </div>
+
+                <!-- Treatments Tab -->
+                <div class="tab-pane fade" id="treatments-tab">
+                    <div id="treatmentsContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="alertContainer"></div>
+    </div>
+
+    <!-- Encounter Detail Modal -->
+    <div class="modal fade" id="encounterModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Chi tiết phiên khám</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="encounterModalBody">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let token = localStorage.getItem('healthysystem_token') || localStorage.getItem('token');
+        let currentPatient = null;
+        let medicalHistory = null;
+
+        // Check authentication
+        if (!token) {
+            alert('⚠️ Vui lòng đăng nhập để sử dụng chức năng này!');
+            window.location.href = 'login.html';
+        }
+
+        // Verify user role
+        const userData = localStorage.getItem('healthysystem_user') || localStorage.getItem('user');
+        if (userData) {
+            try {
+                const user = JSON.parse(userData);
+                if (user.role !== 'doctor' && user.role !== 'admin') {
+                    alert('❌ Chỉ bác sĩ mới có quyền sử dụng chức năng này!');
+                    window.location.href = 'index.html';
+                }
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+            }
+        }
+
+        // Search patient
+        async function searchPatient() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            if (!searchTerm) {
+                showAlert('Vui lòng nhập SĐT hoặc tên bệnh nhân', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/patients/search?searchTerm=${encodeURIComponent(searchTerm)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.patients && result.patients.length > 0) {
+                    currentPatient = result.patients[0];
+                    await loadMedicalHistory(currentPatient.id);
+                } else {
+                    showAlert('Không tìm thấy bệnh nhân', 'warning');
+                }
+            } catch (error) {
+                console.error('Error searching patient:', error);
+                showAlert('Lỗi khi tìm kiếm bệnh nhân: ' + error.message, 'danger');
+            }
+        }
+
+        // Load medical history
+        async function loadMedicalHistory(patientId) {
+            try {
+                showLoading('Đang tải lịch sử bệnh...');
+
+                const response = await fetch(`${API_URL}/medicalhistory/${patientId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    medicalHistory = result.data;
+                    displayPatientInfo();
+                    displayStatistics();
+                    displayEncounters();
+                    displayLabResults();
+                    displayImagingResults();
+                    displayTreatments();
+                    
+                    document.getElementById('patientBanner').style.display = 'block';
+                    hideLoading();
+                } else {
+                    showAlert(result.message || 'Lỗi khi tải lịch sử bệnh', 'danger');
+                    hideLoading();
+                }
+            } catch (error) {
+                console.error('Error loading medical history:', error);
+                showAlert('Lỗi khi tải lịch sử bệnh: ' + error.message, 'danger');
+                hideLoading();
+            }
+        }
+
+        // Display patient info
+        function displayPatientInfo() {
+            document.getElementById('patientName').textContent = currentPatient.fullName;
+            document.getElementById('patientDOB').textContent = formatDate(currentPatient.dateOfBirth);
+            document.getElementById('patientGender').textContent = currentPatient.gender === 'male' ? 'Nam' : 'Nữ';
+            document.getElementById('patientPhone').textContent = currentPatient.phoneNumber || 'N/A';
+        }
+
+        // Display statistics
+        function displayStatistics() {
+            const stats = medicalHistory.Statistics;
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card primary">
+                    <div class="stat-number">${stats.TotalEncounters}</div>
+                    <div class="stat-label">Lượt khám</div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-number">${stats.TotalLabTests}</div>
+                    <div class="stat-label">Xét nghiệm</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-number">${stats.TotalImagingTests}</div>
+                    <div class="stat-label">Chẩn đoán hình ảnh</div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-number">${stats.ActiveTreatments}/${stats.TotalTreatments}</div>
+                    <div class="stat-label">Đang điều trị</div>
+                </div>
+            `;
+        }
+
+        // Display encounters
+        function displayEncounters() {
+            const encounters = medicalHistory.Encounters;
+            const container = document.getElementById('encountersContent');
+
+            if (encounters.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-times"></i><p>Chưa có phiên khám nào</p></div>';
+                return;
+            }
+
+            container.innerHTML = '<div class="timeline">' + encounters.map(enc => `
+                <div class="timeline-item">
+                    <div class="timeline-date">
+                        <i class="fas fa-calendar-alt me-2"></i>${formatDateTime(enc.VisitDate)}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="mb-1">${enc.ChiefComplaint || 'Khám tổng quát'}</h6>
+                            <small class="text-muted"><i class="fas fa-user-md me-1"></i>${enc.DoctorName}</small>
+                        </div>
+                        <span class="badge-status badge-${enc.Status === 'completed' ? 'completed' : 'active'}">${enc.Status === 'completed' ? 'Hoàn thành' : 'Đang khám'}</span>
+                    </div>
+                    
+                    ${enc.Diagnosis ? `
+                    <div class="encounter-card">
+                        <strong><i class="fas fa-diagnoses me-2"></i>Chẩn đoán:</strong>
+                        <p class="mb-0 mt-1">${enc.Diagnosis}</p>
+                    </div>
+                    ` : ''}
+
+                    ${enc.Notes ? `
+                    <div class="encounter-card mt-2">
+                        <strong><i class="fas fa-notes-medical me-2"></i>Ghi chú:</strong>
+                        <p class="mb-0 mt-1">${enc.Notes}</p>
+                    </div>
+                    ` : ''}
+
+                    <div class="mt-3">
+                        <span class="badge bg-info me-2">
+                            <i class="fas fa-flask me-1"></i>${enc.LabRequests.reduce((sum, lr) => sum + lr.Results.length, 0)} xét nghiệm
+                        </span>
+                        <span class="badge bg-warning me-2">
+                            <i class="fas fa-x-ray me-1"></i>${enc.ImagingRequests.reduce((sum, ir) => sum + ir.Results.length, 0)} chẩn đoán hình ảnh
+                        </span>
+                        <span class="badge bg-success">
+                            <i class="fas fa-prescription me-1"></i>${enc.PrescriptionsCount} đơn thuốc
+                        </span>
+                    </div>
+
+                    <button class="btn btn-detail btn-sm mt-3" onclick="viewEncounterDetail(${enc.Id})">
+                        <i class="fas fa-eye me-2"></i>Xem chi tiết
+                    </button>
+                </div>
+            `).join('') + '</div>';
+        }
+
+        // Display lab results
+        function displayLabResults() {
+            const encounters = medicalHistory.Encounters;
+            const allLabResults = [];
+
+            encounters.forEach(enc => {
+                enc.LabRequests.forEach(lr => {
+                    lr.Results.forEach(result => {
+                        allLabResults.push({
+                            ...result,
+                            encounterDate: enc.VisitDate,
+                            requestNote: lr.Note
+                        });
+                    });
+                });
+            });
+
+            const container = document.getElementById('labContent');
+
+            if (allLabResults.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-flask"></i><p>Chưa có kết quả xét nghiệm</p></div>';
+                return;
+            }
+
+            // Group by test code
+            const groupedResults = {};
+            allLabResults.forEach(result => {
+                if (!groupedResults[result.TestCode]) {
+                    groupedResults[result.TestCode] = [];
+                }
+                groupedResults[result.TestCode].push(result);
+            });
+
+            container.innerHTML = Object.entries(groupedResults).map(([testCode, results]) => `
+                <div class="mb-4">
+                    <h5 class="section-title">${testCode}</h5>
+                    ${results.map(result => `
+                        <div class="test-result-item ${result.IsAbnormal ? 'abnormal' : ''}">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <div class="test-code">${result.TestCode}</div>
+                                    <small class="text-muted">${formatDateTime(result.PerformedAt || result.encounterDate)}</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="test-value ${result.IsAbnormal ? 'abnormal' : ''}">${result.ResultValue || result.ResultText || 'Đang chờ kết quả'}</div>
+                                    ${result.Units ? `<small class="text-muted">${result.Units}</small>` : ''}
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="test-range">
+                                        <i class="fas fa-ruler me-1"></i>BT: ${result.NormalRange || 'N/A'}
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-end">
+                                    ${result.IsAbnormal ? '<span class="badge bg-danger">Bất thường</span>' : '<span class="badge bg-success">Bình thường</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+        }
+
+        // Display imaging results
+        function displayImagingResults() {
+            const encounters = medicalHistory.Encounters;
+            const allImagingResults = [];
+
+            encounters.forEach(enc => {
+                enc.ImagingRequests.forEach(ir => {
+                    ir.Results.forEach(result => {
+                        allImagingResults.push({
+                            ...result,
+                            encounterDate: enc.VisitDate,
+                            requestNote: ir.Note
+                        });
+                    });
+                });
+            });
+
+            const container = document.getElementById('imagingContent');
+
+            if (allImagingResults.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-x-ray"></i><p>Chưa có kết quả chẩn đoán hình ảnh</p></div>';
+                return;
+            }
+
+            container.innerHTML = allImagingResults.map(result => `
+                <div class="timeline-item">
+                    <div class="timeline-date">
+                        <i class="fas fa-calendar-alt me-2"></i>${formatDateTime(result.PerformedAt || result.encounterDate)}
+                    </div>
+                    ${result.requestNote ? `<p class="mb-2"><strong>Yêu cầu:</strong> ${result.requestNote}</p>` : ''}
+                    <div class="encounter-card">
+                        <strong><i class="fas fa-file-medical me-2"></i>Báo cáo:</strong>
+                        <p class="mb-0 mt-2">${result.ReportText || 'Chưa có báo cáo'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Display treatments
+        function displayTreatments() {
+            const treatments = medicalHistory.Treatments;
+            const container = document.getElementById('treatmentsContent');
+
+            if (treatments.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-heartbeat"></i><p>Chưa có liệu trình điều trị</p></div>';
+                return;
+            }
+
+            // Group by status
+            const active = treatments.filter(t => t.Status === 'active');
+            const completed = treatments.filter(t => t.Status === 'completed');
+
+            container.innerHTML = `
+                ${active.length > 0 ? `
+                <h5 class="section-title"><i class="fas fa-circle text-warning me-2"></i>Đang điều trị (${active.length})</h5>
+                ${active.map(t => renderTreatmentCard(t)).join('')}
+                ` : ''}
+
+                ${completed.length > 0 ? `
+                <h5 class="section-title mt-4"><i class="fas fa-check-circle text-success me-2"></i>Đã hoàn thành (${completed.length})</h5>
+                ${completed.map(t => renderTreatmentCard(t)).join('')}
+                ` : ''}
+            `;
+        }
+
+        function renderTreatmentCard(treatment) {
+            return `
+                <div class="treatment-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="mb-1">${treatment.Name}</h6>
+                            <small class="text-muted"><i class="fas fa-user-md me-1"></i>${treatment.DoctorName}</small>
+                        </div>
+                        <span class="badge-status badge-${treatment.Status === 'active' ? 'active' : 'completed'}">
+                            ${treatment.Status === 'active' ? 'Đang điều trị' : 'Hoàn thành'}
+                        </span>
+                    </div>
+
+                    ${treatment.Diagnosis ? `
+                    <p class="mb-2"><strong>Chẩn đoán:</strong> ${treatment.Diagnosis}</p>
+                    ` : ''}
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted">Tiến độ: ${treatment.Progress}%</small>
+                        <small class="text-muted">${formatDate(treatment.StartDate)} - ${treatment.EndDate ? formatDate(treatment.EndDate) : 'Đang điều trị'}</small>
+                    </div>
+
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: ${treatment.Progress}%"></div>
+                    </div>
+
+                    ${treatment.Outcome ? `
+                    <div class="mt-3 p-2 bg-light rounded">
+                        <strong><i class="fas fa-check-circle text-success me-2"></i>Kết quả:</strong>
+                        <p class="mb-0 mt-1">${treatment.Outcome}</p>
+                    </div>
+                    ` : ''}
+
+                    <div class="mt-3">
+                        <span class="badge bg-info">${treatment.ItemsCount} mục điều trị</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // View encounter detail
+        async function viewEncounterDetail(encounterId) {
+            try {
+                const response = await fetch(`${API_URL}/medicalhistory/encounter/${encounterId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    displayEncounterModal(result.data);
+                    new bootstrap.Modal(document.getElementById('encounterModal')).show();
+                } else {
+                    showAlert('Lỗi khi tải chi tiết phiên khám', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading encounter detail:', error);
+                showAlert('Lỗi khi tải chi tiết phiên khám', 'danger');
+            }
+        }
+
+        function displayEncounterModal(encounter) {
+            const modalBody = document.getElementById('encounterModalBody');
+            modalBody.innerHTML = `
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Thông tin chung</h6>
+                        <p><strong>Ngày khám:</strong> ${formatDateTime(encounter.VisitDate)}</p>
+                        <p><strong>Bác sĩ:</strong> ${encounter.Doctor?.FullName || 'N/A'}</p>
+                        <p><strong>Trạng thái:</strong> ${encounter.Status}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Triệu chứng & Chẩn đoán</h6>
+                        <p><strong>Triệu chứng:</strong> ${encounter.ChiefComplaint || 'N/A'}</p>
+                        <p><strong>Chẩn đoán:</strong> ${encounter.Diagnosis || 'Chưa có'}</p>
+                    </div>
+                </div>
+
+                ${encounter.LabRequests.length > 0 ? `
+                <h6>Kết quả xét nghiệm (${encounter.LabRequests.reduce((sum, lr) => sum + lr.Results.length, 0)})</h6>
+                ${encounter.LabRequests.map(lr => `
+                    <div class="mb-3">
+                        ${lr.Results.map(r => `
+                            <div class="test-result-item">
+                                <strong>${r.TestCode}</strong>: ${r.ResultValue || r.ResultText || 'Chưa có kết quả'}
+                                ${r.Units ? `${r.Units}` : ''} (BT: ${r.NormalRange || 'N/A'})
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('')}
+                ` : ''}
+
+                ${encounter.ImagingRequests.length > 0 ? `
+                <h6 class="mt-4">Chẩn đoán hình ảnh (${encounter.ImagingRequests.reduce((sum, ir) => sum + ir.Results.length, 0)})</h6>
+                ${encounter.ImagingRequests.map(ir => `
+                    <div class="mb-3">
+                        ${ir.Note ? `<p><strong>Yêu cầu:</strong> ${ir.Note}</p>` : ''}
+                        ${ir.Results.map(r => `
+                            <div class="encounter-card">
+                                ${r.ReportText || 'Chưa có báo cáo'}
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('')}
+                ` : ''}
+
+                ${encounter.Prescriptions.length > 0 ? `
+                <h6 class="mt-4">Đơn thuốc (${encounter.Prescriptions.length})</h6>
+                ${encounter.Prescriptions.map(p => `
+                    <div class="mb-3">
+                        <small class="text-muted">${formatDateTime(p.PrescribedAt)}</small>
+                        ${p.Items.map(item => `
+                            <div class="mt-2 p-2 bg-light rounded">
+                                <strong>${item.MedicineName}</strong><br>
+                                ${item.Dosage ? `Liều: ${item.Dosage}<br>` : ''}
+                                ${item.Frequency ? `Tần suất: ${item.Frequency}<br>` : ''}
+                                ${item.DurationDays ? `Thời gian: ${item.DurationDays} ngày<br>` : ''}
+                                ${item.Instructions ? `Hướng dẫn: ${item.Instructions}` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('')}
+                ` : ''}
+
+                ${encounter.Notes ? `
+                <h6 class="mt-4">Ghi chú</h6>
+                <div class="encounter-card">${encounter.Notes}</div>
+                ` : ''}
+            `;
+        }
+
+        // Print history
+        function printHistory() {
+            window.print();
+        }
+
+        // Helper functions
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            container.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        function showLoading(message) {
+            const container = document.getElementById('encountersContent');
+            container.innerHTML = `<div class="loading-spinner"><div class="spinner-border"></div><p class="mt-3">${message}</p></div>`;
+        }
+
+        function hideLoading() {
+            // Handled by displayEncounters()
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleString('vi-VN');
+        }
+    </script>
+</body>
+</html>
