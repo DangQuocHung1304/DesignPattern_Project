@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản trị viên - Healthy System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #9c27b0;
+            --secondary-color: #673ab7;
+            --success-color: #52c41a;
+            --warning-color: #fa8c16;
+        }
+
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+            border-left: 4px solid;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+        }
+
+        .stat-card.users { border-left-color: #9c27b0; }
+        .stat-card.appointments { border-left-color: #ff9800; }
+        .stat-card.reminders { border-left-color: #f44336; }
+        .stat-card.patients { border-left-color: #2196f3; }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            color: #8c8c8c;
+            font-size: 0.9rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-tabs .nav-link {
+            color: #595959;
+            border: none;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            background: transparent;
+        }
+
+        .data-table {
+            width: 100%;
+        }
+
+        .data-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-bottom: 2px solid #e8e8e8;
+            font-size: 0.9rem;
+        }
+
+        .data-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+        }
+
+        .data-table tr:hover {
+            background: #fafafa;
+        }
+
+        .badge-urgent {
+            background: #ff4d4f;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+
+        .badge-soon {
+            background: #fa8c16;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+
+        .badge-normal {
+            background: #52c41a;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(156,39,176,0.3);
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .search-box {
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+        .patient-info-card {
+            background: #f9f9f9;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .history-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .print-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #8c8c8c;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .reminder-message {
+            background: #f0f0f0;
+            padding: 1rem;
+            border-radius: 6px;
+            white-space: pre-line;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .page-header {
+                background: none !important;
+                color: black !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="page-header no-print">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-user-shield me-2"></i>
+                        Quản trị viên
+                    </h1>
+                    <p class="mb-0 mt-2 opacity-75" id="welcomeText">Quản lý hệ thống và nhắc lịch hẹn</p>
+                </div>
+                <button class="btn btn-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt me-2"></i>
+                    Đăng xuất
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Statistics -->
+        <div class="row no-print">
+            <div class="col-md-3 mb-3">
+                <div class="stat-card users">
+                    <div class="stat-icon" style="color: #9c27b0;">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <div class="stat-value" id="totalUsers">0</div>
+                    <div class="stat-label">Tổng người dùng</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card appointments">
+                    <div class="stat-icon" style="color: #ff9800;">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-value" id="todayAppointments">0</div>
+                    <div class="stat-label">Lịch hẹn hôm nay</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card reminders">
+                    <div class="stat-icon" style="color: #f44336;">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="stat-value" id="pendingReminders">0</div>
+                    <div class="stat-label">Nhắc nhở chờ gửi</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card patients">
+                    <div class="stat-icon" style="color: #2196f3;">
+                        <i class="fas fa-user-injured"></i>
+                    </div>
+                    <div class="stat-value" id="totalPatients">0</div>
+                    <div class="stat-label">Tổng bệnh nhân</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="content-card no-print">
+            <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="reminders-tab" data-bs-toggle="tab" data-bs-target="#reminders" type="button">
+                        <i class="fas fa-bell me-2"></i>Nhắc lịch hẹn
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="print-tab" data-bs-toggle="tab" data-bs-target="#print" type="button">
+                        <i class="fas fa-print me-2"></i>In lịch sử BN
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button">
+                        <i class="fas fa-users me-2"></i>Người dùng
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content mt-3" id="adminTabsContent">
+                <!-- Reminders Tab -->
+                <div class="tab-pane fade show active" id="reminders" role="tabpanel">
+                    <div class="search-box">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small">Thời gian tìm kiếm</label>
+                                <select class="form-select" id="reminderHours">
+                                    <option value="1">1 giờ tới</option>
+                                    <option value="4">4 giờ tới</option>
+                                    <option value="24" selected>24 giờ tới</option>
+                                    <option value="48">48 giờ tới</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">&nbsp;</label>
+                                <button class="btn btn-primary-custom w-100" onclick="loadReminders()">
+                                    <i class="fas fa-search me-1"></i> Tìm lịch hẹn
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">&nbsp;</label>
+                                <button class="btn btn-success w-100" onclick="sendSelectedReminders()" id="sendRemindersBtn" disabled>
+                                    <i class="fas fa-paper-plane me-1"></i> Gửi nhắc nhở
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="remindersSummary" class="mb-3"></div>
+                    <div id="remindersContainer">
+                        <div class="text-center py-4">
+                            <p class="text-muted">Chọn khoảng thời gian và nhấn Tìm lịch hẹn</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Print Medical History Tab -->
+                <div class="tab-pane fade" id="print" role="tabpanel">
+                    <div class="search-box">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label small">Tìm bệnh nhân</label>
+                                <input type="text" class="form-control" id="patientSearch" placeholder="Nhập tên, số điện thoại hoặc email">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">&nbsp;</label>
+                                <button class="btn btn-primary-custom w-100" onclick="searchPatients()">
+                                    <i class="fas fa-search me-1"></i> Tìm kiếm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="patientSearchResults"></div>
+                </div>
+
+                <!-- Users Tab -->
+                <div class="tab-pane fade" id="users" role="tabpanel">
+                    <div class="search-box">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small">Vai trò</label>
+                                <select class="form-select" id="userRole">
+                                    <option value="">Tất cả</option>
+                                    <option value="doctor">Bác sĩ</option>
+                                    <option value="lab">Bác sĩ xét nghiệm</option>
+                                    <option value="reception">Lễ tân</option>
+                                    <option value="accountant">Kế toán</option>
+                                    <option value="admin">Quản trị</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">Trạng thái</label>
+                                <select class="form-select" id="userStatus">
+                                    <option value="">Tất cả</option>
+                                    <option value="true">Hoạt động</option>
+                                    <option value="false">Vô hiệu hóa</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">&nbsp;</label>
+                                <button class="btn btn-primary-custom w-100" onclick="loadUsers()">
+                                    <i class="fas fa-search me-1"></i> Tìm kiếm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="usersContainer">
+                        <div class="text-center py-4">
+                            <p class="text-muted">Nhấn Tìm kiếm để xem danh sách người dùng</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical History Print View -->
+        <div id="printView" style="display: none;">
+            <div class="text-center mb-4">
+                <h2>LỊCH SỬ KHÁM BỆNH</h2>
+                <h4>PHÒNG KHÁM HEALTHY SYSTEM</h4>
+                <p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM | Điện thoại: (028) 1234 5678</p>
+            </div>
+            <div id="printContent"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let selectedReminders = new Set();
+
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token') || localStorage.getItem('healthysystem_token');
+            
+            if (!token) {
+                window.location.href = 'login.html';
+                return null;
+            }
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const roleClaim = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+                const role = roleClaim || payload.role;
+                
+                if (role !== 'admin') {
+                    alert('Chỉ Quản trị viên mới có quyền truy cập trang này!');
+                    window.location.href = 'index.html';
+                    return null;
+                }
+                
+                const nameClaim = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || payload.name;
+                if (nameClaim) {
+                    document.getElementById('welcomeText').textContent = `Xin chào, ${nameClaim}`;
+                }
+                
+                return token;
+            } catch (error) {
+                console.error('Invalid token:', error);
+                localStorage.removeItem('token');
+                localStorage.removeItem('healthysystem_token');
+                window.location.href = 'login.html';
+                return null;
+            }
+        }
+
+        // Load dashboard
+        async function loadDashboard() {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load dashboard');
+
+                const result = await response.json();
+                const data = result.data;
+
+                document.getElementById('totalUsers').textContent = data.Users?.Total || data.users?.total || 0;
+                document.getElementById('todayAppointments').textContent = data.Appointments?.Today || data.appointments?.today || 0;
+                document.getElementById('pendingReminders').textContent = data.Appointments?.PendingReminders || data.appointments?.pendingReminders || 0;
+                document.getElementById('totalPatients').textContent = data.Users?.Patients || data.users?.patients || 0;
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Load reminders
+        async function loadReminders() {
+            const token = checkAuth();
+            if (!token) return;
+
+            const hours = document.getElementById('reminderHours').value;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/appointment-reminders?hoursAhead=${hours}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load reminders');
+
+                const result = await response.json();
+                const data = result.data;
+
+                displayRemindersSummary(data.Summary || data.summary);
+                displayReminders(data.Reminders || data.reminders);
+            } catch (error) {
+                console.error('Error loading reminders:', error);
+                alert('Không thể tải danh sách nhắc nhở');
+            }
+        }
+
+        // Display reminders summary
+        function displayRemindersSummary(summary) {
+            const html = `
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <div class="p-3 bg-light rounded">
+                            <small class="text-muted">Tổng lịch hẹn</small>
+                            <h5 class="mb-0">${summary.TotalReminders || summary.totalReminders || 0}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <div class="p-3 bg-danger bg-opacity-10 rounded">
+                            <small class="text-muted">Trong 1 giờ</small>
+                            <h5 class="mb-0 text-danger">${summary.Within1Hour || summary.within1Hour || 0}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <div class="p-3 bg-warning bg-opacity-10 rounded">
+                            <small class="text-muted">Trong 4 giờ</small>
+                            <h5 class="mb-0 text-warning">${summary.Within4Hours || summary.within4Hours || 0}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <div class="p-3 bg-success bg-opacity-10 rounded">
+                            <small class="text-muted">Trong 24 giờ</small>
+                            <h5 class="mb-0 text-success">${summary.Within24Hours || summary.within24Hours || 0}</h5>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('remindersSummary').innerHTML = html;
+        }
+
+        // Display reminders
+        function displayReminders(reminders) {
+            if (!reminders || reminders.length === 0) {
+                document.getElementById('remindersContainer').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-check"></i>
+                        <h5>Không có lịch hẹn nào</h5>
+                        <p>Không có lịch hẹn nào trong khoảng thời gian này</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAllReminders" onchange="toggleSelectAll()"></th>
+                            <th>Thời gian</th>
+                            <th>Bệnh nhân</th>
+                            <th>Bác sĩ</th>
+                            <th>Liên hệ</th>
+                            <th>Còn lại</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            reminders.forEach(r => {
+                const apptDate = new Date(r.AppointmentDate || r.appointmentDate);
+                const hoursUntil = r.HoursUntil || r.hoursUntil || 0;
+                let urgencyBadge = '';
+                
+                if (hoursUntil <= 1) {
+                    urgencyBadge = '<span class="badge-urgent"><i class="fas fa-exclamation-triangle"></i> Khẩn cấp</span>';
+                } else if (hoursUntil <= 4) {
+                    urgencyBadge = '<span class="badge-soon"><i class="fas fa-clock"></i> Sắp đến</span>';
+                } else {
+                    urgencyBadge = '<span class="badge-normal"><i class="fas fa-check"></i> Bình thường</span>';
+                }
+
+                html += `
+                    <tr>
+                        <td><input type="checkbox" class="reminder-checkbox" value="${r.Id || r.id}" onchange="updateSendButton()"></td>
+                        <td>${apptDate.toLocaleString('vi-VN')}</td>
+                        <td><strong>${r.PatientName || r.patientName}</strong></td>
+                        <td>${r.DoctorName || r.doctorName}</td>
+                        <td>
+                            <small>${r.PatientPhone || r.patientPhone}</small><br>
+                            <small class="text-muted">${r.PatientEmail || r.patientEmail || 'N/A'}</small>
+                        </td>
+                        <td>${urgencyBadge}<br><small>${Math.round(hoursUntil * 10) / 10} giờ</small></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary-custom" onclick="viewReminderMessage(${r.Id || r.id}, \`${(r.ReminderMessage || r.reminderMessage || '').replace(/`/g, '\\`')}\`)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('remindersContainer').innerHTML = html;
+        }
+
+        // Toggle select all
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAllReminders').checked;
+            document.querySelectorAll('.reminder-checkbox').forEach(cb => {
+                cb.checked = selectAll;
+            });
+            updateSendButton();
+        }
+
+        // Update send button
+        function updateSendButton() {
+            const checkboxes = document.querySelectorAll('.reminder-checkbox:checked');
+            document.getElementById('sendRemindersBtn').disabled = checkboxes.length === 0;
+        }
+
+        // Send selected reminders
+        async function sendSelectedReminders() {
+            const token = checkAuth();
+            if (!token) return;
+
+            const checkboxes = document.querySelectorAll('.reminder-checkbox:checked');
+            const appointmentIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+            if (appointmentIds.length === 0) {
+                alert('Vui lòng chọn lịch hẹn cần gửi nhắc nhở');
+                return;
+            }
+
+            if (!confirm(`Bạn có chắc muốn gửi nhắc nhở cho ${appointmentIds.length} lịch hẹn?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/admin/appointment-reminders/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ AppointmentIds: appointmentIds })
+                });
+
+                if (!response.ok) throw new Error('Failed to send reminders');
+
+                const result = await response.json();
+                alert(`Đã gửi thành công ${result.data.TotalSent || result.data.totalSent} nhắc nhở!`);
+                
+                loadReminders();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error sending reminders:', error);
+                alert('Không thể gửi nhắc nhở');
+            }
+        }
+
+        // View reminder message
+        function viewReminderMessage(appointmentId, message) {
+            alert(message);
+        }
+
+        // Search patients
+        async function searchPatients() {
+            const token = checkAuth();
+            if (!token) return;
+
+            const query = document.getElementById('patientSearch').value;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/patients/search?query=${encodeURIComponent(query)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to search patients');
+
+                const result = await response.json();
+                const patients = result.data || [];
+
+                displayPatientSearchResults(patients);
+            } catch (error) {
+                console.error('Error searching patients:', error);
+                alert('Không thể tìm kiếm bệnh nhân');
+            }
+        }
+
+        // Display patient search results
+        function displayPatientSearchResults(patients) {
+            if (!patients || patients.length === 0) {
+                document.getElementById('patientSearchResults').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h5>Không tìm thấy</h5>
+                        <p>Không tìm thấy bệnh nhân nào</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Họ tên</th>
+                            <th>Ngày sinh</th>
+                            <th>Tuổi</th>
+                            <th>Giới tính</th>
+                            <th>Liên hệ</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            patients.forEach(p => {
+                const dob = new Date(p.DateOfBirth || p.dateOfBirth);
+                html += `
+                    <tr>
+                        <td><strong>${p.FullName || p.fullName}</strong></td>
+                        <td>${dob.toLocaleDateString('vi-VN')}</td>
+                        <td>${p.Age || p.age}</td>
+                        <td>${p.Gender === 'M' ? 'Nam' : p.Gender === 'F' ? 'Nữ' : 'Khác'}</td>
+                        <td>
+                            ${p.Phone || p.phone}<br>
+                            <small class="text-muted">${p.Email || p.email || 'N/A'}</small>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary-custom" onclick="printPatientHistory(${p.Id || p.id})">
+                                <i class="fas fa-print"></i> In lịch sử
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('patientSearchResults').innerHTML = html;
+        }
+
+        // Print patient history
+        async function printPatientHistory(patientId) {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/patient/${patientId}/medical-history`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load medical history');
+
+                const result = await response.json();
+                const history = result.data;
+
+                // Generate print content
+                const printContent = generatePrintContent(history);
+                document.getElementById('printContent').innerHTML = printContent;
+
+                // Hide main content, show print view
+                document.querySelector('.container').style.display = 'none';
+                document.getElementById('printView').style.display = 'block';
+
+                // Print
+                window.print();
+
+                // Restore view
+                document.querySelector('.container').style.display = 'block';
+                document.getElementById('printView').style.display = 'none';
+            } catch (error) {
+                console.error('Error printing history:', error);
+                alert('Không thể in lịch sử khám bệnh');
+            }
+        }
+
+        // Generate print content
+        function generatePrintContent(history) {
+            const patient = history.Patient || history.patient;
+            const stats = history.Statistics || history.statistics;
+            const encounters = history.Encounters || history.encounters || [];
+
+            let html = `
+                <div class="patient-info-card">
+                    <h4>Thông tin bệnh nhân</h4>
+                    <p><strong>Họ tên:</strong> ${patient.FullName || patient.fullName}</p>
+                    <p><strong>Ngày sinh:</strong> ${new Date(patient.DateOfBirth || patient.dateOfBirth).toLocaleDateString('vi-VN')} (${patient.Age || patient.age} tuổi)</p>
+                    <p><strong>Giới tính:</strong> ${patient.Gender === 'M' ? 'Nam' : patient.Gender === 'F' ? 'Nữ' : 'Khác'}</p>
+                    <p><strong>Điện thoại:</strong> ${patient.Phone || patient.phone}</p>
+                    <p><strong>Email:</strong> ${patient.Email || patient.email || 'N/A'}</p>
+                    <p><strong>Địa chỉ:</strong> ${patient.Address || patient.address || 'N/A'}</p>
+                    <p><strong>Nhóm máu:</strong> ${patient.BloodType || patient.bloodType || 'N/A'}</p>
+                    <p><strong>Dị ứng:</strong> ${patient.Allergies || patient.allergies || 'Không'}</p>
+                </div>
+
+                <div class="mb-3">
+                    <h4>Thống kê</h4>
+                    <p>Tổng số lần khám: ${stats.TotalEncounters || stats.totalEncounters || 0}</p>
+                    <p>Lần khám đầu: ${stats.FirstVisit ? new Date(stats.FirstVisit || stats.firstVisit).toLocaleDateString('vi-VN') : 'N/A'}</p>
+                    <p>Lần khám gần nhất: ${stats.LastVisit ? new Date(stats.LastVisit || stats.lastVisit).toLocaleDateString('vi-VN') : 'N/A'}</p>
+                </div>
+
+                <h4>Lịch sử khám bệnh</h4>
+            `;
+
+            encounters.forEach((e, index) => {
+                const date = new Date(e.Date || e.date);
+                html += `
+                    <div class="history-item">
+                        <h5>Lần khám ${encounters.length - index} - ${date.toLocaleString('vi-VN')}</h5>
+                        <p><strong>Bác sĩ:</strong> ${e.DoctorName || e.doctorName}</p>
+                        <p><strong>Lý do khám:</strong> ${e.ChiefComplaint || e.chiefComplaint}</p>
+                        <p><strong>Chẩn đoán:</strong> ${e.Diagnosis || e.diagnosis || 'N/A'}</p>
+                        <p><strong>Trạng thái:</strong> ${e.Status || e.status}</p>
+
+                        ${(e.LabTests || e.labTests || []).length > 0 ? `
+                            <p><strong>Xét nghiệm:</strong></p>
+                            <ul>
+                                ${(e.LabTests || e.labTests).map(lt => `
+                                    <li>${lt.TestCode || lt.testCode}: ${lt.ResultValue || lt.resultValue} ${lt.Units || lt.units || ''} (${lt.NormalRange || lt.normalRange || 'N/A'})</li>
+                                `).join('')}
+                            </ul>
+                        ` : ''}
+
+                        ${(e.Medications || e.medications || []).length > 0 ? `
+                            <p><strong>Đơn thuốc:</strong></p>
+                            <ul>
+                                ${(e.Medications || e.medications).map(m => `
+                                    <li>${m.MedicationName || m.medicationName} - ${m.Dosage || m.dosage} - ${m.Frequency || m.frequency} - ${m.Duration || m.duration}</li>
+                                `).join('')}
+                            </ul>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            html += `<p class="text-muted text-center mt-4">Ngày in: ${new Date().toLocaleString('vi-VN')}</p>`;
+
+            return html;
+        }
+
+        // Load users
+        async function loadUsers() {
+            const token = checkAuth();
+            if (!token) return;
+
+            const role = document.getElementById('userRole').value;
+            const isActive = document.getElementById('userStatus').value;
+
+            try {
+                let url = `${API_URL}/admin/users?`;
+                if (role) url += `role=${role}&`;
+                if (isActive) url += `isActive=${isActive}&`;
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load users');
+
+                const result = await response.json();
+                const users = result.data || [];
+
+                displayUsers(users);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                alert('Không thể tải danh sách người dùng');
+            }
+        }
+
+        // Display users
+        function displayUsers(users) {
+            if (!users || users.length === 0) {
+                document.getElementById('usersContainer').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h5>Không có người dùng</h5>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Họ tên</th>
+                            <th>Email</th>
+                            <th>Điện thoại</th>
+                            <th>Vai trò</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            users.forEach(u => {
+                const statusBadge = (u.IsActive || u.isActive) 
+                    ? '<span class="badge bg-success">Hoạt động</span>'
+                    : '<span class="badge bg-secondary">Vô hiệu hóa</span>';
+
+                html += `
+                    <tr>
+                        <td><strong>${u.FullName || u.fullName}</strong></td>
+                        <td>${u.Email || u.email}</td>
+                        <td>${u.Phone || u.phone}</td>
+                        <td>${u.Role || u.role}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn btn-sm ${(u.IsActive || u.isActive) ? 'btn-warning' : 'btn-success'}" 
+                                    onclick="toggleUserStatus(${u.Id || u.id}, ${!(u.IsActive || u.isActive)})">
+                                ${(u.IsActive || u.isActive) ? '<i class="fas fa-ban"></i>' : '<i class="fas fa-check"></i>'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('usersContainer').innerHTML = html;
+        }
+
+        // Toggle user status
+        async function toggleUserStatus(userId, newStatus) {
+            const token = checkAuth();
+            if (!token) return;
+
+            if (!confirm(`Bạn có chắc muốn ${newStatus ? 'kích hoạt' : 'vô hiệu hóa'} người dùng này?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/admin/users/${userId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ IsActive: newStatus })
+                });
+
+                if (!response.ok) throw new Error('Failed to update user status');
+
+                alert('Đã cập nhật trạng thái người dùng');
+                loadUsers();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error updating user status:', error);
+                alert('Không thể cập nhật trạng thái');
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('healthysystem_token');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = checkAuth();
+            if (token) {
+                loadDashboard();
+            }
+        });
+    </script>
+</body>
+</html>

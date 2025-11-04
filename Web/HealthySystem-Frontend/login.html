@@ -291,6 +291,15 @@
                             } else if (userRole === 'doctor' || userRole === 'Doctor') {
                                 console.log('Redirecting to doctor dashboard...');
                                 window.location.href = 'doctor-dashboard.html';
+                            } else if (userRole === 'lab' || userRole === 'Lab') {
+                                console.log('Redirecting to lab technician dashboard...');
+                                window.location.href = 'lab-technician-dashboard.html';
+                            } else if (userRole === 'accountant' || userRole === 'Accountant') {
+                                console.log('Redirecting to accountant dashboard...');
+                                window.location.href = 'accountant-dashboard.html';
+                            } else if (userRole === 'admin' || userRole === 'Admin') {
+                                console.log('Redirecting to admin dashboard...');
+                                window.location.href = 'admin-dashboard.html';
                             } else {
                                 console.log('Redirecting to index.html...');
                                 window.location.href = 'index.html';

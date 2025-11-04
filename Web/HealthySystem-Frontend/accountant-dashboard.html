@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kế toán - Healthy System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #00d4aa;
+            --secondary-color: #0095ff;
+            --success-color: #52c41a;
+            --warning-color: #fa8c16;
+            --danger-color: #ff4d4f;
+        }
+
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+            border-left: 4px solid;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+        }
+
+        .stat-card.revenue { border-left-color: #52c41a; }
+        .stat-card.expense { border-left-color: #ff4d4f; }
+        .stat-card.profit { border-left-color: #1890ff; }
+        .stat-card.patients { border-left-color: #fa8c16; }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            color: #8c8c8c;
+            font-size: 0.9rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-tabs .nav-link {
+            color: #595959;
+            border: none;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            background: transparent;
+        }
+
+        .billing-table {
+            width: 100%;
+        }
+
+        .billing-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-bottom: 2px solid #e8e8e8;
+            font-size: 0.9rem;
+        }
+
+        .billing-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+        }
+
+        .billing-table tr:hover {
+            background: #fafafa;
+        }
+
+        .currency {
+            font-weight: 600;
+            color: #52c41a;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,212,170,0.3);
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .search-box {
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+        .detail-row {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #595959;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #8c8c8c;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-calculator me-2"></i>
+                        Kế toán
+                    </h1>
+                    <p class="mb-0 mt-2 opacity-75" id="welcomeText">Quản lý tài chính và lương</p>
+                </div>
+                <button class="btn btn-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt me-2"></i>
+                    Đăng xuất
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Statistics -->
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="stat-card revenue">
+                    <div class="stat-icon" style="color: #52c41a;">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="stat-value" id="thisMonthRevenue">0 ₫</div>
+                    <div class="stat-label">Doanh thu tháng này</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card expense">
+                    <div class="stat-icon" style="color: #ff4d4f;">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-value" id="salaryExpense">0 ₫</div>
+                    <div class="stat-label">Chi phí lương</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card profit">
+                    <div class="stat-icon" style="color: #1890ff;">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-value" id="netIncome">0 ₫</div>
+                    <div class="stat-label">Lợi nhuận ròng</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card patients">
+                    <div class="stat-icon" style="color: #fa8c16;">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="totalEmployees">0</div>
+                    <div class="stat-label">Tổng nhân viên</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="content-card">
+            <ul class="nav nav-tabs" id="accountantTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="billing-tab" data-bs-toggle="tab" data-bs-target="#billing" type="button">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>Báo cáo chi phí
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="salary-tab" data-bs-toggle="tab" data-bs-target="#salary" type="button">
+                        <i class="fas fa-hand-holding-usd me-2"></i>Tính lương
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="statistics-tab" data-bs-toggle="tab" data-bs-target="#statistics" type="button">
+                        <i class="fas fa-chart-pie me-2"></i>Thống kê
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content mt-3" id="accountantTabsContent">
+                <!-- Billing Report Tab -->
+                <div class="tab-pane fade show active" id="billing" role="tabpanel">
+                    <div class="search-box">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label small">Từ ngày</label>
+                                <input type="date" class="form-control" id="billingFromDate">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">Đến ngày</label>
+                                <input type="date" class="form-control" id="billingToDate">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">Trạng thái</label>
+                                <select class="form-select" id="billingStatus">
+                                    <option value="">Tất cả</option>
+                                    <option value="completed">Hoàn thành</option>
+                                    <option value="in_progress">Đang khám</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">&nbsp;</label>
+                                <button class="btn btn-primary-custom w-100" onclick="loadBillingReport()">
+                                    <i class="fas fa-search me-1"></i> Tìm kiếm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="billingSummary" class="mb-3"></div>
+                    <div id="billingContainer">
+                        <div class="text-center py-4">
+                            <p class="text-muted">Chọn khoảng thời gian và nhấn Tìm kiếm</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salary Calculation Tab -->
+                <div class="tab-pane fade" id="salary" role="tabpanel">
+                    <div class="search-box">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label small">Tháng</label>
+                                <select class="form-select" id="salaryMonth">
+                                    <option value="1">Tháng 1</option>
+                                    <option value="2">Tháng 2</option>
+                                    <option value="3">Tháng 3</option>
+                                    <option value="4">Tháng 4</option>
+                                    <option value="5">Tháng 5</option>
+                                    <option value="6">Tháng 6</option>
+                                    <option value="7">Tháng 7</option>
+                                    <option value="8">Tháng 8</option>
+                                    <option value="9">Tháng 9</option>
+                                    <option value="10">Tháng 10</option>
+                                    <option value="11">Tháng 11</option>
+                                    <option value="12">Tháng 12</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">Năm</label>
+                                <select class="form-select" id="salaryYear">
+                                    <option value="2024">2024</option>
+                                    <option value="2025" selected>2025</option>
+                                    <option value="2026">2026</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">Phòng ban</label>
+                                <select class="form-select" id="salaryRole">
+                                    <option value="">Tất cả</option>
+                                    <option value="doctor">Bác sĩ</option>
+                                    <option value="lab">Bác sĩ xét nghiệm</option>
+                                    <option value="reception">Lễ tân</option>
+                                    <option value="accountant">Kế toán</option>
+                                    <option value="admin">Quản trị</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">&nbsp;</label>
+                                <button class="btn btn-primary-custom w-100" onclick="calculateSalary()">
+                                    <i class="fas fa-calculator me-1"></i> Tính lương
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="salarySummary" class="mb-3"></div>
+                    <div id="salaryContainer">
+                        <div class="text-center py-4">
+                            <p class="text-muted">Chọn tháng/năm và nhấn Tính lương</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Tab -->
+                <div class="tab-pane fade" id="statistics" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6>Phân bổ doanh thu</h6>
+                            <div class="chart-container">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Thống kê lương theo phòng ban</h6>
+                            <div class="chart-container">
+                                <canvas id="salaryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Encounter Detail Modal -->
+    <div class="modal fade" id="encounterDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-receipt me-2"></i>
+                        Chi tiết chi phí khám bệnh
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="encounterDetailContent">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let revenueChart = null;
+        let salaryChart = null;
+
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token') || localStorage.getItem('healthysystem_token');
+            
+            if (!token) {
+                window.location.href = 'login.html';
+                return null;
+            }
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const roleClaim = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+                const role = roleClaim || payload.role;
+                
+                if (role !== 'accountant' && role !== 'admin') {
+                    alert('Chỉ Kế toán mới có quyền truy cập trang này!');
+                    window.location.href = 'index.html';
+                    return null;
+                }
+                
+                const nameClaim = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || payload.name;
+                if (nameClaim) {
+                    document.getElementById('welcomeText').textContent = `Xin chào, ${nameClaim}`;
+                }
+                
+                return token;
+            } catch (error) {
+                console.error('Invalid token:', error);
+                localStorage.removeItem('token');
+                localStorage.removeItem('healthysystem_token');
+                window.location.href = 'login.html';
+                return null;
+            }
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        }
+
+        // Load dashboard
+        async function loadDashboard() {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/accountant/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load dashboard');
+
+                const result = await response.json();
+                const data = result.data;
+
+                document.getElementById('thisMonthRevenue').textContent = formatCurrency(data.ThisMonth?.Revenue || data.thisMonth?.revenue || 0);
+                document.getElementById('salaryExpense').textContent = formatCurrency(data.Employees?.SalaryExpense || data.employees?.salaryExpense || 0);
+                document.getElementById('netIncome').textContent = formatCurrency(data.NetIncome || data.netIncome || 0);
+                document.getElementById('totalEmployees').textContent = data.Employees?.TotalActive || data.employees?.totalActive || 0;
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Load billing report
+        async function loadBillingReport() {
+            const token = checkAuth();
+            if (!token) return;
+
+            const fromDate = document.getElementById('billingFromDate').value;
+            const toDate = document.getElementById('billingToDate').value;
+            const status = document.getElementById('billingStatus').value;
+
+            if (!fromDate || !toDate) {
+                alert('Vui lòng chọn khoảng thời gian');
+                return;
+            }
+
+            try {
+                let url = `${API_URL}/accountant/billing-report?fromDate=${fromDate}&toDate=${toDate}`;
+                if (status) url += `&status=${status}`;
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load billing report');
+
+                const result = await response.json();
+                const data = result.data;
+                
+                displayBillingSummary(data.Summary || data.summary);
+                displayBillingDetails(data.Details || data.details);
+            } catch (error) {
+                console.error('Error loading billing report:', error);
+                alert('Không thể tải báo cáo chi phí');
+            }
+        }
+
+        // Display billing summary
+        function displayBillingSummary(summary) {
+            const html = `
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <div class="p-3 bg-light rounded">
+                            <small class="text-muted">Tổng lượt khám</small>
+                            <h5 class="mb-0">${summary.TotalEncounters || summary.totalEncounters || 0}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <div class="p-3 bg-light rounded">
+                            <small class="text-muted">Tổng doanh thu</small>
+                            <h5 class="mb-0 text-success">${formatCurrency(summary.TotalRevenue || summary.totalRevenue || 0)}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <div class="p-3 bg-light rounded">
+                            <small class="text-muted">Chi phí TB/lượt</small>
+                            <h5 class="mb-0">${formatCurrency(summary.AverageEncounterCost || summary.averageEncounterCost || 0)}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <div class="p-3 bg-light rounded">
+                            <small class="text-muted">Doanh thu xét nghiệm</small>
+                            <h5 class="mb-0">${formatCurrency(summary.TotalLabRevenue || summary.totalLabRevenue || 0)}</h5>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('billingSummary').innerHTML = html;
+        }
+
+        // Display billing details
+        function displayBillingDetails(details) {
+            if (!details || details.length === 0) {
+                document.getElementById('billingContainer').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h5>Không có dữ liệu</h5>
+                        <p>Không tìm thấy lượt khám nào trong khoảng thời gian này</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="billing-table">
+                    <thead>
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Bệnh nhân</th>
+                            <th>Bác sĩ</th>
+                            <th>Phí khám</th>
+                            <th>XN</th>
+                            <th>Thuốc</th>
+                            <th>Tổng</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            details.forEach(bill => {
+                const date = new Date(bill.EncounterDate || bill.encounterDate);
+                html += `
+                    <tr>
+                        <td>${date.toLocaleDateString('vi-VN')}</td>
+                        <td>${bill.PatientName || bill.patientName}</td>
+                        <td>${bill.DoctorName || bill.doctorName}</td>
+                        <td>${formatCurrency(bill.ConsultationFee || bill.consultationFee)}</td>
+                        <td>${formatCurrency(bill.LabCost || bill.labCost)}</td>
+                        <td>${formatCurrency(bill.PrescriptionCost || bill.prescriptionCost)}</td>
+                        <td class="currency">${formatCurrency(bill.TotalCost || bill.totalCost)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary-custom" onclick="viewEncounterDetail(${bill.EncounterId || bill.encounterId})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('billingContainer').innerHTML = html;
+        }
+
+        // View encounter detail
+        async function viewEncounterDetail(encounterId) {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/accountant/encounter/${encounterId}/costs`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load encounter detail');
+
+                const result = await response.json();
+                const data = result.data;
+
+                displayEncounterDetail(data);
+                
+                const modal = new bootstrap.Modal(document.getElementById('encounterDetailModal'));
+                modal.show();
+            } catch (error) {
+                console.error('Error loading encounter detail:', error);
+                alert('Không thể tải chi tiết');
+            }
+        }
+
+        // Display encounter detail
+        function displayEncounterDetail(data) {
+            const summary = data.Summary || data.summary;
+            
+            let html = `
+                <div class="mb-3">
+                    <h6>Thông tin bệnh nhân</h6>
+                    <p><strong>Họ tên:</strong> ${data.Patient?.FullName || data.patient?.fullName}</p>
+                    <p><strong>Bác sĩ:</strong> ${data.Doctor?.FullName || data.doctor?.fullName}</p>
+                    <p><strong>Ngày khám:</strong> ${new Date(data.EncounterDate || data.encounterDate).toLocaleString('vi-VN')}</p>
+                </div>
+
+                <div class="mb-3">
+                    <h6>Chi tiết chi phí</h6>
+                    <div class="detail-row d-flex justify-content-between">
+                        <span class="detail-label">Phí khám bệnh</span>
+                        <span class="currency">${formatCurrency(summary.ConsultationFee || summary.consultationFee)}</span>
+                    </div>
+                    <div class="detail-row d-flex justify-content-between">
+                        <span class="detail-label">Xét nghiệm (${(data.LabTests || data.labTests || []).length} loại)</span>
+                        <span class="currency">${formatCurrency(summary.LabCost || summary.labCost)}</span>
+                    </div>
+                    <div class="detail-row d-flex justify-content-between">
+                        <span class="detail-label">Chẩn đoán hình ảnh (${(data.ImagingTests || data.imagingTests || []).length} loại)</span>
+                        <span class="currency">${formatCurrency(summary.ImagingCost || summary.imagingCost)}</span>
+                    </div>
+                    <div class="detail-row d-flex justify-content-between">
+                        <span class="detail-label">Thuốc (${(data.Medications || data.medications || []).length} loại)</span>
+                        <span class="currency">${formatCurrency(summary.MedicationCost || summary.medicationCost)}</span>
+                    </div>
+                    <div class="detail-row d-flex justify-content-between">
+                        <span class="detail-label">Liệu trình điều trị</span>
+                        <span class="currency">${formatCurrency(summary.TreatmentCost || summary.treatmentCost)}</span>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-success bg-opacity-10 rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Tổng cộng</h5>
+                        <h4 class="mb-0 text-success">${formatCurrency(summary.TotalCost || summary.totalCost)}</h4>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('encounterDetailContent').innerHTML = html;
+        }
+
+        // Calculate salary
+        async function calculateSalary() {
+            const token = checkAuth();
+            if (!token) return;
+
+            const month = document.getElementById('salaryMonth').value;
+            const year = document.getElementById('salaryYear').value;
+            const role = document.getElementById('salaryRole').value;
+
+            try {
+                let url = `${API_URL}/accountant/salary-calculation?month=${month}&year=${year}`;
+                if (role) url += `&role=${role}`;
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to calculate salary');
+
+                const result = await response.json();
+                const data = result.data;
+
+                displaySalarySummary(data.Summary || data.summary);
+                displaySalaryDetails(data.Details || data.details);
+            } catch (error) {
+                console.error('Error calculating salary:', error);
+                alert('Không thể tính lương');
+            }
+        }
+
+        // Display salary summary
+        function displaySalarySummary(summary) {
+            const html = `
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <div class="p-3 bg-light rounded">
+                            <small class="text-muted">Tổng nhân viên</small>
+                            <h5 class="mb-0">${summary.TotalEmployees || summary.totalEmployees || 0}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <div class="p-3 bg-light rounded">
+                            <small class="text-muted">Tổng chi phí lương</small>
+                            <h5 class="mb-0 text-danger">${formatCurrency(summary.TotalSalaryExpense || summary.totalSalaryExpense || 0)}</h5>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('salarySummary').innerHTML = html;
+        }
+
+        // Display salary details
+        function displaySalaryDetails(details) {
+            if (!details || details.length === 0) {
+                document.getElementById('salaryContainer').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h5>Không có dữ liệu</h5>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="billing-table">
+                    <thead>
+                        <tr>
+                            <th>Nhân viên</th>
+                            <th>Phòng ban</th>
+                            <th>Lương CB</th>
+                            <th>Thưởng</th>
+                            <th>Phụ cấp</th>
+                            <th>Tổng lương</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            details.forEach(salary => {
+                html += `
+                    <tr>
+                        <td><strong>${salary.FullName || salary.fullName}</strong><br><small class="text-muted">${salary.Email || salary.email}</small></td>
+                        <td>${salary.Role || salary.role}</td>
+                        <td>${formatCurrency(salary.BaseSalary || salary.baseSalary)}</td>
+                        <td class="text-success">${formatCurrency(salary.PerformanceBonus || salary.performanceBonus)}</td>
+                        <td>${formatCurrency(salary.Allowance || salary.allowance)}</td>
+                        <td class="currency">${formatCurrency(salary.TotalSalary || salary.totalSalary)}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('salaryContainer').innerHTML = html;
+        }
+
+        // Load charts
+        async function loadCharts() {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                // Revenue chart
+                const ctx1 = document.getElementById('revenueChart');
+                if (revenueChart) revenueChart.destroy();
+                
+                revenueChart = new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Phí khám', 'Xét nghiệm', 'Chẩn đoán hình ảnh', 'Thuốc', 'Điều trị'],
+                        datasets: [{
+                            data: [30, 25, 15, 20, 10],
+                            backgroundColor: ['#52c41a', '#1890ff', '#fa8c16', '#f5222d', '#722ed1']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Salary chart
+                const ctx2 = document.getElementById('salaryChart');
+                if (salaryChart) salaryChart.destroy();
+
+                salaryChart = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Bác sĩ', 'Kế toán', 'XN', 'Lễ tân', 'Admin'],
+                        datasets: [{
+                            label: 'Chi phí lương (triệu)',
+                            data: [20, 15, 12, 8, 18],
+                            backgroundColor: '#00d4aa'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading charts:', error);
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('healthysystem_token');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = checkAuth();
+            if (token) {
+                loadDashboard();
+                loadCharts();
+                
+                // Set current month/year
+                const now = new Date();
+                document.getElementById('salaryMonth').value = now.getMonth() + 1;
+                document.getElementById('salaryYear').value = now.getFullYear();
+                
+                // Set date range to current month
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                document.getElementById('billingFromDate').valueAsDate = firstDay;
+                document.getElementById('billingToDate').valueAsDate = lastDay;
+            }
+        });
+    </script>
+</body>
+</html>

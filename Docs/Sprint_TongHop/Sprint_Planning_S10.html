@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>SPRING PLANNING - SPRINT 10</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        h2 { color: #34495e; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #dddddd; text-align: left; padding: 8px; }
+        th { background-color: #f2f2f2; }
+        .note { background-color: #ecf0f1; padding: 10px; border-left: 5px solid #3498db; }
+    </style>
+</head>
+<body>
+    [cite_start]<h1>SPRING PLANNING [cite: 39]</h1>
+
+    <h2>Thông tin Sprint</h2>
+    <table>
+        <tr>
+            <th>Mã sprint</th>
+            <th>Thời gian bắt đầu</th>
+            <th>Thời gian kết thúc</th>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td>8/11/2025</td>
+            <td>11/11/2025</td>
+        </tr>
+    [cite_start]</table> [cite: 40]
+
+    <h2>1. [cite_start]Mục tiêu Sprint [cite: 41]</h2>
+    <ul>
+        [cite_start]<li>Hoàn thành giao diện chức năng **Xem lịch sử bệnh của bệnh nhân**[cite: 42].</li>
+        [cite_start]<li>Hoàn thành giao diện chức năng **Yêu cầu thực hiện các xét nghiệm cho bệnh nhân**[cite: 43].</li>
+        [cite_start]<li>Hoàn thành API cho trang **Xem lịch sử bệnh của bệnh nhân**[cite: 44].</li>
+        [cite_start]<li>Hoàn thành API cho trang **Yêu cầu thực hiện các xét nghiệm cho bệnh nhân**[cite: 45].</li>
+    </ul>
+
+    <h2>2. [cite_start]Backlog được chọn cho Sprint [cite: 46]</h2>
+    <table>
+        <tr>
+            <th>User Story</th>
+            <th>Mô tả</th>
+            <th>Độ ưu tiên</th>
+            <th>Points</th>
+            <th>Người phụ trách</th>
+            <th>Trạng thái</th>
+        </tr>
+        <tr>
+            <td>US-01</td>
+            <td>Nhắc lịch hẹn khi gần đến giờ cho tất cả người dùng.</td>
+            <td>Trung bình</td>
+            <td>4</td>
+            <td>Quốc Hưng</td>
+            <td>To Do</td>
+        </tr>
+        <tr>
+            <td>US-02</td>
+            <td>Tính toán lương.</td>
+            <td>Cao</td>
+            <td>4</td>
+            <td>Quốc Hưng</td>
+            <td>To Do</td>
+        </tr>
+        <tr>
+            <td>US-03</td>
+            <td>Tính toán các chi phí khám chữa bệnh.</td>
+            <td>Cao</td>
+            <td>5</td>
+            <td>Quốc Hưng</td>
+            <td>To Do</td>
+        </tr>
+    [cite_start]</table> [cite: 47]
+
+    <h2>3. [cite_start]Phân công công việc chi tiết [cite: 48]</h2>
+    <table>
+        <tr>
+            <th>Công việc</th>
+            <th>Người thực hiện</th>
+            <th>Deadline</th>
+            <th>Công nghệ/tool/thư viện…</th>
+        </tr>
+        <tr>
+            <td>Thiết kế UI cho Trang Xem lịch sử bệnh của bệnh nhân</td>
+            <td>Quốc Hưng</td>
+            <td>31/10/2025</td>
+            <td>Vanilla JavaScript + HTML5 + CSS3</td>
+        </tr>
+        <tr>
+            <td>Thiết kế UI cho Trang Yêu cầu thực hiện các xét nghiệm cho bệnh nhân</td>
+            <td>Quốc Hưng</td>
+            <td>31/10/2025</td>
+            <td>Vanilla JavaScript + HTML5 + CSS3</td>
+        </tr>
+        <tr>
+            <td>Viết API liên quan đến Xem lịch sử bệnh của bệnh nhân</td>
+            <td>Quốc Hưng</td>
+            <td>31/10/2025</td>
+            <td>ASP.NET Core Web API (C#)</td>
+        </tr>
+        <tr>
+            <td>Viết API liên quan đến Yêu cầu thực hiện các xét nghiệm cho bệnh nhân</td>
+            <td>Quốc Hưng</td>
+            <td>31/10/2025</td>
+            <td>ASP.NET Core Web API (C#)</td>
+        </tr>
+    [cite_start]</table> [cite: 49]
+
+    <h2>4. [cite_start]Rủi ro và biện pháp [cite: 50]</h2>
+    <p><strong>Rủi ro:</strong></p>
+    <ul>
+        [cite_start]<li>API được viết có thể gặp lỗi khiến mất nhiều thời gian sửa lỗi[cite: 51].</li>
+        [cite_start]<li>Có nhiều ràng buộc ở một số chức năng nhất định[cite: 52].</li>
+    </ul>
+    <p><strong>Biện pháp:</strong></p>
+    <ul>
+        [cite_start]<li>Tranh thủ làm sớm, phát hiện lỗi sớm sửa sớm[cite: 53].</li>
+        [cite_start]<li>Còn về ràng buộc thì build các chức năng riêng lẻ trước, sau khi hoàn thiện sẽ bổ sung ràng buộc sau[cite: 54].</li>
+    </ul>
+
+    <h2>5. [cite_start]Sprint Planning Update (nếu là version cập nhật cho sprint cũ) [cite: 55]</h2>
+    <div class="note">
+        [cite_start]<p>Thay đổi so với kế hoạch ban đầu: … [cite: 56]</p>
+        [cite_start]<p>Lý do cập nhật: … [cite: 57]</p>
+    </div>
+</body>
+</html>

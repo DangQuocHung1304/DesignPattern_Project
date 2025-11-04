@@ -1,0 +1,14 @@
+Sprint 07:
+US-01 và US-02 là của bác sĩ.
+
+Sprint 08:
+US-01 và US-02 là của Bác sĩ Xét Nghiệm
+
+Sprint 09:
+US-01 là của Nhân viên kế toán
+US-02 là của Nhân viên quản trị hệ thống
+
+Sprint 10:
+US-01 là của Nhân viên quản trị hệ thống
+US-02 là của Nhân viên kế toán
+US-03 là của Nhân viên kế toán
