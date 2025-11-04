@@ -320,6 +320,11 @@
                         <i class="fas fa-users me-2"></i>Người dùng
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="schedules-tab" data-bs-toggle="tab" data-bs-target="#schedules" type="button">
+                        <i class="fas fa-calendar-alt me-2"></i>Lịch làm việc BS
+                    </button>
+                </li>
             </ul>
 
             <div class="tab-content mt-3" id="adminTabsContent">
@@ -417,6 +422,37 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Doctor Schedules Tab -->
+                <div class="tab-pane fade" id="schedules" role="tabpanel">
+                    <div class="search-box">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small">Chọn bác sĩ</label>
+                                <select class="form-select" id="doctorSelect" onchange="loadDoctorSchedules()">
+                                    <option value="">-- Chọn bác sĩ --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">&nbsp;</label>
+                                <button class="btn btn-success w-100" onclick="showAddScheduleModal()">
+                                    <i class="fas fa-plus me-1"></i> Thêm lịch làm việc
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Schedule View -->
+                    <div id="scheduleCalendar" class="mb-4">
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-alt" style="font-size: 3rem; opacity: 0.3;"></i>
+                            <p class="text-muted mt-2">Chọn bác sĩ để xem lịch làm việc</p>
+                        </div>
+                    </div>
+
+                    <!-- Schedule List View -->
+                    <div id="scheduleListContainer"></div>
+                </div>
             </div>
         </div>
 
@@ -428,6 +464,73 @@
                 <p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM | Điện thoại: (028) 1234 5678</p>
             </div>
             <div id="printContent"></div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Schedule Modal -->
+    <div class="modal fade" id="scheduleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white;">
+                    <h5 class="modal-title" id="scheduleModalTitle">
+                        <i class="fas fa-calendar-plus me-2"></i>Thêm lịch làm việc
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="scheduleId">
+                    <input type="hidden" id="scheduleDoctorId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Bác sĩ</label>
+                        <input type="text" class="form-control" id="scheduleDoctorName" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Thứ trong tuần <span class="text-danger">*</span></label>
+                        <select class="form-select" id="scheduleDayOfWeek" required>
+                            <option value="1">Thứ hai</option>
+                            <option value="2">Thứ ba</option>
+                            <option value="3">Thứ tư</option>
+                            <option value="4">Thứ năm</option>
+                            <option value="5">Thứ sáu</option>
+                            <option value="6">Thứ bảy</option>
+                            <option value="0">Chủ nhật</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="scheduleStartTime" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="scheduleEndTime" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Số lượng bệnh nhân tối đa/ca</label>
+                        <input type="number" class="form-control" id="scheduleMaxAppointments" value="4" min="1" max="20">
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="scheduleIsAvailable" checked>
+                            <label class="form-check-label" for="scheduleIsAvailable">
+                                Đang hoạt động
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary-custom" onclick="saveSchedule()">
+                        <i class="fas fa-save me-1"></i>Lưu lịch làm việc
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1002,11 +1105,412 @@
             window.location.href = 'login.html';
         }
 
+        // ============================================================
+        // Doctor Schedule Management Functions
+        // ============================================================
+
+        let allDoctors = [];
+        let currentDoctorSchedules = [];
+        const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+
+        // Load all doctors for dropdown
+        async function loadDoctors() {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/doctors`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load doctors');
+
+                const result = await response.json();
+                allDoctors = result.data || [];
+
+                const select = document.getElementById('doctorSelect');
+                select.innerHTML = '<option value="">-- Chọn bác sĩ --</option>';
+                
+                allDoctors.forEach(doc => {
+                    const option = document.createElement('option');
+                    option.value = doc.Id || doc.id;
+                    option.textContent = doc.FullName || doc.fullName;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading doctors:', error);
+                alert('Không thể tải danh sách bác sĩ');
+            }
+        }
+
+        // Load doctor schedules
+        async function loadDoctorSchedules() {
+            const doctorId = document.getElementById('doctorSelect').value;
+            if (!doctorId) {
+                document.getElementById('scheduleCalendar').innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-alt" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="text-muted mt-2">Chọn bác sĩ để xem lịch làm việc</p>
+                    </div>
+                `;
+                document.getElementById('scheduleListContainer').innerHTML = '';
+                return;
+            }
+
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/doctors/${doctorId}/schedules`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load schedules');
+
+                const result = await response.json();
+                const data = result.data;
+                currentDoctorSchedules = data.Schedules || data.schedules || [];
+
+                renderScheduleCalendar(currentDoctorSchedules, data.DoctorName || data.doctorName);
+                renderScheduleList(currentDoctorSchedules);
+            } catch (error) {
+                console.error('Error loading schedules:', error);
+                alert('Không thể tải lịch làm việc');
+            }
+        }
+
+        // Render schedule calendar (weekly view)
+        function renderScheduleCalendar(schedules, doctorName) {
+            const days = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+            const schedulesByDay = {};
+
+            // Group schedules by day
+            schedules.forEach(s => {
+                const day = s.DayOfWeek ?? s.dayOfWeek;
+                if (!schedulesByDay[day]) {
+                    schedulesByDay[day] = [];
+                }
+                schedulesByDay[day].push(s);
+            });
+
+            let html = `
+                <div class="section-title">
+                    <i class="fas fa-calendar-week"></i>
+                    Lịch làm việc tuần của ${doctorName}
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 15%;">Thứ</th>
+                                <th>Lịch làm việc</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            for (let i = 1; i <= 6; i++) { // Monday to Saturday
+                html += `<tr>`;
+                html += `<td><strong>${days[i]}</strong></td>`;
+                html += `<td>`;
+
+                if (schedulesByDay[i] && schedulesByDay[i].length > 0) {
+                    schedulesByDay[i].forEach(s => {
+                        const startTime = s.StartTime || s.startTime;
+                        const endTime = s.EndTime || s.endTime;
+                        const isAvailable = s.IsAvailable ?? s.isAvailable;
+                        const maxAppts = s.MaxAppointmentsPerSlot ?? s.maxAppointmentsPerSlot;
+
+                        html += `
+                            <div class="badge ${isAvailable ? 'bg-success' : 'bg-secondary'} me-2 mb-2" style="font-size: 0.9rem;">
+                                <i class="fas fa-clock me-1"></i>
+                                ${startTime} - ${endTime}
+                                <span class="ms-2">(Tối đa: ${maxAppts} BN)</span>
+                                <button class="btn btn-sm btn-link text-white p-0 ms-2" onclick="editSchedule(${s.Id || s.id})" title="Sửa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-link text-white p-0 ms-1" onclick="deleteSchedule(${s.Id || s.id})" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += `<span class="text-muted">Không có lịch</span>`;
+                }
+
+                html += `</td></tr>`;
+            }
+
+            // Sunday
+            html += `<tr>`;
+            html += `<td><strong>${days[0]}</strong></td>`;
+            html += `<td>`;
+            if (schedulesByDay[0] && schedulesByDay[0].length > 0) {
+                schedulesByDay[0].forEach(s => {
+                    const startTime = s.StartTime || s.startTime;
+                    const endTime = s.EndTime || s.endTime;
+                    const isAvailable = s.IsAvailable ?? s.isAvailable;
+                    const maxAppts = s.MaxAppointmentsPerSlot ?? s.maxAppointmentsPerSlot;
+
+                    html += `
+                        <div class="badge ${isAvailable ? 'bg-success' : 'bg-secondary'} me-2 mb-2" style="font-size: 0.9rem;">
+                            <i class="fas fa-clock me-1"></i>
+                            ${startTime} - ${endTime}
+                            <span class="ms-2">(Tối đa: ${maxAppts} BN)</span>
+                            <button class="btn btn-sm btn-link text-white p-0 ms-2" onclick="editSchedule(${s.Id || s.id})" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-link text-white p-0 ms-1" onclick="deleteSchedule(${s.Id || s.id})" title="Xóa">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+            } else {
+                html += `<span class="text-muted">Không có lịch</span>`;
+            }
+            html += `</td></tr>`;
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('scheduleCalendar').innerHTML = html;
+        }
+
+        // Render schedule list
+        function renderScheduleList(schedules) {
+            if (schedules.length === 0) {
+                document.getElementById('scheduleListContainer').innerHTML = '';
+                return;
+            }
+
+            const days = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+
+            let html = `
+                <div class="section-title mt-4">
+                    <i class="fas fa-list"></i>
+                    Danh sách chi tiết (${schedules.length} lịch)
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Thứ</th>
+                                <th>Giờ bắt đầu</th>
+                                <th>Giờ kết thúc</th>
+                                <th>Trạng thái</th>
+                                <th>Số BN tối đa</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            schedules.forEach(s => {
+                const dayOfWeek = s.DayOfWeek ?? s.dayOfWeek;
+                const dayName = s.DayName || s.dayName || days[dayOfWeek];
+                const startTime = s.StartTime || s.startTime;
+                const endTime = s.EndTime || s.endTime;
+                const isAvailable = s.IsAvailable ?? s.isAvailable;
+                const maxAppts = s.MaxAppointmentsPerSlot ?? s.maxAppointmentsPerSlot;
+                const id = s.Id || s.id;
+
+                html += `
+                    <tr>
+                        <td><strong>${dayName}</strong></td>
+                        <td>${startTime}</td>
+                        <td>${endTime}</td>
+                        <td>
+                            <span class="badge ${isAvailable ? 'bg-success' : 'bg-secondary'}">
+                                ${isAvailable ? 'Hoạt động' : 'Tạm dừng'}
+                            </span>
+                        </td>
+                        <td>${maxAppts} bệnh nhân</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary-custom" onclick="editSchedule(${id})" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteSchedule(${id})" title="Xóa">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('scheduleListContainer').innerHTML = html;
+        }
+
+        // Show add schedule modal
+        function showAddScheduleModal() {
+            const doctorId = document.getElementById('doctorSelect').value;
+            if (!doctorId) {
+                alert('Vui lòng chọn bác sĩ trước');
+                return;
+            }
+
+            const doctor = allDoctors.find(d => (d.Id || d.id) == doctorId);
+            if (!doctor) return;
+
+            document.getElementById('scheduleModalTitle').innerHTML = '<i class="fas fa-calendar-plus me-2"></i>Thêm lịch làm việc';
+            document.getElementById('scheduleId').value = '';
+            document.getElementById('scheduleDoctorId').value = doctorId;
+            document.getElementById('scheduleDoctorName').value = doctor.FullName || doctor.fullName;
+            document.getElementById('scheduleDayOfWeek').value = '1';
+            document.getElementById('scheduleStartTime').value = '08:00';
+            document.getElementById('scheduleEndTime').value = '17:00';
+            document.getElementById('scheduleMaxAppointments').value = '4';
+            document.getElementById('scheduleIsAvailable').checked = true;
+
+            scheduleModal.show();
+        }
+
+        // Edit schedule
+        function editSchedule(scheduleId) {
+            const schedule = currentDoctorSchedules.find(s => (s.Id || s.id) == scheduleId);
+            if (!schedule) return;
+
+            const doctorId = document.getElementById('doctorSelect').value;
+            const doctor = allDoctors.find(d => (d.Id || d.id) == doctorId);
+
+            document.getElementById('scheduleModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Sửa lịch làm việc';
+            document.getElementById('scheduleId').value = scheduleId;
+            document.getElementById('scheduleDoctorId').value = doctorId;
+            document.getElementById('scheduleDoctorName').value = doctor ? (doctor.FullName || doctor.fullName) : '';
+            document.getElementById('scheduleDayOfWeek').value = schedule.DayOfWeek ?? schedule.dayOfWeek;
+            document.getElementById('scheduleStartTime').value = schedule.StartTime || schedule.startTime;
+            document.getElementById('scheduleEndTime').value = schedule.EndTime || schedule.endTime;
+            document.getElementById('scheduleMaxAppointments').value = schedule.MaxAppointmentsPerSlot ?? schedule.maxAppointmentsPerSlot;
+            document.getElementById('scheduleIsAvailable').checked = schedule.IsAvailable ?? schedule.isAvailable;
+
+            scheduleModal.show();
+        }
+
+        // Save schedule (create or update)
+        async function saveSchedule() {
+            const token = checkAuth();
+            if (!token) return;
+
+            const scheduleId = document.getElementById('scheduleId').value;
+            const doctorId = document.getElementById('scheduleDoctorId').value;
+            const dayOfWeek = parseInt(document.getElementById('scheduleDayOfWeek').value);
+            const startTime = document.getElementById('scheduleStartTime').value;
+            const endTime = document.getElementById('scheduleEndTime').value;
+            const maxAppointments = parseInt(document.getElementById('scheduleMaxAppointments').value);
+            const isAvailable = document.getElementById('scheduleIsAvailable').checked;
+
+            // Validation
+            if (!startTime || !endTime) {
+                alert('Vui lòng nhập đầy đủ thời gian');
+                return;
+            }
+
+            if (startTime >= endTime) {
+                alert('Giờ bắt đầu phải nhỏ hơn giờ kết thúc');
+                return;
+            }
+
+            try {
+                let response;
+                if (scheduleId) {
+                    // Update
+                    response = await fetch(`${API_URL}/admin/schedules/${scheduleId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            StartTime: startTime,
+                            EndTime: endTime,
+                            MaxAppointmentsPerSlot: maxAppointments,
+                            IsAvailable: isAvailable
+                        })
+                    });
+                } else {
+                    // Create
+                    response = await fetch(`${API_URL}/admin/doctors/${doctorId}/schedules`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            DayOfWeek: dayOfWeek,
+                            StartTime: startTime,
+                            EndTime: endTime,
+                            MaxAppointmentsPerSlot: maxAppointments,
+                            IsAvailable: isAvailable
+                        })
+                    });
+                }
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Lỗi khi lưu lịch làm việc');
+                }
+
+                const result = await response.json();
+                alert(result.message || 'Đã lưu lịch làm việc thành công');
+                scheduleModal.hide();
+                loadDoctorSchedules();
+            } catch (error) {
+                console.error('Error saving schedule:', error);
+                alert(error.message || 'Không thể lưu lịch làm việc');
+            }
+        }
+
+        // Delete schedule
+        async function deleteSchedule(scheduleId) {
+            if (!confirm('Bạn có chắc muốn xóa lịch làm việc này?')) {
+                return;
+            }
+
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/schedules/${scheduleId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to delete schedule');
+
+                const result = await response.json();
+                alert(result.message || 'Đã xóa lịch làm việc');
+                loadDoctorSchedules();
+            } catch (error) {
+                console.error('Error deleting schedule:', error);
+                alert('Không thể xóa lịch làm việc');
+            }
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             const token = checkAuth();
             if (token) {
                 loadDashboard();
+                loadDoctors(); // Load doctors for schedule management
             }
         });
     </script>

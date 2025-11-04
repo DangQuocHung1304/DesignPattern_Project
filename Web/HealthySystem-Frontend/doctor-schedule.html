@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch làm việc của tôi - Healthy System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1890ff;
+            --secondary-color: #0050b3;
+            --success-color: #52c41a;
+            --warning-color: #fa8c16;
+        }
+
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .schedule-day {
+            background: #fafafa;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+        }
+
+        .schedule-day h5 {
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .schedule-slot {
+            background: white;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 6px;
+            border: 1px solid #e8e8e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .schedule-slot.unavailable {
+            opacity: 0.6;
+            background: #f5f5f5;
+        }
+
+        .time-badge {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .status-badge.inactive {
+            background: #f0f0f0;
+            color: #8c8c8c;
+            border: 1px solid #d9d9d9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #8c8c8c;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .info-box {
+            background: #e6f7ff;
+            border-left: 4px solid #1890ff;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .summary-item i {
+            font-size: 1.5rem;
+            opacity: 0.8;
+        }
+
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .summary-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .page-header {
+                background: none !important;
+                color: black !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="page-header no-print">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-calendar-week me-2"></i>
+                        Lịch làm việc của tôi
+                    </h1>
+                    <p class="mb-0 mt-2" id="welcomeText">Xin chào!</p>
+                </div>
+                <div>
+                    <button class="btn btn-light" onclick="window.location.href='doctor-dashboard.html'">
+                        <i class="fas fa-arrow-left me-1"></i> Quay lại
+                    </button>
+                    <button class="btn btn-light" onclick="window.print()">
+                        <i class="fas fa-print me-1"></i> In lịch
+                    </button>
+                    <button class="btn btn-outline-light" onclick="logout()">
+                        <i class="fas fa-sign-out-alt me-1"></i> Đăng xuất
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Info Box -->
+        <div class="info-box no-print">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Lưu ý:</strong> Lịch làm việc này do Quản trị viên thiết lập. 
+            Nếu cần thay đổi lịch làm việc, vui lòng liên hệ với bộ phận quản trị.
+        </div>
+
+        <!-- Summary Card -->
+        <div class="summary-card">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="summary-item">
+                        <i class="fas fa-calendar-check"></i>
+                        <div>
+                            <div class="summary-value" id="totalDays">0</div>
+                            <div class="summary-label">Ngày làm việc/tuần</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="summary-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <div class="summary-value" id="totalHours">0</div>
+                            <div class="summary-label">Giờ làm việc/tuần</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="summary-item">
+                        <i class="fas fa-user-injured"></i>
+                        <div>
+                            <div class="summary-value" id="totalSlots">0</div>
+                            <div class="summary-label">Ca khám/tuần</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Schedule -->
+        <div class="content-card">
+            <div class="section-title">
+                <i class="fas fa-calendar-alt"></i>
+                Lịch làm việc trong tuần
+            </div>
+
+            <div id="scheduleContainer">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Đang tải lịch làm việc...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule List -->
+        <div class="content-card">
+            <div class="section-title">
+                <i class="fas fa-list"></i>
+                Danh sách chi tiết
+            </div>
+
+            <div id="scheduleListContainer"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let currentDoctorId = null;
+
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token') || localStorage.getItem('healthysystem_token');
+            
+            if (!token) {
+                window.location.href = 'login.html';
+                return null;
+            }
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const roleClaim = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+                const role = roleClaim || payload.role;
+                
+                if (role !== 'doctor') {
+                    alert('Trang này chỉ dành cho Bác sĩ!');
+                    window.location.href = 'index.html';
+                    return null;
+                }
+                
+                const nameClaim = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || payload.name;
+                const userIdClaim = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || payload.sub || payload.userId;
+                
+                if (nameClaim) {
+                    document.getElementById('welcomeText').textContent = `Xin chào, BS. ${nameClaim}`;
+                }
+                
+                currentDoctorId = userIdClaim;
+                
+                return token;
+            } catch (error) {
+                console.error('Invalid token:', error);
+                localStorage.removeItem('token');
+                localStorage.removeItem('healthysystem_token');
+                window.location.href = 'login.html';
+                return null;
+            }
+        }
+
+        // Load doctor schedules
+        async function loadDoctorSchedules() {
+            const token = checkAuth();
+            if (!token || !currentDoctorId) return;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/doctors/${currentDoctorId}/schedules`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load schedules');
+                }
+
+                const result = await response.json();
+                const data = result.data;
+                const schedules = data.Schedules || data.schedules || [];
+
+                if (schedules.length === 0) {
+                    showEmptyState();
+                } else {
+                    renderSchedules(schedules);
+                    calculateSummary(schedules);
+                }
+            } catch (error) {
+                console.error('Error loading schedules:', error);
+                document.getElementById('scheduleContainer').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Không thể tải lịch làm việc. Vui lòng thử lại sau.
+                    </div>
+                `;
+            }
+        }
+
+        // Show empty state
+        function showEmptyState() {
+            document.getElementById('scheduleContainer').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <h5>Chưa có lịch làm việc</h5>
+                    <p>Quản trị viên chưa thiết lập lịch làm việc cho bạn.<br>
+                    Vui lòng liên hệ với bộ phận quản trị để được hỗ trợ.</p>
+                </div>
+            `;
+            document.getElementById('scheduleListContainer').innerHTML = '';
+        }
+
+        // Render schedules
+        function renderSchedules(schedules) {
+            const days = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+            const schedulesByDay = {};
+
+            // Group schedules by day
+            schedules.forEach(s => {
+                const day = s.DayOfWeek ?? s.dayOfWeek;
+                if (!schedulesByDay[day]) {
+                    schedulesByDay[day] = [];
+                }
+                schedulesByDay[day].push(s);
+            });
+
+            let html = '';
+
+            // Render Monday to Saturday
+            for (let i = 1; i <= 6; i++) {
+                if (schedulesByDay[i] && schedulesByDay[i].length > 0) {
+                    html += renderDaySchedule(days[i], schedulesByDay[i]);
+                }
+            }
+
+            // Render Sunday
+            if (schedulesByDay[0] && schedulesByDay[0].length > 0) {
+                html += renderDaySchedule(days[0], schedulesByDay[0]);
+            }
+
+            if (html === '') {
+                showEmptyState();
+            } else {
+                document.getElementById('scheduleContainer').innerHTML = html;
+                renderScheduleList(schedules);
+            }
+        }
+
+        // Render day schedule
+        function renderDaySchedule(dayName, schedules) {
+            let html = `
+                <div class="schedule-day">
+                    <h5><i class="fas fa-calendar-day me-2"></i>${dayName}</h5>
+            `;
+
+            schedules.forEach(s => {
+                const startTime = s.StartTime || s.startTime;
+                const endTime = s.EndTime || s.endTime;
+                const isAvailable = s.IsAvailable ?? s.isAvailable;
+                const maxAppts = s.MaxAppointmentsPerSlot ?? s.maxAppointmentsPerSlot;
+
+                html += `
+                    <div class="schedule-slot ${!isAvailable ? 'unavailable' : ''}">
+                        <div>
+                            <span class="time-badge">
+                                <i class="fas fa-clock me-2"></i>${startTime} - ${endTime}
+                            </span>
+                            <span class="ms-3 text-muted">
+                                <i class="fas fa-user-injured me-1"></i>
+                                Tối đa ${maxAppts} bệnh nhân
+                            </span>
+                        </div>
+                        <div>
+                            <span class="status-badge ${isAvailable ? 'active' : 'inactive'}">
+                                <i class="fas fa-${isAvailable ? 'check-circle' : 'pause-circle'} me-1"></i>
+                                ${isAvailable ? 'Đang hoạt động' : 'Tạm dừng'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            return html;
+        }
+
+        // Render schedule list
+        function renderScheduleList(schedules) {
+            const days = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Thứ</th>
+                                <th>Giờ bắt đầu</th>
+                                <th>Giờ kết thúc</th>
+                                <th>Thời lượng</th>
+                                <th>Số BN tối đa</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            schedules.forEach(s => {
+                const dayOfWeek = s.DayOfWeek ?? s.dayOfWeek;
+                const dayName = days[dayOfWeek];
+                const startTime = s.StartTime || s.startTime;
+                const endTime = s.EndTime || s.endTime;
+                const isAvailable = s.IsAvailable ?? s.isAvailable;
+                const maxAppts = s.MaxAppointmentsPerSlot ?? s.maxAppointmentsPerSlot;
+
+                // Calculate duration
+                const start = new Date(`2000-01-01 ${startTime}`);
+                const end = new Date(`2000-01-01 ${endTime}`);
+                const durationHours = (end - start) / (1000 * 60 * 60);
+
+                html += `
+                    <tr>
+                        <td><strong>${dayName}</strong></td>
+                        <td>${startTime}</td>
+                        <td>${endTime}</td>
+                        <td>${durationHours} giờ</td>
+                        <td>${maxAppts} bệnh nhân</td>
+                        <td>
+                            <span class="status-badge ${isAvailable ? 'active' : 'inactive'}">
+                                ${isAvailable ? 'Hoạt động' : 'Tạm dừng'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('scheduleListContainer').innerHTML = html;
+        }
+
+        // Calculate summary
+        function calculateSummary(schedules) {
+            const uniqueDays = new Set();
+            let totalHours = 0;
+            let totalSlots = schedules.filter(s => s.IsAvailable ?? s.isAvailable).length;
+
+            schedules.forEach(s => {
+                uniqueDays.add(s.DayOfWeek ?? s.dayOfWeek);
+
+                const startTime = s.StartTime || s.startTime;
+                const endTime = s.EndTime || s.endTime;
+                const start = new Date(`2000-01-01 ${startTime}`);
+                const end = new Date(`2000-01-01 ${endTime}`);
+                const hours = (end - start) / (1000 * 60 * 60);
+                totalHours += hours;
+            });
+
+            document.getElementById('totalDays').textContent = uniqueDays.size;
+            document.getElementById('totalHours').textContent = totalHours.toFixed(1);
+            document.getElementById('totalSlots').textContent = totalSlots;
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('healthysystem_token');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = checkAuth();
+            if (token) {
+                loadDoctorSchedules();
+            }
+        });
+    </script>
+</body>
+</html>

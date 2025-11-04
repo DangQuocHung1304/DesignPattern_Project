@@ -501,6 +501,414 @@ namespace HealthySystem.WebAPI.Controllers
         }
 
         // ============================================================
+        // Quản lý lịch làm việc bác sĩ (Doctor Schedule Management)
+        // ============================================================
+
+        /// <summary>
+        /// Lấy tất cả lịch làm việc của các bác sĩ
+        /// </summary>
+        [HttpGet("schedules/all")]
+        public async Task<IActionResult> GetAllDoctorSchedules()
+        {
+            try
+            {
+                var schedules = await _context.DoctorSchedules
+                    .Include(ds => ds.Doctor)
+                    .OrderBy(ds => ds.DoctorId)
+                    .ThenBy(ds => ds.DayOfWeek)
+                    .ThenBy(ds => ds.StartTime)
+                    .Select(ds => new
+                    {
+                        Id = ds.Id,
+                        DoctorId = ds.DoctorId,
+                        DoctorName = $"{ds.Doctor!.FirstName} {ds.Doctor.LastName}",
+                        DayOfWeek = ds.DayOfWeek,
+                        DayName = GetDayName(ds.DayOfWeek),
+                        StartTime = ds.StartTime.ToString("HH:mm"),
+                        EndTime = ds.EndTime.ToString("HH:mm"),
+                        IsAvailable = ds.IsAvailable,
+                        MaxAppointmentsPerSlot = ds.MaxAppointmentsPerSlot,
+                        CreatedAt = ds.CreatedAt
+                    })
+                    .ToListAsync();
+
+                return Ok(new { success = true, data = schedules });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting all doctor schedules");
+                return StatusCode(500, new { success = false, error = "Lỗi khi lấy danh sách lịch làm việc" });
+            }
+        }
+
+        /// <summary>
+        /// Lấy lịch làm việc của một bác sĩ cụ thể
+        /// </summary>
+        [HttpGet("doctors/{doctorId}/schedules")]
+        public async Task<IActionResult> GetDoctorSchedules(long doctorId)
+        {
+            try
+            {
+                var doctor = await _context.Users.FindAsync(doctorId);
+                if (doctor == null || doctor.Role != "doctor")
+                {
+                    return NotFound(new { success = false, error = "Không tìm thấy bác sĩ" });
+                }
+
+                var schedules = await _context.DoctorSchedules
+                    .Where(ds => ds.DoctorId == doctorId)
+                    .OrderBy(ds => ds.DayOfWeek)
+                    .ThenBy(ds => ds.StartTime)
+                    .Select(ds => new
+                    {
+                        Id = ds.Id,
+                        DayOfWeek = ds.DayOfWeek,
+                        DayName = GetDayName(ds.DayOfWeek),
+                        StartTime = ds.StartTime.ToString("HH:mm"),
+                        EndTime = ds.EndTime.ToString("HH:mm"),
+                        IsAvailable = ds.IsAvailable,
+                        MaxAppointmentsPerSlot = ds.MaxAppointmentsPerSlot,
+                        CreatedAt = ds.CreatedAt,
+                        UpdatedAt = ds.UpdatedAt
+                    })
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        DoctorId = doctor.Id,
+                        DoctorName = $"{doctor.FirstName} {doctor.LastName}",
+                        Schedules = schedules
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting doctor schedules for doctor {DoctorId}", doctorId);
+                return StatusCode(500, new { success = false, error = "Lỗi khi lấy lịch làm việc của bác sĩ" });
+            }
+        }
+
+        /// <summary>
+        /// Tạo lịch làm việc mới cho bác sĩ
+        /// </summary>
+        [HttpPost("doctors/{doctorId}/schedules")]
+        public async Task<IActionResult> CreateDoctorSchedule(long doctorId, [FromBody] CreateDoctorScheduleRequest request)
+        {
+            try
+            {
+                // Kiểm tra bác sĩ có tồn tại không
+                var doctor = await _context.Users.FindAsync(doctorId);
+                if (doctor == null || doctor.Role != "doctor")
+                {
+                    return NotFound(new { success = false, error = "Không tìm thấy bác sĩ" });
+                }
+
+                // Validate time
+                if (request.StartTime >= request.EndTime)
+                {
+                    return BadRequest(new { success = false, error = "Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc" });
+                }
+
+                // Kiểm tra trùng lặp lịch
+                var existingSchedule = await _context.DoctorSchedules
+                    .Where(ds => ds.DoctorId == doctorId
+                        && ds.DayOfWeek == request.DayOfWeek
+                        && ((request.StartTime >= ds.StartTime && request.StartTime < ds.EndTime) ||
+                            (request.EndTime > ds.StartTime && request.EndTime <= ds.EndTime) ||
+                            (request.StartTime <= ds.StartTime && request.EndTime >= ds.EndTime)))
+                    .FirstOrDefaultAsync();
+
+                if (existingSchedule != null)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        error = "Lịch làm việc bị trùng với lịch đã có. Vui lòng kiểm tra lại thời gian."
+                    });
+                }
+
+                var schedule = new DoctorSchedule
+                {
+                    DoctorId = doctorId,
+                    DayOfWeek = request.DayOfWeek,
+                    StartTime = TimeOnly.Parse(request.StartTime),
+                    EndTime = TimeOnly.Parse(request.EndTime),
+                    IsAvailable = request.IsAvailable,
+                    MaxAppointmentsPerSlot = request.MaxAppointmentsPerSlot,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.DoctorSchedules.Add(schedule);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Tạo lịch làm việc thành công",
+                    data = new
+                    {
+                        Id = schedule.Id,
+                        DayOfWeek = schedule.DayOfWeek,
+                        DayName = GetDayName(schedule.DayOfWeek),
+                        StartTime = schedule.StartTime.ToString("HH:mm"),
+                        EndTime = schedule.EndTime.ToString("HH:mm"),
+                        IsAvailable = schedule.IsAvailable,
+                        MaxAppointmentsPerSlot = schedule.MaxAppointmentsPerSlot
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating doctor schedule");
+                return StatusCode(500, new { success = false, error = "Lỗi khi tạo lịch làm việc" });
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật lịch làm việc
+        /// </summary>
+        [HttpPut("schedules/{scheduleId}")]
+        public async Task<IActionResult> UpdateDoctorSchedule(int scheduleId, [FromBody] UpdateDoctorScheduleRequest request)
+        {
+            try
+            {
+                var schedule = await _context.DoctorSchedules
+                    .Include(ds => ds.Doctor)
+                    .FirstOrDefaultAsync(ds => ds.Id == scheduleId);
+
+                if (schedule == null)
+                {
+                    return NotFound(new { success = false, error = "Không tìm thấy lịch làm việc" });
+                }
+
+                // Validate time if provided
+                if (!string.IsNullOrEmpty(request.StartTime) && !string.IsNullOrEmpty(request.EndTime))
+                {
+                    var startTime = TimeOnly.Parse(request.StartTime);
+                    var endTime = TimeOnly.Parse(request.EndTime);
+
+                    if (startTime >= endTime)
+                    {
+                        return BadRequest(new { success = false, error = "Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc" });
+                    }
+
+                    // Kiểm tra trùng lặp (không tính bản thân)
+                    var existingSchedule = await _context.DoctorSchedules
+                        .Where(ds => ds.Id != scheduleId
+                            && ds.DoctorId == schedule.DoctorId
+                            && ds.DayOfWeek == schedule.DayOfWeek
+                            && ((startTime >= ds.StartTime && startTime < ds.EndTime) ||
+                                (endTime > ds.StartTime && endTime <= ds.EndTime) ||
+                                (startTime <= ds.StartTime && endTime >= ds.EndTime)))
+                        .FirstOrDefaultAsync();
+
+                    if (existingSchedule != null)
+                    {
+                        return BadRequest(new
+                        {
+                            success = false,
+                            error = "Lịch làm việc bị trùng với lịch đã có. Vui lòng kiểm tra lại thời gian."
+                        });
+                    }
+
+                    schedule.StartTime = startTime;
+                    schedule.EndTime = endTime;
+                }
+
+                if (request.IsAvailable.HasValue)
+                {
+                    schedule.IsAvailable = request.IsAvailable.Value;
+                }
+
+                if (request.MaxAppointmentsPerSlot.HasValue)
+                {
+                    schedule.MaxAppointmentsPerSlot = request.MaxAppointmentsPerSlot.Value;
+                }
+
+                schedule.UpdatedAt = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Cập nhật lịch làm việc thành công",
+                    data = new
+                    {
+                        Id = schedule.Id,
+                        DoctorId = schedule.DoctorId,
+                        DoctorName = $"{schedule.Doctor!.FirstName} {schedule.Doctor.LastName}",
+                        DayOfWeek = schedule.DayOfWeek,
+                        DayName = GetDayName(schedule.DayOfWeek),
+                        StartTime = schedule.StartTime.ToString("HH:mm"),
+                        EndTime = schedule.EndTime.ToString("HH:mm"),
+                        IsAvailable = schedule.IsAvailable,
+                        MaxAppointmentsPerSlot = schedule.MaxAppointmentsPerSlot,
+                        UpdatedAt = schedule.UpdatedAt
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating doctor schedule");
+                return StatusCode(500, new { success = false, error = "Lỗi khi cập nhật lịch làm việc" });
+            }
+        }
+
+        /// <summary>
+        /// Xóa lịch làm việc
+        /// </summary>
+        [HttpDelete("schedules/{scheduleId}")]
+        public async Task<IActionResult> DeleteDoctorSchedule(int scheduleId)
+        {
+            try
+            {
+                var schedule = await _context.DoctorSchedules.FindAsync(scheduleId);
+
+                if (schedule == null)
+                {
+                    return NotFound(new { success = false, error = "Không tìm thấy lịch làm việc" });
+                }
+
+                _context.DoctorSchedules.Remove(schedule);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Xóa lịch làm việc thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting doctor schedule");
+                return StatusCode(500, new { success = false, error = "Lỗi khi xóa lịch làm việc" });
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách tất cả bác sĩ (để hiển thị trong dropdown)
+        /// </summary>
+        [HttpGet("doctors")]
+        public async Task<IActionResult> GetAllDoctors()
+        {
+            try
+            {
+                var doctors = await _context.Users
+                    .Where(u => u.Role == "doctor" && u.Status == "active")
+                    .OrderBy(u => u.FirstName)
+                    .Select(u => new
+                    {
+                        Id = u.Id,
+                        FullName = $"{u.FirstName} {u.LastName}",
+                        Email = u.Email,
+                        Phone = u.Phone
+                    })
+                    .ToListAsync();
+
+                return Ok(new { success = true, data = doctors });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting doctors list");
+                return StatusCode(500, new { success = false, error = "Lỗi khi lấy danh sách bác sĩ" });
+            }
+        }
+
+        /// <summary>
+        /// Lấy các time slots có sẵn của bác sĩ cho một ngày cụ thể (Public API cho booking)
+        /// </summary>
+        [HttpGet("doctors/{doctorId}/available-slots")]
+        [AllowAnonymous] // Allow public access for patient booking
+        public async Task<IActionResult> GetAvailableTimeSlots(long doctorId, [FromQuery] string date)
+        {
+            try
+            {
+                if (!DateTime.TryParse(date, out DateTime appointmentDate))
+                {
+                    return BadRequest(new { success = false, error = "Ngày không hợp lệ" });
+                }
+
+                // Get day of week (0=Sunday, 1=Monday, ..., 6=Saturday)
+                int dayOfWeek = (int)appointmentDate.DayOfWeek;
+
+                // Get doctor's schedules for this day
+                var schedules = await _context.DoctorSchedules
+                    .Where(ds => ds.DoctorId == doctorId 
+                        && ds.DayOfWeek == dayOfWeek 
+                        && ds.IsAvailable)
+                    .ToListAsync();
+
+                if (schedules.Count == 0)
+                {
+                    return Ok(new 
+                    { 
+                        success = true, 
+                        data = new
+                        {
+                            Date = appointmentDate.ToString("yyyy-MM-dd"),
+                            DayOfWeek = dayOfWeek,
+                            DayName = GetDayName(dayOfWeek),
+                            AvailableSlots = new List<object>(),
+                            Message = "Bác sĩ không làm việc vào ngày này"
+                        }
+                    });
+                }
+
+                // Get existing appointments for this date
+                var existingAppointments = await _context.Appointments
+                    .Where(a => a.DoctorId == doctorId 
+                        && a.AppointmentStart.Date == appointmentDate.Date
+                        && a.Status != "cancelled")
+                    .ToListAsync();
+
+                var availableSlots = new List<object>();
+
+                foreach (var schedule in schedules)
+                {
+                    // Count appointments in this time slot
+                    var appointmentsInSlot = existingAppointments
+                        .Count(a => a.AppointmentStart.TimeOfDay >= schedule.StartTime.ToTimeSpan()
+                            && a.AppointmentStart.TimeOfDay < schedule.EndTime.ToTimeSpan());
+
+                    var isAvailable = appointmentsInSlot < schedule.MaxAppointmentsPerSlot;
+
+                    availableSlots.Add(new
+                    {
+                        StartTime = schedule.StartTime.ToString("HH:mm"),
+                        EndTime = schedule.EndTime.ToString("HH:mm"),
+                        MaxSlots = schedule.MaxAppointmentsPerSlot,
+                        BookedSlots = appointmentsInSlot,
+                        RemainingSlots = schedule.MaxAppointmentsPerSlot - appointmentsInSlot,
+                        IsAvailable = isAvailable
+                    });
+                }
+
+                return Ok(new 
+                { 
+                    success = true, 
+                    data = new
+                    {
+                        DoctorId = doctorId,
+                        Date = appointmentDate.ToString("yyyy-MM-dd"),
+                        DayOfWeek = dayOfWeek,
+                        DayName = GetDayName(dayOfWeek),
+                        AvailableSlots = availableSlots.Where(s => ((dynamic)s).IsAvailable).ToList(),
+                        AllSlots = availableSlots
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting available time slots");
+                return StatusCode(500, new { success = false, error = "Lỗi khi lấy danh sách giờ khám" });
+            }
+        }
+
+        // ============================================================
         // Helper Methods
         // ============================================================
 
@@ -529,6 +937,21 @@ namespace HealthySystem.WebAPI.Controllers
                    $"Trân trọng,\n" +
                    $"Healthy System";
         }
+
+        private string GetDayName(int dayOfWeek)
+        {
+            return dayOfWeek switch
+            {
+                0 => "Chủ nhật",
+                1 => "Thứ hai",
+                2 => "Thứ ba",
+                3 => "Thứ tư",
+                4 => "Thứ năm",
+                5 => "Thứ sáu",
+                6 => "Thứ bảy",
+                _ => "Không xác định"
+            };
+        }
     }
 
     // DTO Classes
@@ -540,5 +963,22 @@ namespace HealthySystem.WebAPI.Controllers
     public class UpdateUserStatusRequest
     {
         public bool IsActive { get; set; }
+    }
+
+    public class CreateDoctorScheduleRequest
+    {
+        public int DayOfWeek { get; set; } // 0=Sunday to 6=Saturday
+        public string StartTime { get; set; } = string.Empty; // Format: "HH:mm"
+        public string EndTime { get; set; } = string.Empty; // Format: "HH:mm"
+        public bool IsAvailable { get; set; } = true;
+        public int MaxAppointmentsPerSlot { get; set; } = 4;
+    }
+
+    public class UpdateDoctorScheduleRequest
+    {
+        public string? StartTime { get; set; } // Format: "HH:mm"
+        public string? EndTime { get; set; } // Format: "HH:mm"
+        public bool? IsAvailable { get; set; }
+        public int? MaxAppointmentsPerSlot { get; set; }
     }
 }

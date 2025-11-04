@@ -33,6 +33,7 @@ namespace HealthySystem.API.Data
         public DbSet<WalkInPatient> WalkInPatients { get; set; }
         public DbSet<Treatment> Treatments { get; set; }
         public DbSet<TreatmentItem> TreatmentItems { get; set; }
+        public DbSet<DoctorSchedule> DoctorSchedules { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -176,6 +177,32 @@ namespace HealthySystem.API.Data
 
             modelBuilder.Entity<Invoice>()
                 .HasIndex(i => i.PatientId);
+
+            // Configure DoctorSchedule relationships
+            modelBuilder.Entity<DoctorSchedule>()
+                .HasOne(ds => ds.Doctor)
+                .WithMany()
+                .HasForeignKey(ds => ds.DoctorId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Create unique constraint for doctor schedule
+            modelBuilder.Entity<DoctorSchedule>()
+                .HasIndex(ds => new { ds.DoctorId, ds.DayOfWeek, ds.StartTime })
+                .IsUnique()
+                .HasDatabaseName("UQ_doctor_schedule");
+
+            // Create index for performance
+            modelBuilder.Entity<DoctorSchedule>()
+                .HasIndex(ds => ds.DoctorId)
+                .HasDatabaseName("IX_doctor_schedules_doctor_id");
+
+            modelBuilder.Entity<DoctorSchedule>()
+                .HasIndex(ds => ds.DayOfWeek)
+                .HasDatabaseName("IX_doctor_schedules_day_of_week");
+
+            modelBuilder.Entity<DoctorSchedule>()
+                .HasIndex(ds => ds.IsAvailable)
+                .HasDatabaseName("IX_doctor_schedules_is_available");
         }
     }
 }
