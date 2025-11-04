@@ -230,6 +230,207 @@
             border-width: 0.3rem;
             color: var(--primary-color);
         }
+
+        /* Medical History Styles */
+        .stat-card {
+            border-radius: 12px;
+            padding: 1.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(45deg);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.9;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: #595959;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            background: #f5f5f5;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 3rem;
+            padding-bottom: 2rem;
+            border-left: 2px solid #e8e8e8;
+        }
+
+        .timeline-item:last-child {
+            border-left: none;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: -1.25rem;
+            top: 0;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .timeline-content {
+            background: white;
+            border-radius: 8px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+        }
+
+        .timeline-content:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transform: translateX(5px);
+        }
+
+        .timeline-date {
+            color: #8c8c8c;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-doctor {
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .result-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-normal {
+            background: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .result-abnormal {
+            background: #fff2e8;
+            color: #fa8c16;
+            border: 1px solid #ffd591;
+        }
+
+        .result-critical {
+            background: #fff1f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+        }
+
+        .result-pending {
+            background: #e6f7ff;
+            color: #1890ff;
+            border: 1px solid #91d5ff;
+        }
+
+        .test-result-item {
+            background: #fafafa;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-result-item.abnormal {
+            background: #fff7e6;
+            border-left: 3px solid #fa8c16;
+        }
+
+        .medication-item {
+            background: #f9f9f9;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .btn-view-detail {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.4rem 1rem;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-view-detail:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
     </style>
 </head>
 <body>
@@ -312,30 +513,125 @@
                 </div>
             </div>
 
-            <!-- Appointments History -->
+            <!-- Medical History with Tabs -->
             <div class="patient-card">
                 <div class="section-title">
-                    <i class="fas fa-calendar-check text-info"></i>
+                    <i class="fas fa-file-medical text-info"></i>
                     Lịch sử khám bệnh
                 </div>
-                <div id="appointmentsHistory">
-                    <div class="loading-spinner">
-                        <div class="spinner-border spinner-border-sm" role="status"></div>
-                        <span class="ms-2">Đang tải...</span>
+
+                <!-- Statistics Grid -->
+                <div class="row mb-4" id="medicalStats" style="display: none;">
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="stat-icon">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="totalEncounters">0</div>
+                                <div class="stat-label">Lượt khám</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="stat-icon">
+                                <i class="fas fa-vial"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="totalLabTests">0</div>
+                                <div class="stat-label">Xét nghiệm</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="stat-icon">
+                                <i class="fas fa-x-ray"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="totalImagingTests">0</div>
+                                <div class="stat-label">Chẩn đoán hình ảnh</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <div class="stat-icon">
+                                <i class="fas fa-pills"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="totalTreatments">0</div>
+                                <div class="stat-label">Điều trị</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Treatments -->
-            <div class="patient-card">
-                <div class="section-title">
-                    <i class="fas fa-heartbeat text-danger"></i>
-                    Liệu trình điều trị
-                </div>
-                <div id="treatmentsHistory">
-                    <div class="loading-spinner">
-                        <div class="spinner-border spinner-border-sm" role="status"></div>
-                        <span class="ms-2">Đang tải...</span>
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs mb-3" id="medicalHistoryTabs" role="tablist" style="display: none;">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="encounters-tab" data-bs-toggle="tab" data-bs-target="#encounters" type="button" role="tab">
+                            <i class="fas fa-user-md me-1"></i> Lượt khám
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="lab-results-tab" data-bs-toggle="tab" data-bs-target="#lab-results" type="button" role="tab">
+                            <i class="fas fa-vial me-1"></i> Kết quả xét nghiệm
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="imaging-results-tab" data-bs-toggle="tab" data-bs-target="#imaging-results" type="button" role="tab">
+                            <i class="fas fa-x-ray me-1"></i> Kết quả chẩn đoán hình ảnh
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="treatments-tab" data-bs-toggle="tab" data-bs-target="#treatments" type="button" role="tab">
+                            <i class="fas fa-pills me-1"></i> Liệu trình điều trị
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="medicalHistoryTabContent">
+                    <!-- Encounters Tab -->
+                    <div class="tab-pane fade show active" id="encounters" role="tabpanel">
+                        <div id="encountersContent">
+                            <div class="loading-spinner">
+                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                                <span class="ms-2">Đang tải lịch sử khám bệnh...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lab Results Tab -->
+                    <div class="tab-pane fade" id="lab-results" role="tabpanel">
+                        <div id="labResultsContent">
+                            <div class="loading-spinner">
+                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                                <span class="ms-2">Đang tải kết quả xét nghiệm...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Imaging Results Tab -->
+                    <div class="tab-pane fade" id="imaging-results" role="tabpanel">
+                        <div id="imagingResultsContent">
+                            <div class="loading-spinner">
+                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                                <span class="ms-2">Đang tải kết quả chẩn đoán hình ảnh...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Treatments Tab -->
+                    <div class="tab-pane fade" id="treatments" role="tabpanel">
+                        <div id="treatmentsContent">
+                            <div class="loading-spinner">
+                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                                <span class="ms-2">Đang tải liệu trình điều trị...</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -507,23 +803,11 @@
             document.getElementById('searchResults').innerHTML = '';
             document.getElementById('patientDetails').style.display = 'block';
 
-            // Load patient info (bao gồm appointment history)
-            const patientData = await loadPatientInfo(patientId, token);
+            // Load patient info
+            await loadPatientInfo(patientId, token);
             
-            // Load appointments history from patient data
-            if (patientData && patientData.appointmentHistory) {
-                displayAppointmentsHistory(patientData.appointmentHistory);
-            } else {
-                document.getElementById('appointmentsHistory').innerHTML = `
-                    <div class="empty-state" style="padding: 2rem;">
-                        <i class="fas fa-calendar-times" style="font-size: 2rem;"></i>
-                        <p class="mt-2">Chưa có lịch hẹn nào</p>
-                    </div>
-                `;
-            }
-            
-            // Load treatments
-            await loadTreatments(patientId, token);
+            // Load comprehensive medical history
+            await loadMedicalHistory(patientId, token);
         }
 
         // Load patient info
@@ -582,7 +866,6 @@
                     ` : ''}
                 `;
                 
-                // Return patient data để sử dụng appointment history
                 return patient;
             } catch (error) {
                 console.error('Error loading patient info:', error);
@@ -596,85 +879,312 @@
             }
         }
 
-        // Display appointments history (sử dụng data từ patient endpoint)
-        function displayAppointmentsHistory(appointments) {
-            if (!appointments || appointments.length === 0) {
-                document.getElementById('appointmentsHistory').innerHTML = `
-                    <div class="empty-state" style="padding: 2rem;">
-                        <i class="fas fa-calendar-times" style="font-size: 2rem;"></i>
-                        <p class="mt-2">Chưa có lịch hẹn nào</p>
+        // Load comprehensive medical history
+        async function loadMedicalHistory(patientId, token) {
+            try {
+                // Call the comprehensive medical history API
+                const response = await fetch(`${API_URL}/medicalhistory/${patientId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load medical history');
+
+                const history = await response.json();
+                
+                // Show stats and tabs
+                document.getElementById('medicalStats').style.display = 'flex';
+                document.getElementById('medicalHistoryTabs').style.display = 'flex';
+
+                // Update statistics
+                document.getElementById('totalEncounters').textContent = history.statistics.totalEncounters;
+                document.getElementById('totalLabTests').textContent = history.statistics.totalLabTests;
+                document.getElementById('totalImagingTests').textContent = history.statistics.totalImagingTests;
+                document.getElementById('totalTreatments').textContent = `${history.statistics.activeTreatments}/${history.statistics.completedTreatments}`;
+
+                // Display encounters (timeline view)
+                displayEncounters(history.encounters);
+
+                // Display lab results
+                displayLabResults(history.labResults);
+
+                // Display imaging results
+                displayImagingResults(history.imagingResults);
+
+                // Display treatments
+                displayTreatmentsTab(history.treatments);
+
+            } catch (error) {
+                console.error('Error loading medical history:', error);
+                document.getElementById('encountersContent').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Không thể tải lịch sử khám bệnh
+                    </div>
+                `;
+            }
+        }
+
+        // Display encounters in timeline format
+        function displayEncounters(encounters) {
+            const content = document.getElementById('encountersContent');
+            
+            if (!encounters || encounters.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user-md"></i>
+                        <h5>Chưa có lịch sử khám bệnh</h5>
+                        <p>Bệnh nhân chưa có lượt khám nào</p>
                     </div>
                 `;
                 return;
             }
 
-            document.getElementById('appointmentsHistory').innerHTML = appointments.map(apt => `
-                <div class="treatment-item">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h6 class="mb-1">${new Date(apt.appointmentDate).toLocaleDateString('vi-VN')} ${new Date(apt.appointmentDate).toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})}</h6>
-                            <small class="text-muted">Bác sĩ: ${apt.doctorName || 'N/A'}</small>
-                        </div>
-                        <span class="appointment-badge">
-                            ${apt.status === 'scheduled' ? 'Đã hẹn' : 
-                              apt.status === 'confirmed' ? 'Đã xác nhận' : 
-                              apt.status === 'completed' ? 'Hoàn thành' : 'Đã hủy'}
-                        </span>
+            content.innerHTML = encounters.map((encounter, index) => `
+                <div class="timeline-item">
+                    <div class="timeline-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                        <i class="fas fa-stethoscope"></i>
                     </div>
-                    ${apt.reason ? `<p class="mb-0 text-muted"><small>${apt.reason}</small></p>` : ''}
+                    <div class="timeline-content">
+                        <div class="timeline-date">
+                            <i class="fas fa-calendar me-1"></i>
+                            ${new Date(encounter.encounterDate).toLocaleDateString('vi-VN')} 
+                            ${new Date(encounter.encounterDate).toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})}
+                        </div>
+                        <h6 class="timeline-title">${encounter.encounterType === 'consultation' ? 'Tư vấn' : encounter.encounterType === 'follow-up' ? 'Tái khám' : 'Khẩn cấp'}</h6>
+                        <div class="timeline-doctor">
+                            <i class="fas fa-user-md me-1"></i>
+                            Bác sĩ: ${encounter.doctorName}
+                        </div>
+                        
+                        ${encounter.chiefComplaint ? `
+                            <div class="mb-2">
+                                <strong>Lý do khám:</strong>
+                                <p class="mb-1 text-muted">${encounter.chiefComplaint}</p>
+                            </div>
+                        ` : ''}
+
+                        ${encounter.diagnosis ? `
+                            <div class="mb-2">
+                                <strong>Chẩn đoán:</strong>
+                                <p class="mb-1 text-muted">${encounter.diagnosis}</p>
+                            </div>
+                        ` : ''}
+
+                        ${encounter.labRequests && encounter.labRequests.length > 0 ? `
+                            <div class="mb-2">
+                                <strong>Xét nghiệm:</strong>
+                                <div class="mt-1">
+                                    ${encounter.labRequests.map(lab => `
+                                        <span class="result-badge ${lab.hasResults ? 'result-normal' : 'result-pending'}">
+                                            <i class="fas fa-${lab.hasResults ? 'check' : 'clock'} me-1"></i>
+                                            ${lab.testName}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${encounter.imagingRequests && encounter.imagingRequests.length > 0 ? `
+                            <div class="mb-2">
+                                <strong>Chẩn đoán hình ảnh:</strong>
+                                <div class="mt-1">
+                                    ${encounter.imagingRequests.map(img => `
+                                        <span class="result-badge ${img.hasResults ? 'result-normal' : 'result-pending'}">
+                                            <i class="fas fa-${img.hasResults ? 'check' : 'clock'} me-1"></i>
+                                            ${img.imagingType}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${encounter.prescriptions && encounter.prescriptions.length > 0 ? `
+                            <div class="mb-2">
+                                <strong>Đơn thuốc:</strong>
+                                <div class="mt-1">
+                                    ${encounter.prescriptions.map(presc => `
+                                        <div class="medication-item">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <strong>${presc.medicineName}</strong>
+                                                    <div class="text-muted small">
+                                                        ${presc.dosage} - ${presc.frequency}
+                                                        ${presc.durationDays ? ` - ${presc.durationDays} ngày` : ''}
+                                                    </div>
+                                                    ${presc.instructions ? `<div class="text-muted small mt-1">${presc.instructions}</div>` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${encounter.notes ? `
+                            <div class="mb-2">
+                                <strong>Ghi chú:</strong>
+                                <p class="mb-0 text-muted small">${encounter.notes}</p>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
             `).join('');
         }
 
-        // Load treatments
-        async function loadTreatments(patientId, token) {
-            try {
-                // Load current treatments
-                const currentResponse = await fetch(`${API_URL}/treatments/current/${patientId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
+        // Display lab results
+        function displayLabResults(labResults) {
+            const content = document.getElementById('labResultsContent');
+            
+            if (!labResults || labResults.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-vial"></i>
+                        <h5>Chưa có kết quả xét nghiệm</h5>
+                        <p>Bệnh nhân chưa có xét nghiệm nào</p>
+                    </div>
+                `;
+                return;
+            }
 
-                // Load completed treatments
-                const historyResponse = await fetch(`${API_URL}/treatments/history/${patientId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                const currentResult = await currentResponse.json();
-                const historyResult = await historyResponse.json();
-
-                const currentTreatments = currentResult.data || [];
-                const completedTreatments = historyResult.data || [];
-
-                const allTreatments = [...currentTreatments, ...completedTreatments];
-
-                if (allTreatments.length === 0) {
-                    document.getElementById('treatmentsHistory').innerHTML = `
-                        <div class="empty-state" style="padding: 2rem;">
-                            <i class="fas fa-notes-medical" style="font-size: 2rem;"></i>
-                            <p class="mt-2">Chưa có liệu trình điều trị nào</p>
+            content.innerHTML = labResults.map(lab => `
+                <div class="timeline-item">
+                    <div class="timeline-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">
+                            <i class="fas fa-calendar me-1"></i>
+                            ${new Date(lab.resultDate || lab.requestDate).toLocaleDateString('vi-VN')}
                         </div>
-                    `;
-                    return;
-                }
+                        <h6 class="timeline-title">${lab.testName}</h6>
+                        
+                        <span class="result-badge ${lab.status === 'completed' ? 'result-normal' : lab.status === 'pending' ? 'result-pending' : 'result-abnormal'}">
+                            ${lab.status === 'completed' ? 'Hoàn thành' : lab.status === 'pending' ? 'Chờ kết quả' : 'Đang xử lý'}
+                        </span>
 
-                document.getElementById('treatmentsHistory').innerHTML = allTreatments.map(treatment => `
-                    <div class="treatment-item ${treatment.status === 'active' ? 'active' : 'completed'}">
+                        ${lab.results && lab.results.length > 0 ? `
+                            <div class="mt-3">
+                                ${lab.results.map(result => `
+                                    <div class="test-result-item ${result.isAbnormal ? 'abnormal' : ''}">
+                                        <div>
+                                            <strong>${result.parameterName}</strong>
+                                            <div class="text-muted small">${result.normalRange || 'N/A'}</div>
+                                        </div>
+                                        <div class="text-end">
+                                            <strong class="${result.isAbnormal ? 'text-warning' : 'text-success'}">
+                                                ${result.value} ${result.unit || ''}
+                                            </strong>
+                                            ${result.isAbnormal ? '<i class="fas fa-exclamation-triangle text-warning ms-1"></i>' : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : '<p class="text-muted mt-2">Chưa có kết quả</p>'}
+
+                        ${lab.interpretation ? `
+                            <div class="mt-2 p-2 bg-light rounded">
+                                <strong>Nhận xét:</strong>
+                                <p class="mb-0 small">${lab.interpretation}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Display imaging results
+        function displayImagingResults(imagingResults) {
+            const content = document.getElementById('imagingResultsContent');
+            
+            if (!imagingResults || imagingResults.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-x-ray"></i>
+                        <h5>Chưa có kết quả chẩn đoán hình ảnh</h5>
+                        <p>Bệnh nhân chưa có chẩn đoán hình ảnh nào</p>
+                    </div>
+                `;
+                return;
+            }
+
+            content.innerHTML = imagingResults.map(img => `
+                <div class="timeline-item">
+                    <div class="timeline-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-x-ray"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">
+                            <i class="fas fa-calendar me-1"></i>
+                            ${new Date(img.resultDate || img.requestDate).toLocaleDateString('vi-VN')}
+                        </div>
+                        <h6 class="timeline-title">${img.imagingType}</h6>
+                        
+                        <span class="result-badge ${img.status === 'completed' ? 'result-normal' : img.status === 'pending' ? 'result-pending' : 'result-abnormal'}">
+                            ${img.status === 'completed' ? 'Hoàn thành' : img.status === 'pending' ? 'Chờ kết quả' : 'Đang xử lý'}
+                        </span>
+
+                        ${img.bodyPart ? `
+                            <div class="mt-2">
+                                <strong>Bộ phận:</strong> ${img.bodyPart}
+                            </div>
+                        ` : ''}
+
+                        ${img.findings ? `
+                            <div class="mt-2">
+                                <strong>Kết quả:</strong>
+                                <p class="mb-1 text-muted">${img.findings}</p>
+                            </div>
+                        ` : '<p class="text-muted mt-2">Chưa có kết quả</p>'}
+
+                        ${img.impression ? `
+                            <div class="mt-2 p-2 bg-light rounded">
+                                <strong>Kết luận:</strong>
+                                <p class="mb-0 small">${img.impression}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Display treatments in tab
+        function displayTreatmentsTab(treatments) {
+            const content = document.getElementById('treatmentsContent');
+            
+            if (!treatments || treatments.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-pills"></i>
+                        <h5>Chưa có liệu trình điều trị</h5>
+                        <p>Bệnh nhân chưa có liệu trình điều trị nào</p>
+                    </div>
+                `;
+                return;
+            }
+
+            content.innerHTML = treatments.map(treatment => `
+                <div class="timeline-item">
+                    <div class="timeline-icon" style="background: ${treatment.status === 'active' ? 'linear-gradient(135deg, #43e97b, #38f9d7)' : 'linear-gradient(135deg, #8c8c8c, #b8b8b8)'};">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <div class="timeline-content">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
-                                <h6 class="mb-1">${treatment.name}</h6>
+                                <h6 class="timeline-title mb-1">${treatment.name}</h6>
                                 <small class="text-muted">${treatment.diagnosis || 'Chưa có chẩn đoán'}</small>
                             </div>
                             <span class="badge-status ${treatment.status === 'active' ? 'badge-active' : 'badge-completed'}">
                                 ${treatment.status === 'active' ? 'Đang điều trị' : 'Hoàn thành'}
                             </span>
                         </div>
-                        <p class="mb-2 text-muted"><small>${treatment.description || ''}</small></p>
+
+                        ${treatment.description ? `
+                            <p class="mb-2 text-muted small">${treatment.description}</p>
+                        ` : ''}
+
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <small class="text-muted">
                                 <i class="fas fa-calendar me-1"></i>
@@ -683,21 +1193,29 @@
                             </small>
                             <small><strong>${treatment.progress}%</strong></small>
                         </div>
+
                         <div class="progress-bar-custom">
-                            <div class="progress-bar-fill" style="width: ${treatment.progress}%"></div>
+                            <div class="progress-bar-fill" style="width: ${treatment.progress}%; background: ${treatment.status === 'active' ? 'linear-gradient(90deg, #43e97b, #38f9d7)' : 'linear-gradient(90deg, #8c8c8c, #b8b8b8)'};"></div>
                         </div>
-                        ${treatment.outcome ? `<p class="mt-2 mb-0 text-success"><small><i class="fas fa-check-circle me-1"></i>${treatment.outcome}</small></p>` : ''}
+
+                        ${treatment.outcome ? `
+                            <p class="mt-2 mb-0 text-success small">
+                                <i class="fas fa-check-circle me-1"></i>${treatment.outcome}
+                            </p>
+                        ` : ''}
                     </div>
-                `).join('');
-            } catch (error) {
-                console.error('Error loading treatments:', error);
-                document.getElementById('treatmentsHistory').innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Không thể tải liệu trình điều trị
-                    </div>
-                `;
-            }
+                </div>
+            `).join('');
+        }
+
+        // Display appointments history (legacy - không còn dùng)
+        function displayAppointmentsHistory(appointments) {
+            // This function is deprecated - using Medical History API instead
+        }
+
+        // Load treatments (legacy - không còn dùng)
+        async function loadTreatments(patientId, token) {
+            // This function is deprecated - using Medical History API instead
         }
 
         // Enter key to search
