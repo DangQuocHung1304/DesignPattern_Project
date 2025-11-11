@@ -41,6 +41,10 @@ namespace HealthySystem.API.Models
         [Column("base_salary", TypeName = "decimal(18,2)")]
         public decimal? BaseSalary { get; set; }
 
+        [Column("profile_image_url")]
+        [MaxLength(500)]
+        public string? ProfileImageUrl { get; set; }
+
         [Column("created_at")]
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 

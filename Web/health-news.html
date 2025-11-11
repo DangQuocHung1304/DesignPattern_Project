@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tin Tức Y Tế - Phòng Khám Healthy System</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* Header Styles */
+        .page-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+            padding: 4rem 0 3rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50px;
+            transition: background 0.3s;
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .filter-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            margin-right: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .filter-tabs .nav-link:hover {
+            background: #e9ecef;
+        }
+
+        .filter-tabs .nav-link.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* News Card Styles */
+        .news-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .news-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .news-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .featured-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #ffc107;
+            color: #000;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .news-content {
+            padding: 1.5rem;
+        }
+
+        .news-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.75rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .news-summary {
+            color: #6c757d;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .news-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1rem;
+            border-top: 1px solid #e9ecef;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .news-author {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .news-views {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Pagination */
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 3rem;
+        }
+
+        .pagination .page-link {
+            color: var(--primary-color);
+            border: 1px solid #dee2e6;
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: 8px;
+        }
+
+        .pagination .page-link:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .pagination .page-item.active .page-link {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* Loading & Empty States */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .filter-tabs .nav-link {
+                margin-bottom: 0.5rem;
+            }
+            
+            .news-image {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <a href="/" class="back-button">
+                <i class="bi bi-arrow-left"></i> Quay lại Trang chủ
+            </a>
+            <h1><i class="bi bi-newspaper"></i> Tin Tức Y Tế</h1>
+            <p>Cập nhật kiến thức sức khỏe mới nhất</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <ul class="nav nav-pills" id="categoryTabs">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" data-category="">
+                        <i class="bi bi-grid-fill"></i> Tất cả
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-category="Sức khỏe tổng quát">
+                        <i class="bi bi-heart-pulse"></i> Sức khỏe tổng quát
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-category="Dinh dưỡng">
+                        <i class="bi bi-apple"></i> Dinh dưỡng
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-category="Phòng bệnh">
+                        <i class="bi bi-shield-check"></i> Phòng bệnh
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-spinner">
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Đang tải...</span>
+                </div>
+                <p class="mt-3 text-muted">Đang tải tin tức...</p>
+            </div>
+        </div>
+
+        <!-- News Grid -->
+        <div id="newsGrid" class="row g-4" style="display: none;"></div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="bi bi-inbox"></i>
+            <h4>Chưa có tin tức</h4>
+            <p>Hiện tại chưa có bài viết nào trong danh mục này</p>
+        </div>
+
+        <!-- Pagination -->
+        <div id="paginationWrapper" class="pagination-wrapper" style="display: none;">
+            <nav>
+                <ul class="pagination" id="pagination"></ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:5271/api';
+        
+        // State
+        let currentPage = 1;
+        let currentCategory = '';
+        const PAGE_SIZE = 9;
+
+        // Load Health News
+        async function loadHealthNews(page = 1, category = '') {
+            try {
+                showLoading();
+                
+                let url = `${API_BASE_URL}/public/health-news?page=${page}&pageSize=${PAGE_SIZE}`;
+                if (category) {
+                    url += `&category=${encodeURIComponent(category)}`;
+                }
+
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch health news');
+                }
+
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    renderNews(result.data);
+                    renderPagination(result.pagination);
+                } else {
+                    showEmptyState();
+                }
+            } catch (error) {
+                console.error('Error loading health news:', error);
+                showError();
+            }
+        }
+
+        // Render News Cards
+        function renderNews(newsItems) {
+            const grid = document.getElementById('newsGrid');
+            grid.innerHTML = '';
+
+            newsItems.forEach(news => {
+                const col = document.createElement('div');
+                col.className = 'col-md-6 col-lg-4';
+                col.innerHTML = createNewsCard(news);
+                grid.appendChild(col);
+            });
+
+            hideLoading();
+            grid.style.display = 'flex';
+        }
+
+        // Create News Card HTML
+        function createNewsCard(news) {
+            const imageUrl = news.image_url || 'https://via.placeholder.com/400x250?text=Tin+Y+Te';
+            const publishedDate = formatDate(news.published_date);
+            
+            return `
+                <div class="news-card" onclick="viewNewsDetail(${news.health_news_id})">
+                    <div style="position: relative;">
+                        <img src="${imageUrl}" alt="${news.title}" class="news-image" 
+                             onerror="this.src='https://via.placeholder.com/400x250?text=Tin+Y+Te'">
+                        ${news.is_featured ? '<span class="featured-badge"><i class="bi bi-star-fill"></i> Nổi bật</span>' : ''}
+                        <span class="news-badge">${news.category}</span>
+                    </div>
+                    <div class="news-content">
+                        <h3 class="news-title">${news.title}</h3>
+                        <p class="news-summary">${news.summary}</p>
+                        <div class="news-meta">
+                            <div class="news-author">
+                                <i class="bi bi-person-circle"></i>
+                                <span>${news.author}</span>
+                            </div>
+                            <div class="news-views">
+                                <i class="bi bi-eye"></i>
+                                <span>${news.view_count}</span>
+                            </div>
+                        </div>
+                        <div class="news-meta" style="border-top: none; padding-top: 0.5rem;">
+                            <div class="news-date">
+                                <i class="bi bi-calendar3"></i>
+                                <span>${publishedDate}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Navigate to News Detail
+        function viewNewsDetail(newsId) {
+            window.location.href = `health-news-detail.html?id=${newsId}`;
+        }
+
+        // Render Pagination
+        function renderPagination(pagination) {
+            const wrapper = document.getElementById('paginationWrapper');
+            const paginationEl = document.getElementById('pagination');
+            
+            if (pagination.totalPages <= 1) {
+                wrapper.style.display = 'none';
+                return;
+            }
+
+            paginationEl.innerHTML = '';
+
+            // Previous button
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${!pagination.hasPreviousPage ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${pagination.currentPage - 1}); return false;">
+                <i class="bi bi-chevron-left"></i>
+            </a>`;
+            paginationEl.appendChild(prevLi);
+
+            // Page numbers
+            for (let i = 1; i <= pagination.totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === pagination.currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>`;
+                paginationEl.appendChild(li);
+            }
+
+            // Next button
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${!pagination.hasNextPage ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${pagination.currentPage + 1}); return false;">
+                <i class="bi bi-chevron-right"></i>
+            </a>`;
+            paginationEl.appendChild(nextLi);
+
+            wrapper.style.display = 'flex';
+        }
+
+        // Change Page
+        function changePage(page) {
+            currentPage = page;
+            loadHealthNews(page, currentCategory);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Format Date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        // Show/Hide States
+        function showLoading() {
+            document.getElementById('loadingState').style.display = 'flex';
+            document.getElementById('newsGrid').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('paginationWrapper').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingState').style.display = 'none';
+        }
+
+        function showEmptyState() {
+            hideLoading();
+            document.getElementById('emptyState').style.display = 'block';
+        }
+
+        function showError() {
+            const grid = document.getElementById('newsGrid');
+            grid.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-danger text-center" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-3"></i>
+                        <h5>Không thể tải tin tức</h5>
+                        <p>Vui lòng thử lại sau hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            <i class="bi bi-arrow-clockwise"></i> Tải lại trang
+                        </button>
+                    </div>
+                </div>
+            `;
+            hideLoading();
+            grid.style.display = 'flex';
+        }
+
+        // Category Filter
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load initial news
+            loadHealthNews(1, '');
+
+            // Setup category tabs
+            const tabs = document.querySelectorAll('#categoryTabs .nav-link');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Get category and reload
+                    currentCategory = this.getAttribute('data-category');
+                    currentPage = 1;
+                    loadHealthNews(1, currentCategory);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

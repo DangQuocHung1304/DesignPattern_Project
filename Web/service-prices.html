@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Giá Dịch Vụ - Phòng Khám Healthy System</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --info-color: #0dcaf0;
+            --warning-color: #ffc107;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* Header Styles */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #0a58ca 100%);
+            color: white;
+            padding: 4rem 0 3rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .page-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Category Card Styles */
+        .category-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .category-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .category-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+            color: var(--primary-color);
+        }
+
+        .category-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        /* Price Table Styles */
+        .price-table {
+            width: 100%;
+        }
+
+        .price-table thead {
+            background-color: #f8f9fa;
+        }
+
+        .price-table th {
+            font-weight: 600;
+            color: #495057;
+            padding: 1rem;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .price-table td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .price-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .service-name {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .service-description {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+
+        .price-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .unit-text {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Back Button */
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50px;
+            transition: background 0.3s;
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        /* Notes Section */
+        .notes-section {
+            background: #e7f3ff;
+            border-left: 4px solid var(--info-color);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-radius: 8px;
+        }
+
+        .notes-section h5 {
+            color: #0dcaf0;
+            margin-bottom: 1rem;
+        }
+
+        .notes-section ul {
+            margin-bottom: 0;
+            padding-left: 1.5rem;
+        }
+
+        .notes-section li {
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        /* Footer */
+        .page-footer {
+            background: #2c3e50;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .category-title {
+                font-size: 1.25rem;
+            }
+            
+            .price-table {
+                font-size: 0.9rem;
+            }
+            
+            .price-table th,
+            .price-table td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <a href="/" class="back-button">
+                <i class="bi bi-arrow-left"></i> Quay lại Trang chủ
+            </a>
+            <h1><i class="bi bi-currency-dollar"></i> Bảng Giá Dịch Vụ</h1>
+            <p>Phòng Khám Đa Khoa Healthy System - Cập nhật mới nhất</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-spinner">
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Đang tải...</span>
+                </div>
+                <p class="mt-3 text-muted">Đang tải bảng giá...</p>
+            </div>
+        </div>
+
+        <!-- Service Prices Container -->
+        <div id="servicePricesContainer" style="display: none;">
+            <!-- Categories will be dynamically loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="bi bi-inbox"></i>
+            <h4>Chưa có thông tin bảng giá</h4>
+            <p>Hiện tại chưa có dữ liệu bảng giá dịch vụ</p>
+        </div>
+
+        <!-- Important Notes -->
+        <div class="notes-section">
+            <h5><i class="bi bi-info-circle-fill"></i> Lưu ý quan trọng</h5>
+            <ul>
+                <li>Giá dịch vụ có thể thay đổi mà không cần báo trước</li>
+                <li>Vui lòng liên hệ trực tiếp để được tư vấn chi tiết</li>
+                <li>Các gói khám sức khỏe tổng quát có giá ưu đãi</li>
+                <li>Chúng tôi chấp nhận thanh toán bằng tiền mặt, thẻ, và chuyển khoản</li>
+                <li>Bảo hiểm y tế được chấp nhận theo quy định</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="page-footer">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2024 Phòng Khám Đa Khoa Healthy System. Hotline: <strong>1900-xxxx</strong></p>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:5271/api';
+
+        // Category Icons Mapping
+        const CATEGORY_ICONS = {
+            'Khám bệnh': 'bi-heart-pulse-fill',
+            'Xét nghiệm': 'bi-clipboard2-pulse-fill',
+            'Chẩn đoán hình ảnh': 'bi-camera-fill',
+            'Dịch vụ khác': 'bi-gear-fill'
+        };
+
+        // Category Colors
+        const CATEGORY_COLORS = {
+            'Khám bệnh': '#0d6efd',
+            'Xét nghiệm': '#198754',
+            'Chẩn đoán hình ảnh': '#fd7e14',
+            'Dịch vụ khác': '#6c757d'
+        };
+
+        // Load Service Prices
+        async function loadServicePrices() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/public/service-prices`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch service prices');
+                }
+
+                const data = await response.json();
+                
+                if (data.success && data.categories && data.categories.length > 0) {
+                    renderServicePrices(data.categories);
+                } else {
+                    showEmptyState();
+                }
+            } catch (error) {
+                console.error('Error loading service prices:', error);
+                showError();
+            }
+        }
+
+        // Render Service Prices
+        function renderServicePrices(categories) {
+            const container = document.getElementById('servicePricesContainer');
+            container.innerHTML = '';
+
+            categories.forEach(category => {
+                const categoryCard = createCategoryCard(category);
+                container.appendChild(categoryCard);
+            });
+
+            // Hide loading, show content
+            document.getElementById('loadingState').style.display = 'none';
+            container.style.display = 'block';
+        }
+
+        // Create Category Card
+        function createCategoryCard(category) {
+            const section = document.createElement('div');
+            section.className = 'category-section';
+
+            const iconClass = CATEGORY_ICONS[category.category] || 'bi-list-ul';
+            const color = CATEGORY_COLORS[category.category] || '#6c757d';
+
+            section.innerHTML = `
+                <div class="category-header">
+                    <i class="category-icon ${iconClass}" style="color: ${color}"></i>
+                    <h2 class="category-title">${category.category}</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="price-table table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 50%">Tên dịch vụ</th>
+                                <th style="width: 25%" class="text-center">Đơn vị</th>
+                                <th style="width: 25%" class="text-end">Giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${category.services.map(service => `
+                                <tr>
+                                    <td>
+                                        <div class="service-name">${service.service_name}</div>
+                                        ${service.description ? `<div class="service-description">${service.description}</div>` : ''}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="unit-text">${service.unit}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="price-value">${formatPrice(service.price)}</span>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            return section;
+        }
+
+        // Format Price
+        function formatPrice(price) {
+            return new Intl.NumberFormat('vi-VN').format(price) + ' đ';
+        }
+
+        // Show Empty State
+        function showEmptyState() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'block';
+        }
+
+        // Show Error
+        function showError() {
+            const container = document.getElementById('servicePricesContainer');
+            container.innerHTML = `
+                <div class="alert alert-danger text-center" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-3"></i>
+                    <h5>Không thể tải dữ liệu</h5>
+                    <p>Vui lòng thử lại sau hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
+                    <button class="btn btn-primary" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> Tải lại trang
+                    </button>
+                </div>
+            `;
+            document.getElementById('loadingState').style.display = 'none';
+            container.style.display = 'block';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadServicePrices();
+        });
+    </script>
+</body>
+</html>

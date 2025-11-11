@@ -68,7 +68,8 @@ namespace HealthySystem.API.Controllers
                         LicenseNumber = doctor.StaffProfile.LicenseNumber,
                         WorkStartDate = doctor.StaffProfile.WorkStartDate,
                         WorkEndDate = doctor.StaffProfile.WorkEndDate,
-                        StaffCode = doctor.StaffProfile.StaffCode
+                        StaffCode = doctor.StaffProfile.StaffCode,
+                        ProfileImageUrl = doctor.StaffProfile.ProfileImageUrl
                     } : null
                 };
 
@@ -183,6 +184,107 @@ namespace HealthySystem.API.Controllers
             {
                 _logger.LogError(ex, "Error updating doctor profile");
                 return StatusCode(500, new { message = "Đã xảy ra lỗi khi cập nhật thông tin" });
+            }
+        }
+
+        /// <summary>
+        /// Upload profile image for doctor
+        /// US-01: Cập nhật ảnh đại diện
+        /// </summary>
+        [HttpPost("profile-image")]
+        public async Task<ActionResult> UploadProfileImage([FromForm] IFormFile image)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !long.TryParse(userIdClaim, out long userId))
+                {
+                    return Unauthorized(new { message = "Không tìm thấy thông tin người dùng" });
+                }
+
+                if (image == null || image.Length == 0)
+                {
+                    return BadRequest(new { message = "Vui lòng chọn file ảnh" });
+                }
+
+                // Validate file type
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(extension))
+                {
+                    return BadRequest(new { message = "Chỉ chấp nhận file ảnh định dạng JPG, PNG, GIF" });
+                }
+
+                // Validate file size (max 5MB)
+                if (image.Length > 5 * 1024 * 1024)
+                {
+                    return BadRequest(new { message = "Kích thước file không được vượt quá 5MB" });
+                }
+
+                var doctor = await _context.Users
+                    .Include(u => u.StaffProfile)
+                    .Where(u => u.Id == userId && u.Role == "doctor")
+                    .FirstOrDefaultAsync();
+
+                if (doctor == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy thông tin bác sĩ" });
+                }
+
+                // Create uploads directory if not exists
+                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "doctors");
+                if (!Directory.Exists(uploadsPath))
+                {
+                    Directory.CreateDirectory(uploadsPath);
+                }
+
+                // Generate unique filename
+                var fileName = $"{userId}_{Guid.NewGuid()}{extension}";
+                var filePath = Path.Combine(uploadsPath, fileName);
+
+                // Save file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(stream);
+                }
+
+                // Delete old image if exists
+                if (!string.IsNullOrEmpty(doctor.StaffProfile?.ProfileImageUrl))
+                {
+                    var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", 
+                        doctor.StaffProfile.ProfileImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        System.IO.File.Delete(oldImagePath);
+                    }
+                }
+
+                // Update database
+                if (doctor.StaffProfile == null)
+                {
+                    doctor.StaffProfile = new StaffProfile
+                    {
+                        UserId = userId,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    _context.StaffProfiles.Add(doctor.StaffProfile);
+                }
+
+                doctor.StaffProfile.ProfileImageUrl = $"/uploads/doctors/{fileName}";
+                doctor.UpdatedAt = DateTimeOffset.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Upload ảnh đại diện thành công",
+                    imageUrl = doctor.StaffProfile.ProfileImageUrl
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading profile image");
+                return StatusCode(500, new { message = "Đã xảy ra lỗi khi upload ảnh" });
             }
         }
 

@@ -1,5 +1,5 @@
 using HealthySystem.WebAPI.Data;
-using HealthySystem.WebAPI.Models;
+using HealthySystem.API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -561,56 +561,36 @@ namespace HealthySystem.WebAPI.Controllers
                         LastName = request.LastName,
                         Email = request.Email,
                         Phone = request.Phone,
+                        Gender = request.Gender,
+                        DateOfBirth = request.DateOfBirth != null ? DateOnly.FromDateTime(request.DateOfBirth.Value) : null,
                         Role = request.Role,
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                        IsActive = true,
-                        CreatedAt = DateTime.Now
+                        Status = "active",
+                        CreatedAt = DateTimeOffset.UtcNow
                     };
 
                     _context.Users.Add(newUser);
                     await _context.SaveChangesAsync();
 
-                    // Create corresponding Doctor or Reception profile
-                    if (request.Role == "doctor")
+                    // Create StaffProfile for both doctor and reception
+                    var staffProfile = new StaffProfile
                     {
-                        var doctor = new Doctor
-                        {
-                            FirstName = request.FirstName,
-                            LastName = request.LastName,
-                            Email = request.Email,
-                            Phone = request.Phone,
-                            Specialization = request.Specialization ?? "Tổng quát",
-                            LicenseNumber = request.LicenseNumber ?? $"BS{newUser.Id:D6}",
-                            DateOfBirth = request.DateOfBirth,
-                            Gender = request.Gender ?? "Khác",
-                            Address = request.Address,
-                            HireDate = DateTime.Now,
-                            IsActive = true,
-                            CreatedAt = DateTime.Now
-                        };
+                        UserId = newUser.Id,
+                        StaffCode = $"{(request.Role == "doctor" ? "BS" : "TT")}{newUser.Id:D6}",
+                        Department = request.Role == "doctor" ? request.Specialization ?? "Tổng quát" : "Tiếp tân",
+                        Position = request.Role == "doctor" ? "Bác sĩ" : "Tiếp tân",
+                        Qualifications = request.Qualifications,
+                        LicenseNumber = request.LicenseNumber,
+                        WorkStartDate = DateOnly.FromDateTime(DateTime.Now),
+                        ProfileImageUrl = request.ProfileImageUrl,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
 
-                        _context.Doctors.Add(doctor);
-                        await _context.SaveChangesAsync();
+                    _context.StaffProfiles.Add(staffProfile);
+                    await _context.SaveChangesAsync();
 
-                        _logger.LogInformation("Doctor account created: {Email}, DoctorId: {DoctorId}", newUser.Email, doctor.Id);
-                    }
-                    else if (request.Role == "reception")
-                    {
-                        var reception = new StaffProfile
-                        {
-                            UserId = newUser.Id,
-                            StaffType = "reception",
-                            Department = "Tiếp tân",
-                            HireDate = DateTime.Now,
-                            IsActive = true,
-                            CreatedAt = DateTime.Now
-                        };
-
-                        _context.StaffProfiles.Add(reception);
-                        await _context.SaveChangesAsync();
-
-                        _logger.LogInformation("Reception account created: {Email}, StaffId: {StaffId}", newUser.Email, reception.Id);
-                    }
+                    _logger.LogInformation("{Role} account created: {Email}, UserId: {UserId}", 
+                        request.Role == "doctor" ? "Doctor" : "Reception", newUser.Email, newUser.Id);
 
                     await transaction.CommitAsync();
 
@@ -623,7 +603,8 @@ namespace HealthySystem.WebAPI.Controllers
                             userId = newUser.Id,
                             email = newUser.Email,
                             fullName = $"{newUser.FirstName} {newUser.LastName}",
-                            role = newUser.Role
+                            role = newUser.Role,
+                            profileImageUrl = staffProfile.ProfileImageUrl
                         }
                     });
                 }
@@ -638,6 +619,101 @@ namespace HealthySystem.WebAPI.Controllers
             {
                 _logger.LogError(ex, "Error creating staff account");
                 return StatusCode(500, new { success = false, error = "Lỗi khi tạo tài khoản: " + ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Upload ảnh đại diện cho bác sĩ/nhân viên (Admin)
+        /// Sprint 11 - Quản lý ảnh đại diện
+        /// </summary>
+        [HttpPost("users/{userId}/profile-image")]
+        public async Task<IActionResult> UploadStaffProfileImage(long userId, [FromForm] IFormFile image)
+        {
+            try
+            {
+                if (image == null || image.Length == 0)
+                {
+                    return BadRequest(new { success = false, error = "Vui lòng chọn file ảnh" });
+                }
+
+                // Validate file type
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(extension))
+                {
+                    return BadRequest(new { success = false, error = "Chỉ chấp nhận file ảnh định dạng JPG, PNG, GIF" });
+                }
+
+                // Validate file size (max 5MB)
+                if (image.Length > 5 * 1024 * 1024)
+                {
+                    return BadRequest(new { success = false, error = "Kích thước file không được vượt quá 5MB" });
+                }
+
+                var user = await _context.Users
+                    .Include(u => u.StaffProfile)
+                    .FirstOrDefaultAsync(u => u.Id == userId && (u.Role == "doctor" || u.Role == "reception"));
+
+                if (user == null)
+                {
+                    return NotFound(new { success = false, error = "Không tìm thấy nhân viên" });
+                }
+
+                // Create uploads directory if not exists
+                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "doctors");
+                if (!Directory.Exists(uploadsPath))
+                {
+                    Directory.CreateDirectory(uploadsPath);
+                }
+
+                // Generate unique filename
+                var fileName = $"{userId}_{Guid.NewGuid()}{extension}";
+                var filePath = Path.Combine(uploadsPath, fileName);
+
+                // Save file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(stream);
+                }
+
+                // Delete old image if exists
+                if (!string.IsNullOrEmpty(user.StaffProfile?.ProfileImageUrl))
+                {
+                    var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot",
+                        user.StaffProfile.ProfileImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        System.IO.File.Delete(oldImagePath);
+                    }
+                }
+
+                // Update database
+                if (user.StaffProfile == null)
+                {
+                    user.StaffProfile = new StaffProfile
+                    {
+                        UserId = userId,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    _context.StaffProfiles.Add(user.StaffProfile);
+                }
+
+                user.StaffProfile.ProfileImageUrl = $"/uploads/doctors/{fileName}";
+                user.UpdatedAt = DateTimeOffset.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Upload ảnh đại diện thành công",
+                    imageUrl = user.StaffProfile.ProfileImageUrl
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading profile image");
+                return StatusCode(500, new { success = false, error = "Lỗi khi upload ảnh: " + ex.Message });
             }
         }
 
@@ -1494,9 +1570,11 @@ namespace HealthySystem.WebAPI.Controllers
         // Doctor-specific fields
         public string? Specialization { get; set; }
         public string? LicenseNumber { get; set; }
+        public string? Qualifications { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string? Gender { get; set; }
         public string? Address { get; set; }
+        public string? ProfileImageUrl { get; set; }
     }
 
     public class CreateDoctorScheduleRequest
