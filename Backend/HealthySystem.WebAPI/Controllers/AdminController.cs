@@ -642,6 +642,371 @@ namespace HealthySystem.WebAPI.Controllers
         }
 
         // ============================================================
+        // Sprint 10 - Quản lý Bảng giá dịch vụ (Service Prices)
+        // ============================================================
+
+        /// <summary>
+        /// Lấy danh sách bảng giá dịch vụ
+        /// </summary>
+        [HttpGet("service-prices")]
+        public async Task<IActionResult> GetServicePrices([FromQuery] bool? isActive)
+        {
+            try
+            {
+                var query = _context.ServicePrices.AsQueryable();
+
+                if (isActive.HasValue)
+                {
+                    query = query.Where(sp => sp.IsActive == isActive.Value);
+                }
+
+                var servicePrices = await query
+                    .OrderBy(sp => sp.DisplayOrder)
+                    .ThenBy(sp => sp.Category)
+                    .Select(sp => new
+                    {
+                        sp.Id,
+                        sp.ServiceName,
+                        sp.Category,
+                        sp.Price,
+                        sp.Unit,
+                        sp.Description,
+                        sp.IsActive,
+                        sp.DisplayOrder,
+                        sp.CreatedAt,
+                        sp.UpdatedAt
+                    })
+                    .ToListAsync();
+
+                return Ok(new { success = true, data = servicePrices });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting service prices");
+                return StatusCode(500, new { success = false, error = "Lỗi khi lấy bảng giá" });
+            }
+        }
+
+        /// <summary>
+        /// Tạo bảng giá dịch vụ mới
+        /// </summary>
+        [HttpPost("service-prices")]
+        public async Task<IActionResult> CreateServicePrice([FromBody] CreateServicePriceRequest request)
+        {
+            try
+            {
+                var servicePrice = new ServicePrice
+                {
+                    ServiceName = request.ServiceName,
+                    Category = request.Category,
+                    Price = request.Price,
+                    Unit = request.Unit ?? "VNĐ",
+                    Description = request.Description,
+                    IsActive = request.IsActive,
+                    DisplayOrder = request.DisplayOrder,
+                    CreatedBy = GetCurrentUserId(),
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.ServicePrices.Add(servicePrice);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Service price created: {ServiceName}", servicePrice.ServiceName);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Tạo bảng giá thành công",
+                    data = new
+                    {
+                        servicePrice.Id,
+                        servicePrice.ServiceName,
+                        servicePrice.Category,
+                        servicePrice.Price
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating service price");
+                return StatusCode(500, new { success = false, error = "Lỗi khi tạo bảng giá" });
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật bảng giá dịch vụ
+        /// </summary>
+        [HttpPut("service-prices/{id}")]
+        public async Task<IActionResult> UpdateServicePrice(int id, [FromBody] UpdateServicePriceRequest request)
+        {
+            try
+            {
+                var servicePrice = await _context.ServicePrices.FindAsync(id);
+
+                if (servicePrice == null)
+                {
+                    return NotFound(new { success = false, error = "Không tìm thấy bảng giá" });
+                }
+
+                servicePrice.ServiceName = request.ServiceName ?? servicePrice.ServiceName;
+                servicePrice.Category = request.Category ?? servicePrice.Category;
+                servicePrice.Price = request.Price ?? servicePrice.Price;
+                servicePrice.Unit = request.Unit ?? servicePrice.Unit;
+                servicePrice.Description = request.Description ?? servicePrice.Description;
+                servicePrice.IsActive = request.IsActive ?? servicePrice.IsActive;
+                servicePrice.DisplayOrder = request.DisplayOrder ?? servicePrice.DisplayOrder;
+                servicePrice.UpdatedAt = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Service price updated: {Id}", id);
+
+                return Ok(new { success = true, message = "Cập nhật bảng giá thành công" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating service price {Id}", id);
+                return StatusCode(500, new { success = false, error = "Lỗi khi cập nhật bảng giá" });
+            }
+        }
+
+        /// <summary>
+        /// Xóa bảng giá dịch vụ
+        /// </summary>
+        [HttpDelete("service-prices/{id}")]
+        public async Task<IActionResult> DeleteServicePrice(int id)
+        {
+            try
+            {
+                var servicePrice = await _context.ServicePrices.FindAsync(id);
+
+                if (servicePrice == null)
+                {
+                    return NotFound(new { success = false, error = "Không tìm thấy bảng giá" });
+                }
+
+                _context.ServicePrices.Remove(servicePrice);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Service price deleted: {Id}", id);
+
+                return Ok(new { success = true, message = "Xóa bảng giá thành công" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting service price {Id}", id);
+                return StatusCode(500, new { success = false, error = "Lỗi khi xóa bảng giá" });
+            }
+        }
+
+        // ============================================================
+        // Sprint 10 - Quản lý Tin tức y tế (Health News)
+        // ============================================================
+
+        /// <summary>
+        /// Lấy danh sách tin tức y tế
+        /// </summary>
+        [HttpGet("health-news")]
+        public async Task<IActionResult> GetHealthNews(
+            [FromQuery] bool? isPublished,
+            [FromQuery] bool? isFeatured,
+            [FromQuery] string? category)
+        {
+            try
+            {
+                var query = _context.HealthNews.AsQueryable();
+
+                if (isPublished.HasValue)
+                {
+                    query = query.Where(hn => hn.IsPublished == isPublished.Value);
+                }
+
+                if (isFeatured.HasValue)
+                {
+                    query = query.Where(hn => hn.IsFeatured == isFeatured.Value);
+                }
+
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    query = query.Where(hn => hn.Category == category);
+                }
+
+                var healthNews = await query
+                    .OrderByDescending(hn => hn.PublishedDate ?? hn.CreatedAt)
+                    .Select(hn => new
+                    {
+                        hn.Id,
+                        hn.Title,
+                        hn.Summary,
+                        hn.Content,
+                        hn.ImageUrl,
+                        hn.Category,
+                        hn.Author,
+                        hn.IsFeatured,
+                        hn.IsPublished,
+                        hn.ViewCount,
+                        hn.PublishedDate,
+                        hn.CreatedAt,
+                        hn.UpdatedAt
+                    })
+                    .ToListAsync();
+
+                return Ok(new { success = true, data = healthNews });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting health news");
+                return StatusCode(500, new { success = false, error = "Lỗi khi lấy tin tức" });
+            }
+        }
+
+        /// <summary>
+        /// Lấy chi tiết tin tức y tế
+        /// </summary>
+        [HttpGet("health-news/{id}")]
+        public async Task<IActionResult> GetHealthNewsById(int id)
+        {
+            try
+            {
+                var news = await _context.HealthNews.FindAsync(id);
+
+                if (news == null)
+                {
+                    return NotFound(new { success = false, error = "Không tìm thấy tin tức" });
+                }
+
+                return Ok(new { success = true, data = news });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting health news {Id}", id);
+                return StatusCode(500, new { success = false, error = "Lỗi khi lấy tin tức" });
+            }
+        }
+
+        /// <summary>
+        /// Tạo tin tức y tế mới
+        /// </summary>
+        [HttpPost("health-news")]
+        public async Task<IActionResult> CreateHealthNews([FromBody] CreateHealthNewsRequest request)
+        {
+            try
+            {
+                var healthNews = new HealthNews
+                {
+                    Title = request.Title,
+                    Summary = request.Summary,
+                    Content = request.Content,
+                    ImageUrl = request.ImageUrl,
+                    Category = request.Category,
+                    Author = request.Author,
+                    IsFeatured = request.IsFeatured,
+                    IsPublished = request.IsPublished,
+                    PublishedDate = request.IsPublished ? DateTime.Now : null,
+                    CreatedBy = GetCurrentUserId(),
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.HealthNews.Add(healthNews);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Health news created: {Title}", healthNews.Title);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Tạo tin tức thành công",
+                    data = new
+                    {
+                        healthNews.Id,
+                        healthNews.Title,
+                        healthNews.Category,
+                        healthNews.IsPublished
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating health news");
+                return StatusCode(500, new { success = false, error = "Lỗi khi tạo tin tức" });
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật tin tức y tế
+        /// </summary>
+        [HttpPut("health-news/{id}")]
+        public async Task<IActionResult> UpdateHealthNews(int id, [FromBody] UpdateHealthNewsRequest request)
+        {
+            try
+            {
+                var healthNews = await _context.HealthNews.FindAsync(id);
+
+                if (healthNews == null)
+                {
+                    return NotFound(new { success = false, error = "Không tìm thấy tin tức" });
+                }
+
+                healthNews.Title = request.Title ?? healthNews.Title;
+                healthNews.Summary = request.Summary ?? healthNews.Summary;
+                healthNews.Content = request.Content ?? healthNews.Content;
+                healthNews.ImageUrl = request.ImageUrl ?? healthNews.ImageUrl;
+                healthNews.Category = request.Category ?? healthNews.Category;
+                healthNews.Author = request.Author ?? healthNews.Author;
+                healthNews.IsFeatured = request.IsFeatured ?? healthNews.IsFeatured;
+                
+                // Nếu chuyển từ chưa publish sang publish, set PublishedDate
+                if (request.IsPublished.HasValue && request.IsPublished.Value && !healthNews.IsPublished)
+                {
+                    healthNews.PublishedDate = DateTime.Now;
+                }
+                
+                healthNews.IsPublished = request.IsPublished ?? healthNews.IsPublished;
+                healthNews.UpdatedAt = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Health news updated: {Id}", id);
+
+                return Ok(new { success = true, message = "Cập nhật tin tức thành công" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating health news {Id}", id);
+                return StatusCode(500, new { success = false, error = "Lỗi khi cập nhật tin tức" });
+            }
+        }
+
+        /// <summary>
+        /// Xóa tin tức y tế
+        /// </summary>
+        [HttpDelete("health-news/{id}")]
+        public async Task<IActionResult> DeleteHealthNews(int id)
+        {
+            try
+            {
+                var healthNews = await _context.HealthNews.FindAsync(id);
+
+                if (healthNews == null)
+                {
+                    return NotFound(new { success = false, error = "Không tìm thấy tin tức" });
+                }
+
+                _context.HealthNews.Remove(healthNews);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Health news deleted: {Id}", id);
+
+                return Ok(new { success = true, message = "Xóa tin tức thành công" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting health news {Id}", id);
+                return StatusCode(500, new { success = false, error = "Lỗi khi xóa tin tức" });
+            }
+        }
+
+        // ============================================================
         // Quản lý lịch làm việc bác sĩ (Doctor Schedule Management)
         // ============================================================
 
@@ -1093,6 +1458,17 @@ namespace HealthySystem.WebAPI.Controllers
                 _ => "Không xác định"
             };
         }
+
+        // Helper method to get current user ID from JWT token
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst("userId") ?? User.FindFirst("sub");
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return userId;
+            }
+            return 0; // Default if not found
+        }
     }
 
     // DTO Classes
@@ -1138,5 +1514,53 @@ namespace HealthySystem.WebAPI.Controllers
         public string? EndTime { get; set; } // Format: "HH:mm"
         public bool? IsAvailable { get; set; }
         public int? MaxAppointmentsPerSlot { get; set; }
+    }
+
+    // Sprint 10 - Service Price DTOs
+    public class CreateServicePriceRequest
+    {
+        public string ServiceName { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public string? Unit { get; set; }
+        public string? Description { get; set; }
+        public bool IsActive { get; set; } = true;
+        public int DisplayOrder { get; set; } = 0;
+    }
+
+    public class UpdateServicePriceRequest
+    {
+        public string? ServiceName { get; set; }
+        public string? Category { get; set; }
+        public decimal? Price { get; set; }
+        public string? Unit { get; set; }
+        public string? Description { get; set; }
+        public bool? IsActive { get; set; }
+        public int? DisplayOrder { get; set; }
+    }
+
+    // Sprint 10 - Health News DTOs
+    public class CreateHealthNewsRequest
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Summary { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }
+        public string Category { get; set; } = string.Empty;
+        public string Author { get; set; } = string.Empty;
+        public bool IsFeatured { get; set; } = false;
+        public bool IsPublished { get; set; } = false;
+    }
+
+    public class UpdateHealthNewsRequest
+    {
+        public string? Title { get; set; }
+        public string? Summary { get; set; }
+        public string? Content { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? Category { get; set; }
+        public string? Author { get; set; }
+        public bool? IsFeatured { get; set; }
+        public bool? IsPublished { get; set; }
     }
 }

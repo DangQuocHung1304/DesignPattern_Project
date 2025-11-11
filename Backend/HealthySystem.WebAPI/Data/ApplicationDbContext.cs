@@ -31,6 +31,10 @@ namespace HealthySystem.WebAPI.Data
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<StaffProfile> StaffProfiles { get; set; }
+        
+        // Sprint 10 - New entities for Homepage
+        public DbSet<ServicePrice> ServicePrices { get; set; }
+        public DbSet<HealthNews> HealthNews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
