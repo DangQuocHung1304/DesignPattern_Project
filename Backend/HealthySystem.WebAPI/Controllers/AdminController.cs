@@ -500,6 +500,147 @@ namespace HealthySystem.WebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Tạo tài khoản mới cho nhân viên (Bác sĩ hoặc Tiếp tân) - Sprint 10
+        /// </summary>
+        [HttpPost("users/create-staff")]
+        public async Task<IActionResult> CreateStaffAccount([FromBody] CreateStaffAccountRequest request)
+        {
+            try
+            {
+                // Validate input
+                if (string.IsNullOrWhiteSpace(request.Email))
+                {
+                    return BadRequest(new { success = false, error = "Email không được để trống" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Password))
+                {
+                    return BadRequest(new { success = false, error = "Mật khẩu không được để trống" });
+                }
+
+                if (request.Password.Length < 6)
+                {
+                    return BadRequest(new { success = false, error = "Mật khẩu phải có ít nhất 6 ký tự" });
+                }
+
+                if (request.Role != "doctor" && request.Role != "reception")
+                {
+                    return BadRequest(new { success = false, error = "Role phải là 'doctor' hoặc 'reception'" });
+                }
+
+                // Check if email already exists
+                var existingUser = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower());
+
+                if (existingUser != null)
+                {
+                    return BadRequest(new { success = false, error = "Email đã tồn tại trong hệ thống" });
+                }
+
+                // Check if phone already exists (if provided)
+                if (!string.IsNullOrWhiteSpace(request.Phone))
+                {
+                    var existingPhone = await _context.Users
+                        .FirstOrDefaultAsync(u => u.Phone == request.Phone);
+
+                    if (existingPhone != null)
+                    {
+                        return BadRequest(new { success = false, error = "Số điện thoại đã được sử dụng" });
+                    }
+                }
+
+                using var transaction = await _context.Database.BeginTransactionAsync();
+
+                try
+                {
+                    // Create User account
+                    var newUser = new User
+                    {
+                        FirstName = request.FirstName,
+                        LastName = request.LastName,
+                        Email = request.Email,
+                        Phone = request.Phone,
+                        Role = request.Role,
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                        IsActive = true,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    _context.Users.Add(newUser);
+                    await _context.SaveChangesAsync();
+
+                    // Create corresponding Doctor or Reception profile
+                    if (request.Role == "doctor")
+                    {
+                        var doctor = new Doctor
+                        {
+                            FirstName = request.FirstName,
+                            LastName = request.LastName,
+                            Email = request.Email,
+                            Phone = request.Phone,
+                            Specialization = request.Specialization ?? "Tổng quát",
+                            LicenseNumber = request.LicenseNumber ?? $"BS{newUser.Id:D6}",
+                            DateOfBirth = request.DateOfBirth,
+                            Gender = request.Gender ?? "Khác",
+                            Address = request.Address,
+                            HireDate = DateTime.Now,
+                            IsActive = true,
+                            CreatedAt = DateTime.Now
+                        };
+
+                        _context.Doctors.Add(doctor);
+                        await _context.SaveChangesAsync();
+
+                        _logger.LogInformation("Doctor account created: {Email}, DoctorId: {DoctorId}", newUser.Email, doctor.Id);
+                    }
+                    else if (request.Role == "reception")
+                    {
+                        var reception = new StaffProfile
+                        {
+                            UserId = newUser.Id,
+                            StaffType = "reception",
+                            Department = "Tiếp tân",
+                            HireDate = DateTime.Now,
+                            IsActive = true,
+                            CreatedAt = DateTime.Now
+                        };
+
+                        _context.StaffProfiles.Add(reception);
+                        await _context.SaveChangesAsync();
+
+                        _logger.LogInformation("Reception account created: {Email}, StaffId: {StaffId}", newUser.Email, reception.Id);
+                    }
+
+                    await transaction.CommitAsync();
+
+                    return Ok(new
+                    {
+                        success = true,
+                        message = $"Tạo tài khoản {(request.Role == "doctor" ? "bác sĩ" : "tiếp tân")} thành công",
+                        data = new
+                        {
+                            userId = newUser.Id,
+                            email = newUser.Email,
+                            fullName = $"{newUser.FirstName} {newUser.LastName}",
+                            role = newUser.Role
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Error in transaction while creating staff account");
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating staff account");
+                return StatusCode(500, new { success = false, error = "Lỗi khi tạo tài khoản: " + ex.Message });
+            }
+        }
+
         // ============================================================
         // Quản lý lịch làm việc bác sĩ (Doctor Schedule Management)
         // ============================================================
@@ -963,6 +1104,23 @@ namespace HealthySystem.WebAPI.Controllers
     public class UpdateUserStatusRequest
     {
         public bool IsActive { get; set; }
+    }
+
+    public class CreateStaffAccountRequest
+    {
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty; // "doctor" or "reception"
+        
+        // Doctor-specific fields
+        public string? Specialization { get; set; }
+        public string? LicenseNumber { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public string? Gender { get; set; }
+        public string? Address { get; set; }
     }
 
     public class CreateDoctorScheduleRequest

@@ -30,6 +30,7 @@ namespace HealthySystem.WebAPI.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<StaffProfile> StaffProfiles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
