@@ -238,6 +238,83 @@
             margin-right: 8px;
         }
 
+        /* Profile Image Upload Styles */
+        .profile-image-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .profile-image-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-image-container:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-image-container:hover .image-overlay {
+            opacity: 1;
+        }
+
+        .profile-image-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .profile-image-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .image-requirements {
+            text-align: center;
+        }
+
+        .upload-progress {
+            width: 200px;
+        }
+
+        .upload-progress .progress {
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .upload-progress .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -250,6 +327,11 @@
             .btn {
                 width: 100%;
                 justify-content: center;
+            }
+
+            .profile-image-container {
+                width: 150px;
+                height: 150px;
             }
         }
     </style>
@@ -280,6 +362,57 @@
 
         <!-- Alert Messages -->
         <div id="alertContainer"></div>
+
+        <!-- Profile Image Upload Section -->
+        <div class="form-card">
+            <h3><i class="fas fa-camera"></i> Ảnh Đại Diện</h3>
+            
+            <div class="profile-image-section">
+                <div class="profile-image-container" onclick="document.getElementById('profileImageInput').click()">
+                    <img id="profileImagePreview" 
+                         src="https://ui-avatars.com/api/?name=Doctor&background=667eea&color=fff&size=200" 
+                         alt="Profile" 
+                         class="profile-image-preview">
+                    <div class="image-overlay">
+                        <i class="fas fa-camera fa-2x"></i>
+                    </div>
+                </div>
+                
+                <div class="profile-image-actions">
+                    <input type="file" 
+                           id="profileImageInput" 
+                           accept="image/jpeg,image/jpg,image/png,image/gif" 
+                           style="display: none;">
+                    
+                    <button type="button" 
+                            class="btn btn-primary" 
+                            onclick="document.getElementById('profileImageInput').click()">
+                        <i class="fas fa-upload"></i> Chọn ảnh
+                    </button>
+                    
+                    <button type="button" 
+                            id="uploadImageBtn" 
+                            class="btn" 
+                            style="display: none; background: #28a745; color: white;">
+                        <i class="fas fa-check"></i> Upload ảnh
+                    </button>
+                    
+                    <div id="uploadProgress" class="upload-progress" style="display: none;">
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted">Đang upload...</small>
+                    </div>
+                </div>
+                
+                <div class="image-requirements">
+                    <small style="color: #666;">
+                        <i class="fas fa-info-circle"></i> 
+                        Chấp nhận JPG, PNG, GIF. Tối đa 5MB.
+                    </small>
+                </div>
+            </div>
+        </div>
 
         <!-- Basic Information Form -->
         <div class="form-card">
@@ -417,7 +550,9 @@
         // Load profile on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadDoctorProfile();
+            loadProfileImage();
             setupPasswordForm();
+            setupImageUpload();
             
             // Không gọi loadNavigationBar vì không có main.js
         });
@@ -506,6 +641,157 @@
                 document.getElementById('qualifications').value = data.profile.qualifications || '';
                 document.getElementById('licenseNumber').value = data.profile.licenseNumber || '';
             }
+        }
+
+        // ==========================================
+        // PROFILE IMAGE UPLOAD FUNCTIONALITY
+        // ==========================================
+
+        let selectedImageFile = null;
+
+        // Load current profile image
+        async function loadProfileImage() {
+            const token = localStorage.getItem('token') || localStorage.getItem('healthysystem_token');
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/doctorprofile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.profile && data.profile.profileImageUrl) {
+                        const imageUrl = data.profile.profileImageUrl.startsWith('http') 
+                            ? data.profile.profileImageUrl 
+                            : `${window.location.origin}${data.profile.profileImageUrl}`;
+                        document.getElementById('profileImagePreview').src = imageUrl;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading profile image:', error);
+            }
+        }
+
+        // Setup image upload handlers
+        function setupImageUpload() {
+            // Handle image file selection
+            document.getElementById('profileImageInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                
+                if (!file) {
+                    return;
+                }
+
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    showAlert('error', 'Chỉ chấp nhận file ảnh JPG, PNG, GIF');
+                    return;
+                }
+
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showAlert('error', 'Kích thước file không được vượt quá 5MB');
+                    return;
+                }
+
+                // Preview image
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('profileImagePreview').src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+
+                // Store file and show upload button
+                selectedImageFile = file;
+                document.getElementById('uploadImageBtn').style.display = 'inline-flex';
+            });
+
+            // Upload profile image
+            document.getElementById('uploadImageBtn').addEventListener('click', async function() {
+                if (!selectedImageFile) {
+                    showAlert('error', 'Vui lòng chọn file ảnh');
+                    return;
+                }
+
+                const token = localStorage.getItem('token') || localStorage.getItem('healthysystem_token');
+                if (!token) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                const uploadBtn = this;
+                const progressDiv = document.getElementById('uploadProgress');
+                const progressBar = progressDiv.querySelector('.progress-bar');
+
+                try {
+                    // Show progress
+                    uploadBtn.disabled = true;
+                    progressDiv.style.display = 'block';
+
+                    // Create FormData
+                    const formData = new FormData();
+                    formData.append('image', selectedImageFile);
+
+                    // Simulate progress
+                    let progress = 0;
+                    const progressInterval = setInterval(() => {
+                        progress += 10;
+                        if (progress <= 90) {
+                            progressBar.style.width = progress + '%';
+                        }
+                    }, 100);
+
+                    // Upload image
+                    const response = await fetch(`${API_URL}/doctorprofile/profile-image`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+
+                    clearInterval(progressInterval);
+                    progressBar.style.width = '100%';
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        showAlert('success', result.message || 'Upload ảnh thành công!');
+                        
+                        // Update profile image
+                        if (result.imageUrl) {
+                            const imageUrl = result.imageUrl.startsWith('http') 
+                                ? result.imageUrl 
+                                : `${window.location.origin}${result.imageUrl}`;
+                            document.getElementById('profileImagePreview').src = imageUrl;
+                        }
+
+                        // Reset
+                        selectedImageFile = null;
+                        uploadBtn.style.display = 'none';
+                        document.getElementById('profileImageInput').value = '';
+
+                        // Hide progress after delay
+                        setTimeout(() => {
+                            progressDiv.style.display = 'none';
+                            progressBar.style.width = '0%';
+                        }, 1500);
+                    } else {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Upload thất bại');
+                    }
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    showAlert('error', error.message || 'Có lỗi xảy ra khi upload ảnh');
+                    progressDiv.style.display = 'none';
+                    progressBar.style.width = '0%';
+                } finally {
+                    uploadBtn.disabled = false;
+                }
+            });
         }
 
         async function saveProfile() {

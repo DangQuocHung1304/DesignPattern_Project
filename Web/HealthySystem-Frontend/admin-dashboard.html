@@ -229,6 +229,31 @@
             font-size: 0.9rem;
         }
 
+        /* Profile Image Upload Styles */
+        .staff-image-preview-container {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .staff-image-preview-img {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            object-fit: cover;
+        }
+
+        .image-upload-hint {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
         @media print {
             .no-print {
                 display: none !important;
@@ -473,6 +498,31 @@
                             <div class="col-md-6 mb-3">
                                 <label for="phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
                                 <input type="tel" class="form-control" id="phone" required pattern="[0-9]{10,11}">
+                            </div>
+
+                            <!-- Profile Image Upload -->
+                            <div class="col-12 mb-3">
+                                <label for="staffProfileImage" class="form-label">
+                                    <i class="fas fa-image me-1"></i> Ảnh đại diện
+                                </label>
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="staffProfileImage" 
+                                       accept="image/jpeg,image/jpg,image/png,image/gif">
+                                <div class="image-upload-hint">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle"></i> 
+                                        Tối đa 5MB. Định dạng: JPG, PNG, GIF
+                                    </small>
+                                </div>
+                                
+                                <!-- Image Preview -->
+                                <div id="staffImagePreview" class="staff-image-preview-container" style="display: none;">
+                                    <img id="staffImagePreviewImg" class="staff-image-preview-img" alt="Preview">
+                                    <div class="mt-2">
+                                        <small class="text-muted">Xem trước ảnh đại diện</small>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="col-md-6 mb-3">
@@ -1653,8 +1703,82 @@
         function resetCreateStaffForm() {
             document.getElementById('createStaffForm').reset();
             document.getElementById('createAccountMessage').style.display = 'none';
+            document.getElementById('staffImagePreview').style.display = 'none';
             toggleDoctorFields();
         }
+
+        // ==========================================
+        // PROFILE IMAGE UPLOAD FUNCTIONALITY
+        // ==========================================
+
+        // Upload staff profile image
+        async function uploadStaffProfileImage(userId, imageFile) {
+            const token = checkAuth();
+            if (!token) return;
+
+            const formData = new FormData();
+            formData.append('image', imageFile);
+
+            try {
+                const response = await fetch(`${API_URL}/admin/users/${userId}/profile-image`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to upload profile image');
+                }
+
+                const result = await response.json();
+                console.log('Profile image uploaded successfully:', result);
+                return result;
+            } catch (error) {
+                console.error('Error uploading staff profile image:', error);
+                throw error;
+            }
+        }
+
+        // Image preview for staff creation
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageInput = document.getElementById('staffProfileImage');
+            if (imageInput) {
+                imageInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        // Validate file type
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                        if (!allowedTypes.includes(file.type)) {
+                            alert('Chỉ chấp nhận file ảnh JPG, PNG, GIF');
+                            e.target.value = '';
+                            document.getElementById('staffImagePreview').style.display = 'none';
+                            return;
+                        }
+
+                        // Validate file size (max 5MB)
+                        if (file.size > 5 * 1024 * 1024) {
+                            alert('Kích thước file không được vượt quá 5MB');
+                            e.target.value = '';
+                            document.getElementById('staffImagePreview').style.display = 'none';
+                            return;
+                        }
+
+                        // Show preview
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            document.getElementById('staffImagePreviewImg').src = event.target.result;
+                            document.getElementById('staffImagePreview').style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        document.getElementById('staffImagePreview').style.display = 'none';
+                    }
+                });
+            }
+        });
 
         // Create staff account
         async function createStaffAccount(event) {
@@ -1714,6 +1838,18 @@
 
                 if (!response.ok) {
                     throw new Error(result.error || 'Không thể tạo tài khoản');
+                }
+
+                // Step 2: Upload profile image if selected
+                const userId = result.data.userId;
+                const imageFile = document.getElementById('staffProfileImage').files[0];
+                if (imageFile && userId) {
+                    try {
+                        await uploadStaffProfileImage(userId, imageFile);
+                    } catch (imgError) {
+                        console.error('Failed to upload profile image:', imgError);
+                        // Don't fail the whole operation if image upload fails
+                    }
                 }
 
                 // Show success message
