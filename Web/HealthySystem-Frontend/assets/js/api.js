@@ -144,12 +144,27 @@ class ApiService {
     getMockLoginData(email, password) {
         // Simple mock validation
         if (email && password.length >= 3) {
+            // Determine role based on email
+            let role = 'patient';
+            if (email.toLowerCase().includes('admin')) {
+                role = 'admin';
+            } else if (email.toLowerCase().includes('doctor')) {
+                role = 'doctor';
+            } else if (email.toLowerCase().includes('reception')) {
+                role = 'reception';
+            } else if (email.toLowerCase().includes('lab')) {
+                role = 'lab';
+            } else if (email.toLowerCase().includes('accountant')) {
+                role = 'accountant';
+            }
+            
             const mockUser = {
                 id: 1,
                 email: email,
                 fullName: 'Nguyễn Văn Test',
                 firstName: 'Nguyễn Văn',
                 lastName: 'Test',
+                role: role,
                 phone: '0123456789',
                 gender: 'male',
                 dateOfBirth: '1990-01-01',
