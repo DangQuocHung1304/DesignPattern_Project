@@ -645,9 +645,9 @@
         </div>
     </div>
 
-    <!-- Add/Edit Schedule Modal -->
+    <!-- Add/Edit Schedule Modal - Quick Weekly Setup -->
     <div class="modal fade" id="scheduleModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white;">
                     <h5 class="modal-title" id="scheduleModalTitle">
@@ -660,57 +660,255 @@
                     <input type="hidden" id="scheduleDoctorId">
                     
                     <div class="mb-3">
-                        <label class="form-label">Bác sĩ</label>
+                        <label class="form-label"><strong>Bác sĩ</strong></label>
                         <input type="text" class="form-control" id="scheduleDoctorName" readonly>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Thứ trong tuần <span class="text-danger">*</span></label>
-                        <select class="form-select" id="scheduleDayOfWeek" required>
-                            <option value="1">Thứ hai</option>
-                            <option value="2">Thứ ba</option>
-                            <option value="3">Thứ tư</option>
-                            <option value="4">Thứ năm</option>
-                            <option value="5">Thứ sáu</option>
-                            <option value="6">Thứ bảy</option>
-                            <option value="0">Chủ nhật</option>
-                        </select>
-                    </div>
+                    <!-- Mode Selection -->
+                    <ul class="nav nav-tabs mb-3" id="scheduleModeTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="quick-tab" data-bs-toggle="tab" data-bs-target="#quick-mode" type="button">
+                                <i class="fas fa-bolt me-1"></i> Tạo nhanh cả tuần
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="custom-tab" data-bs-toggle="tab" data-bs-target="#custom-mode" type="button">
+                                <i class="fas fa-cog me-1"></i> Tùy chỉnh từng ngày
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="single-tab" data-bs-toggle="tab" data-bs-target="#single-mode" type="button">
+                                <i class="fas fa-plus me-1"></i> Thêm 1 ca làm việc
+                            </button>
+                        </li>
+                    </ul>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
-                            <input type="time" class="form-control" id="scheduleStartTime" required>
+                    <div class="tab-content" id="scheduleTabContent">
+                        <!-- Quick Mode: Weekly Template -->
+                        <div class="tab-pane fade show active" id="quick-mode">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Tạo lịch nhanh:</strong> Chọn mẫu ca làm việc và áp dụng cho nhiều ngày trong tuần
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label"><strong>Chọn mẫu ca làm việc</strong></label>
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <div class="card border-primary cursor-pointer shift-template" onclick="selectTemplate('morning')" data-template="morning">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-sun text-warning" style="font-size: 2rem;"></i>
+                                                <h6 class="mt-2 mb-1">Ca sáng</h6>
+                                                <small class="text-muted">8:00 - 12:00</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card border-primary cursor-pointer shift-template" onclick="selectTemplate('afternoon')" data-template="afternoon">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-cloud-sun text-info" style="font-size: 2rem;"></i>
+                                                <h6 class="mt-2 mb-1">Ca chiều</h6>
+                                                <small class="text-muted">13:30 - 17:30</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card border-primary cursor-pointer shift-template" onclick="selectTemplate('evening')" data-template="evening">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-moon text-primary" style="font-size: 2rem;"></i>
+                                                <h6 class="mt-2 mb-1">Ca tối</h6>
+                                                <small class="text-muted">18:00 - 21:00</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card border-primary cursor-pointer shift-template" onclick="selectTemplate('fullday')" data-template="fullday">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-calendar-day text-success" style="font-size: 2rem;"></i>
+                                                <h6 class="mt-2 mb-1">Cả ngày</h6>
+                                                <small class="text-muted">8:00 - 17:00</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card border-primary cursor-pointer shift-template" onclick="selectTemplate('custom-quick')" data-template="custom-quick">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-edit text-secondary" style="font-size: 2rem;"></i>
+                                                <h6 class="mt-2 mb-1">Tùy chỉnh</h6>
+                                                <small class="text-muted">Chọn giờ khác</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="customTimeQuick" style="display: none;">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Giờ bắt đầu</label>
+                                        <input type="time" class="form-control" id="quickStartTime" value="08:00">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Giờ kết thúc</label>
+                                        <input type="time" class="form-control" id="quickEndTime" value="12:00">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label"><strong>Chọn các ngày áp dụng</strong></label>
+                                <div class="row g-2">
+                                    <div class="col-md-3 col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="1" id="day1">
+                                            <label class="form-check-label" for="day1">Thứ Hai</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="2" id="day2">
+                                            <label class="form-check-label" for="day2">Thứ Ba</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="3" id="day3">
+                                            <label class="form-check-label" for="day3">Thứ Tư</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="4" id="day4">
+                                            <label class="form-check-label" for="day4">Thứ Năm</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="5" id="day5">
+                                            <label class="form-check-label" for="day5">Thứ Sáu</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="6" id="day6">
+                                            <label class="form-check-label" for="day6">Thứ Bảy</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="0" id="day0">
+                                            <label class="form-check-label" for="day0">Chủ Nhật</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-6">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="selectAllDays()">
+                                            <i class="fas fa-check-double me-1"></i> Chọn tất cả
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Số bệnh nhân tối đa/ca</label>
+                                <input type="number" class="form-control" id="quickMaxPatients" value="4" min="1" max="20">
+                                <small class="text-muted">Số lượng bệnh nhân có thể đăng ký trong 1 ca làm việc</small>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
-                            <input type="time" class="form-control" id="scheduleEndTime" required>
+
+                        <!-- Custom Mode: Day by Day -->
+                        <div class="tab-pane fade" id="custom-mode">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Tùy chỉnh từng ngày:</strong> Thiết lập ca làm việc khác nhau cho mỗi ngày trong tuần
+                            </div>
+
+                            <div id="customScheduleBuilder">
+                                <!-- Will be populated dynamically -->
+                            </div>
+
+                            <button class="btn btn-success btn-sm" onclick="addCustomShift()">
+                                <i class="fas fa-plus me-1"></i> Thêm ca làm việc
+                            </button>
                         </div>
-                    </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Số lượng bệnh nhân tối đa/ca</label>
-                        <input type="number" class="form-control" id="scheduleMaxAppointments" value="4" min="1" max="20">
-                    </div>
+                        <!-- Single Mode: Add One Shift -->
+                        <div class="tab-pane fade" id="single-mode">
+                            <div class="mb-3">
+                                <label class="form-label">Thứ trong tuần <span class="text-danger">*</span></label>
+                                <select class="form-select" id="scheduleDayOfWeek" required>
+                                    <option value="1">Thứ hai</option>
+                                    <option value="2">Thứ ba</option>
+                                    <option value="3">Thứ tư</option>
+                                    <option value="4">Thứ năm</option>
+                                    <option value="5">Thứ sáu</option>
+                                    <option value="6">Thứ bảy</option>
+                                    <option value="0">Chủ nhật</option>
+                                </select>
+                            </div>
 
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="scheduleIsAvailable" checked>
-                            <label class="form-check-label" for="scheduleIsAvailable">
-                                Đang hoạt động
-                            </label>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
+                                    <input type="time" class="form-control" id="scheduleStartTime" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
+                                    <input type="time" class="form-control" id="scheduleEndTime" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Số lượng bệnh nhân tối đa/ca</label>
+                                <input type="number" class="form-control" id="scheduleMaxAppointments" value="4" min="1" max="20">
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="scheduleIsAvailable" checked>
+                                    <label class="form-check-label" for="scheduleIsAvailable">
+                                        Đang hoạt động
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-primary-custom" onclick="saveSchedule()">
-                        <i class="fas fa-save me-1"></i>Lưu lịch làm việc
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Hủy
+                    </button>
+                    <button type="button" class="btn btn-primary-custom" onclick="saveScheduleMain()">
+                        <i class="fas fa-save me-1"></i> <span id="saveButtonText">Lưu lịch</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
+
+    <style>
+        .shift-template {
+            transition: all 0.3s ease;
+        }
+        .shift-template:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .shift-template.selected {
+            background-color: #e3f2fd;
+            border-color: #2196F3 !important;
+            border-width: 2px;
+        }
+        .cursor-pointer {
+            cursor: pointer;
+        }
+        .custom-shift-item {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+        }
+    </style>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -1559,20 +1757,292 @@
                 return;
             }
 
-            const doctor = allDoctors.find(d => (d.Id || d.id) == doctorId);
+            const doctor = allDoctors.find(d => (d.userId || d.UserId) == doctorId);
             if (!doctor) return;
 
             document.getElementById('scheduleModalTitle').innerHTML = '<i class="fas fa-calendar-plus me-2"></i>Thêm lịch làm việc';
             document.getElementById('scheduleId').value = '';
             document.getElementById('scheduleDoctorId').value = doctorId;
-            document.getElementById('scheduleDoctorName').value = doctor.FullName || doctor.fullName;
+            document.getElementById('scheduleDoctorName').value = doctor.fullName || doctor.FullName;
+            
+            // Reset form
             document.getElementById('scheduleDayOfWeek').value = '1';
             document.getElementById('scheduleStartTime').value = '08:00';
             document.getElementById('scheduleEndTime').value = '17:00';
             document.getElementById('scheduleMaxAppointments').value = '4';
             document.getElementById('scheduleIsAvailable').checked = true;
+            
+            // Reset quick mode
+            document.querySelectorAll('.shift-template').forEach(t => t.classList.remove('selected'));
+            document.querySelectorAll('input[id^="day"]').forEach(cb => cb.checked = false);
+            document.getElementById('quickStartTime').value = '08:00';
+            document.getElementById('quickEndTime').value = '12:00';
+            document.getElementById('quickMaxPatients').value = '4';
+            document.getElementById('customTimeQuick').style.display = 'none';
+            
+            // Reset custom mode
+            document.getElementById('customScheduleBuilder').innerHTML = '';
+            
+            // Show quick mode tab by default
+            document.getElementById('quick-tab').click();
 
             scheduleModal.show();
+        }
+
+        // Template selection
+        let selectedTemplate = null;
+        const shiftTemplates = {
+            morning: { start: '08:00', end: '12:00' },
+            afternoon: { start: '13:30', end: '17:30' },
+            evening: { start: '18:00', end: '21:00' },
+            fullday: { start: '08:00', end: '17:00' }
+        };
+
+        function selectTemplate(template) {
+            document.querySelectorAll('.shift-template').forEach(t => t.classList.remove('selected'));
+            document.querySelector(`[data-template="${template}"]`).classList.add('selected');
+            selectedTemplate = template;
+
+            if (template === 'custom-quick') {
+                document.getElementById('customTimeQuick').style.display = 'block';
+            } else {
+                document.getElementById('customTimeQuick').style.display = 'none';
+                if (shiftTemplates[template]) {
+                    document.getElementById('quickStartTime').value = shiftTemplates[template].start;
+                    document.getElementById('quickEndTime').value = shiftTemplates[template].end;
+                }
+            }
+        }
+
+        function selectAllDays() {
+            document.querySelectorAll('input[id^="day"]').forEach(cb => cb.checked = true);
+        }
+
+        // Custom shift builder
+        let customShiftCount = 0;
+        function addCustomShift() {
+            customShiftCount++;
+            const container = document.getElementById('customScheduleBuilder');
+            const html = `
+                <div class="custom-shift-item" id="shift-${customShiftCount}">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-3">
+                            <label class="form-label small">Thứ</label>
+                            <select class="form-select form-select-sm" id="customDay-${customShiftCount}">
+                                <option value="1">Thứ Hai</option>
+                                <option value="2">Thứ Ba</option>
+                                <option value="3">Thứ Tư</option>
+                                <option value="4">Thứ Năm</option>
+                                <option value="5">Thứ Sáu</option>
+                                <option value="6">Thứ Bảy</option>
+                                <option value="0">Chủ Nhật</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Giờ bắt đầu</label>
+                            <input type="time" class="form-control form-control-sm" id="customStart-${customShiftCount}" value="08:00">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Giờ kết thúc</label>
+                            <input type="time" class="form-control form-control-sm" id="customEnd-${customShiftCount}" value="12:00">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small">Số BN</label>
+                            <input type="number" class="form-control form-control-sm" id="customMax-${customShiftCount}" value="4" min="1" max="20">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label small">&nbsp;</label>
+                            <button class="btn btn-sm btn-danger w-100" onclick="removeCustomShift(${customShiftCount})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        function removeCustomShift(id) {
+            document.getElementById(`shift-${id}`).remove();
+        }
+
+        // Main save function - route to appropriate handler
+        async function saveScheduleMain() {
+            const activeTab = document.querySelector('#scheduleTabContent .tab-pane.active').id;
+            
+            if (activeTab === 'quick-mode') {
+                await saveQuickSchedule();
+            } else if (activeTab === 'custom-mode') {
+                await saveCustomSchedule();
+            } else if (activeTab === 'single-mode') {
+                await saveSingleSchedule();
+            }
+        }
+
+        // Save quick schedule (multiple days with same time)
+        async function saveQuickSchedule() {
+            const doctorId = document.getElementById('scheduleDoctorId').value;
+            const selectedDays = [];
+            document.querySelectorAll('input[id^="day"]:checked').forEach(cb => {
+                selectedDays.push(parseInt(cb.value));
+            });
+
+            if (selectedDays.length === 0) {
+                alert('Vui lòng chọn ít nhất 1 ngày trong tuần');
+                return;
+            }
+
+            if (!selectedTemplate) {
+                alert('Vui lòng chọn mẫu ca làm việc');
+                return;
+            }
+
+            const startTime = document.getElementById('quickStartTime').value;
+            const endTime = document.getElementById('quickEndTime').value;
+            const maxPatients = parseInt(document.getElementById('quickMaxPatients').value);
+
+            if (!startTime || !endTime) {
+                alert('Vui lòng nhập giờ làm việc');
+                return;
+            }
+
+            const schedules = selectedDays.map(day => ({
+                DayOfWeek: day,
+                StartTime: startTime,
+                EndTime: endTime,
+                MaxAppointmentsPerSlot: maxPatients,
+                IsAvailable: true
+            }));
+
+            await saveBulkSchedules(doctorId, schedules);
+        }
+
+        // Save custom schedules (different times for each day)
+        async function saveCustomSchedule() {
+            const doctorId = document.getElementById('scheduleDoctorId').value;
+            const schedules = [];
+
+            document.querySelectorAll('.custom-shift-item').forEach(item => {
+                const id = item.id.split('-')[1];
+                const day = parseInt(document.getElementById(`customDay-${id}`).value);
+                const start = document.getElementById(`customStart-${id}`).value;
+                const end = document.getElementById(`customEnd-${id}`).value;
+                const max = parseInt(document.getElementById(`customMax-${id}`).value);
+
+                schedules.push({
+                    DayOfWeek: day,
+                    StartTime: start,
+                    EndTime: end,
+                    MaxAppointmentsPerSlot: max,
+                    IsAvailable: true
+                });
+            });
+
+            if (schedules.length === 0) {
+                alert('Vui lòng thêm ít nhất 1 ca làm việc');
+                return;
+            }
+
+            await saveBulkSchedules(doctorId, schedules);
+        }
+
+        // Save single schedule (original functionality)
+        async function saveSingleSchedule() {
+            const scheduleId = document.getElementById('scheduleId').value;
+            const doctorId = document.getElementById('scheduleDoctorId').value;
+            const dayOfWeek = parseInt(document.getElementById('scheduleDayOfWeek').value);
+            const startTime = document.getElementById('scheduleStartTime').value;
+            const endTime = document.getElementById('scheduleEndTime').value;
+            const maxAppointments = parseInt(document.getElementById('scheduleMaxAppointments').value);
+            const isAvailable = document.getElementById('scheduleIsAvailable').checked;
+
+            if (!startTime || !endTime) {
+                alert('Vui lòng nhập đầy đủ thông tin');
+                return;
+            }
+
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                let url, method;
+                if (scheduleId) {
+                    // Update existing
+                    url = `${API_URL}/admin/doctors/schedules/${scheduleId}`;
+                    method = 'PUT';
+                } else {
+                    // Create new
+                    url = `${API_URL}/admin/doctors/${doctorId}/schedules`;
+                    method = 'POST';
+                }
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        DayOfWeek: dayOfWeek,
+                        StartTime: startTime,
+                        EndTime: endTime,
+                        MaxAppointmentsPerSlot: maxAppointments,
+                        IsAvailable: isAvailable
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Lỗi khi lưu lịch làm việc');
+                }
+
+                const result = await response.json();
+                alert('Đã lưu lịch làm việc thành công');
+                scheduleModal.hide();
+                loadDoctorSchedules();
+            } catch (error) {
+                console.error('Error saving schedule:', error);
+                alert(error.message || 'Không thể lưu lịch làm việc');
+            }
+        }
+
+        // Bulk save schedules
+        async function saveBulkSchedules(doctorId, schedules) {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                document.getElementById('saveButtonText').textContent = 'Đang lưu...';
+                
+                // Call API for each schedule
+                const promises = schedules.map(schedule => 
+                    fetch(`${API_URL}/admin/doctors/${doctorId}/schedules`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(schedule)
+                    })
+                );
+
+                const results = await Promise.all(promises);
+                const failedCount = results.filter(r => !r.ok).length;
+
+                if (failedCount > 0) {
+                    alert(`Đã lưu ${schedules.length - failedCount}/${schedules.length} ca làm việc. ${failedCount} ca bị lỗi.`);
+                } else {
+                    alert(`Đã tạo ${schedules.length} ca làm việc thành công!`);
+                }
+
+                scheduleModal.hide();
+                loadDoctorSchedules();
+            } catch (error) {
+                console.error('Error saving schedules:', error);
+                alert('Có lỗi xảy ra khi lưu lịch làm việc');
+            } finally {
+                document.getElementById('saveButtonText').textContent = 'Lưu lịch';
+            }
         }
 
         // Edit schedule

@@ -76,7 +76,7 @@ namespace HealthySystem.API.Controllers
         {
             try
             {
-                var schedules = await _context.DoctorSchedules.Where(ds => ds.DoctorId == doctorId).OrderBy(ds => ds.DayOfWeek).ThenBy(ds => ds.StartTime).Select(ds => new { id = ds.Id, doctorId = ds.DoctorId, dayOfWeek = ds.DayOfWeek, startTime = ds.StartTime.ToString("HH:mm"), endTime = ds.EndTime.ToString("HH:mm"), isAvailable = ds.IsAvailable }).ToListAsync();
+                var schedules = await _context.DoctorSchedules.Where(ds => ds.DoctorId == doctorId).OrderBy(ds => ds.DayOfWeek).ThenBy(ds => ds.StartTime).Select(ds => new { id = ds.Id, doctorId = ds.DoctorId, dayOfWeek = ds.DayOfWeek, startTime = ds.StartTime.ToString("HH:mm"), endTime = ds.EndTime.ToString("HH:mm"), isAvailable = ds.IsAvailable, maxAppointmentsPerSlot = ds.MaxAppointmentsPerSlot }).ToListAsync();
                 return Ok(new { success = true, data = schedules });
             }
             catch (Exception ex)
@@ -94,10 +94,10 @@ namespace HealthySystem.API.Controllers
                 var doctor = await _context.Users.FirstOrDefaultAsync(u => u.Id == doctorId && u.Role == "doctor");
                 if (doctor == null) return NotFound(new { success = false, error = "Doctor not found" });
 
-                var schedule = new DoctorSchedule { DoctorId = doctorId, DayOfWeek = dto.DayOfWeek, StartTime = TimeOnly.Parse(dto.StartTime), EndTime = TimeOnly.Parse(dto.EndTime), IsAvailable = dto.IsAvailable ?? true };
+                var schedule = new DoctorSchedule { DoctorId = doctorId, DayOfWeek = dto.DayOfWeek, StartTime = TimeOnly.Parse(dto.StartTime), EndTime = TimeOnly.Parse(dto.EndTime), IsAvailable = dto.IsAvailable ?? true, MaxAppointmentsPerSlot = dto.MaxAppointmentsPerSlot ?? 4 };
                 _context.DoctorSchedules.Add(schedule);
                 await _context.SaveChangesAsync();
-                return Ok(new { success = true, data = new { id = schedule.Id, doctorId = schedule.DoctorId, dayOfWeek = schedule.DayOfWeek, startTime = schedule.StartTime.ToString("HH:mm"), endTime = schedule.EndTime.ToString("HH:mm"), isAvailable = schedule.IsAvailable } });
+                return Ok(new { success = true, data = new { id = schedule.Id, doctorId = schedule.DoctorId, dayOfWeek = schedule.DayOfWeek, startTime = schedule.StartTime.ToString("HH:mm"), endTime = schedule.EndTime.ToString("HH:mm"), isAvailable = schedule.IsAvailable, maxAppointmentsPerSlot = schedule.MaxAppointmentsPerSlot } });
             }
             catch (Exception ex)
             {
@@ -117,9 +117,11 @@ namespace HealthySystem.API.Controllers
                 if (!string.IsNullOrEmpty(dto.StartTime)) schedule.StartTime = TimeOnly.Parse(dto.StartTime);
                 if (!string.IsNullOrEmpty(dto.EndTime)) schedule.EndTime = TimeOnly.Parse(dto.EndTime);
                 if (dto.IsAvailable.HasValue) schedule.IsAvailable = dto.IsAvailable.Value;
+                if (dto.MaxAppointmentsPerSlot.HasValue) schedule.MaxAppointmentsPerSlot = dto.MaxAppointmentsPerSlot.Value;
+                schedule.UpdatedAt = DateTime.Now;
 
                 await _context.SaveChangesAsync();
-                return Ok(new { success = true, data = new { id = schedule.Id, doctorId = schedule.DoctorId, dayOfWeek = schedule.DayOfWeek, startTime = schedule.StartTime.ToString("HH:mm"), endTime = schedule.EndTime.ToString("HH:mm"), isAvailable = schedule.IsAvailable } });
+                return Ok(new { success = true, data = new { id = schedule.Id, doctorId = schedule.DoctorId, dayOfWeek = schedule.DayOfWeek, startTime = schedule.StartTime.ToString("HH:mm"), endTime = schedule.EndTime.ToString("HH:mm"), isAvailable = schedule.IsAvailable, maxAppointmentsPerSlot = schedule.MaxAppointmentsPerSlot } });
             }
             catch (Exception ex)
             {
@@ -154,6 +156,7 @@ namespace HealthySystem.API.Controllers
         public string StartTime { get; set; } = string.Empty;
         public string EndTime { get; set; } = string.Empty;
         public bool? IsAvailable { get; set; }
+        public int? MaxAppointmentsPerSlot { get; set; }
     }
 
     public class UpdateScheduleDto
@@ -161,5 +164,6 @@ namespace HealthySystem.API.Controllers
         public string? StartTime { get; set; }
         public string? EndTime { get; set; }
         public bool? IsAvailable { get; set; }
+        public int? MaxAppointmentsPerSlot { get; set; }
     }
 }
