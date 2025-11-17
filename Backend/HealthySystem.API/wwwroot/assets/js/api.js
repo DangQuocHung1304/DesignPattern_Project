@@ -96,48 +96,15 @@ class ApiService {
     // Authentication
     async login(email, password) {
         try {
+            console.log('API: Attempting login with email:', email);
             const result = await this.post('/auth/login', { email, password }, false);
-            
-            if (result.success) {
-                return result;
-            } else {
-                // Fallback to mock data for testing
-                console.log('API login failed, using mock data for testing');
-                return this.getMockLoginData(email, password);
-            }
+            console.log('API: Login result from server:', result);
+            return result;
         } catch (error) {
-            console.log('API connection failed, using mock data for testing');
-            return this.getMockLoginData(email, password);
-        }
-    }
-    
-    // Mock login data for testing
-    getMockLoginData(email, password) {
-        // Simple mock validation
-        if (email && password.length >= 3) {
-            const mockUser = {
-                id: 1,
-                email: email,
-                fullName: 'Nguyễn Văn Test',
-                firstName: 'Nguyễn Văn',
-                lastName: 'Test',
-                phone: '0123456789',
-                gender: 'male',
-                dateOfBirth: '1990-01-01',
-                address: '123 Test Street, Test City'
-            };
-            
-            return {
-                success: true,
-                data: {
-                    user: mockUser,
-                    token: 'mock-token-' + Date.now()
-                }
-            };
-        } else {
+            console.error('API: Connection failed:', error);
             return {
                 success: false,
-                error: 'Email hoặc mật khẩu không đúng'
+                error: error.message || 'Không thể kết nối đến server. Vui lòng kiểm tra backend đã chạy chưa.'
             };
         }
     }

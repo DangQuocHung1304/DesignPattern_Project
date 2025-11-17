@@ -131,64 +131,12 @@ class ApiService {
             console.log('API: result.success:', result.success);
             console.log('API: result.data:', result.data);
             
-            if (result.success) {
-                console.log('API: Login successful, returning result');
-                return result;
-            } else {
-                // Fallback to mock data for testing
-                console.log('API: Login failed, error:', result.error);
-                console.log('API: Using mock data for testing');
-                return this.getMockLoginData(email, password);
-            }
+            return result;
         } catch (error) {
             console.error('API: Connection failed:', error);
-            console.log('API: Using mock data for testing');
-            return this.getMockLoginData(email, password);
-        }
-    }
-    
-    // Mock login data for testing
-    getMockLoginData(email, password) {
-        // Simple mock validation
-        if (email && password.length >= 3) {
-            // Determine role based on email
-            let role = 'patient';
-            if (email.toLowerCase().includes('admin')) {
-                role = 'admin';
-            } else if (email.toLowerCase().includes('doctor')) {
-                role = 'doctor';
-            } else if (email.toLowerCase().includes('reception')) {
-                role = 'reception';
-            } else if (email.toLowerCase().includes('lab')) {
-                role = 'lab';
-            } else if (email.toLowerCase().includes('accountant')) {
-                role = 'accountant';
-            }
-            
-            const mockUser = {
-                id: 1,
-                email: email,
-                fullName: 'Nguyễn Văn Test',
-                firstName: 'Nguyễn Văn',
-                lastName: 'Test',
-                role: role,
-                phone: '0123456789',
-                gender: 'male',
-                dateOfBirth: '1990-01-01',
-                address: '123 Test Street, Test City'
-            };
-            
-            return {
-                success: true,
-                data: {
-                    user: mockUser,
-                    token: 'mock-token-' + Date.now()
-                }
-            };
-        } else {
             return {
                 success: false,
-                error: 'Email hoặc mật khẩu không đúng'
+                error: error.message || 'Không thể kết nối đến server. Vui lòng kiểm tra backend đã chạy chưa.'
             };
         }
     }
