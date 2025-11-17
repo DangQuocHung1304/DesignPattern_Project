@@ -77,7 +77,24 @@ namespace HealthySystem.API.Controllers
             try
             {
                 _logger.LogInformation("Getting schedules for doctor {DoctorId}", doctorId);
-                var schedules = await _context.DoctorSchedules.Where(ds => ds.DoctorId == doctorId).OrderBy(ds => ds.DayOfWeek).ThenBy(ds => ds.StartTime).Select(ds => new { id = ds.Id, doctorId = ds.DoctorId, dayOfWeek = ds.DayOfWeek, startTime = ds.StartTime.ToString("HH:mm"), endTime = ds.EndTime.ToString("HH:mm"), isAvailable = ds.IsAvailable, maxAppointmentsPerSlot = ds.MaxAppointmentsPerSlot }).ToListAsync();
+                
+                // Get schedules from today onwards, grouped by date
+                var schedules = await _context.DoctorSchedules
+                    .Where(ds => ds.DoctorId == doctorId && ds.ScheduleDate >= DateTime.Today)
+                    .OrderBy(ds => ds.ScheduleDate)
+                    .ThenBy(ds => ds.StartTime)
+                    .Select(ds => new { 
+                        id = ds.Id, 
+                        doctorId = ds.DoctorId, 
+                        scheduleDate = ds.ScheduleDate.ToString("yyyy-MM-dd"),
+                        dayOfWeek = (int)ds.ScheduleDate.DayOfWeek,
+                        startTime = ds.StartTime.ToString("HH:mm"), 
+                        endTime = ds.EndTime.ToString("HH:mm"), 
+                        isAvailable = ds.IsAvailable,
+                        slotLengthMinutes = ds.SlotLengthMinutes
+                    })
+                    .ToListAsync();
+                    
                 _logger.LogInformation("Found {Count} schedules", schedules.Count);
                 return Ok(new { success = true, data = schedules });
             }
@@ -93,8 +110,11 @@ namespace HealthySystem.API.Controllers
         {
             try
             {
-                _logger.LogInformation("Creating schedule for doctor {DoctorId}: Day={Day}, Start={Start}, End={End}", 
-                    doctorId, dto.DayOfWeek, dto.StartTime, dto.EndTime);
+                _logger.LogInformation("=== CREATE SCHEDULE REQUEST ===");
+                _logger.LogInformation("DoctorId: {DoctorId}", doctorId);
+                _logger.LogInformation("DTO received: {@Dto}", dto);
+                _logger.LogInformation("DayOfWeek: {Day}, StartTime: {Start}, EndTime: {End}, Weeks: {Weeks}", 
+                    dto.DayOfWeek, dto.StartTime, dto.EndTime, dto.WeeksToRepeat);
                 
                 var doctor = await _context.Users.FirstOrDefaultAsync(u => u.Id == doctorId && u.Role == "doctor");
                 if (doctor == null)
@@ -102,18 +122,93 @@ namespace HealthySystem.API.Controllers
                     _logger.LogWarning("Doctor not found: {DoctorId}", doctorId);
                     return NotFound(new { success = false, error = "Doctor not found" });
                 }
+                _logger.LogInformation("Doctor found: {DoctorName}", doctor.FullName);
 
-                var schedule = new DoctorSchedule { DoctorId = doctorId, DayOfWeek = dto.DayOfWeek, StartTime = TimeOnly.Parse(dto.StartTime), EndTime = TimeOnly.Parse(dto.EndTime), IsAvailable = dto.IsAvailable ?? true, MaxAppointmentsPerSlot = dto.MaxAppointmentsPerSlot ?? 4 };
-                _context.DoctorSchedules.Add(schedule);
+                TimeOnly startTime, endTime;
+                if (!TimeOnly.TryParse(dto.StartTime, out startTime))
+                {
+                    _logger.LogError("Invalid StartTime format: {StartTime}", dto.StartTime);
+                    return BadRequest(new { success = false, error = "Invalid StartTime format. Use HH:mm" });
+                }
+                if (!TimeOnly.TryParse(dto.EndTime, out endTime))
+                {
+                    _logger.LogError("Invalid EndTime format: {EndTime}", dto.EndTime);
+                    return BadRequest(new { success = false, error = "Invalid EndTime format. Use HH:mm" });
+                }
+
+                // Create schedules for multiple weeks (default 4 weeks)
+                int weeksToCreate = dto.WeeksToRepeat ?? 4;
+                List<DoctorSchedule> schedules = new List<DoctorSchedule>();
+                
+                // Find the first occurrence of this day of week
+                DateTime currentDate = DateTime.Today;
+                while ((int)currentDate.DayOfWeek != dto.DayOfWeek)
+                {
+                    currentDate = currentDate.AddDays(1);
+                }
+                
+                // Create schedule for each week
+                for (int week = 0; week < weeksToCreate; week++)
+                {
+                    DateTime scheduleDate = currentDate.AddDays(week * 7);
+                    
+                    // Check if schedule already exists for this date and time
+                    bool exists = await _context.DoctorSchedules.AnyAsync(ds => 
+                        ds.DoctorId == doctorId && 
+                        ds.ScheduleDate == scheduleDate && 
+                        ds.StartTime == startTime);
+                    
+                    if (!exists)
+                    {
+                        schedules.Add(new DoctorSchedule
+                        {
+                            DoctorId = doctorId,
+                            ScheduleDate = scheduleDate,
+                            StartTime = startTime,
+                            EndTime = endTime,
+                            IsAvailable = dto.IsAvailable ?? true,
+                            SlotLengthMinutes = dto.MaxAppointmentsPerSlot ?? 15
+                        });
+                    }
+                }
+                
+                if (schedules.Count == 0)
+                {
+                    return Ok(new { success = true, message = "All schedules already exist", created = 0 });
+                }
+                
+                _logger.LogInformation("Adding {Count} schedules to context...", schedules.Count);
+                _context.DoctorSchedules.AddRange(schedules);
+                
+                _logger.LogInformation("Saving changes to database...");
                 await _context.SaveChangesAsync();
                 
-                _logger.LogInformation("Schedule created with ID {ScheduleId}", schedule.Id);
-                return Ok(new { success = true, data = new { id = schedule.Id, doctorId = schedule.DoctorId, dayOfWeek = schedule.DayOfWeek, startTime = schedule.StartTime.ToString("HH:mm"), endTime = schedule.EndTime.ToString("HH:mm"), isAvailable = schedule.IsAvailable, maxAppointmentsPerSlot = schedule.MaxAppointmentsPerSlot } });
+                _logger.LogInformation("Created {Count} schedules successfully", schedules.Count);
+                
+                var createdData = schedules.Select(s => new { 
+                    id = s.Id, 
+                    doctorId = s.DoctorId, 
+                    scheduleDate = s.ScheduleDate.ToString("yyyy-MM-dd"), 
+                    dayOfWeek = s.DayOfWeek, 
+                    startTime = s.StartTime.ToString("HH:mm"), 
+                    endTime = s.EndTime.ToString("HH:mm"), 
+                    isAvailable = s.IsAvailable, 
+                    slotLengthMinutes = s.SlotLengthMinutes 
+                }).ToList();
+                
+                return Ok(new { success = true, created = schedules.Count, data = createdData });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating schedule for doctor {DoctorId}: {Message}", doctorId, ex.Message);
-                return StatusCode(500, new { success = false, error = "Failed to create schedule", details = ex.Message });
+                _logger.LogError(ex, "=== ERROR CREATING SCHEDULE ===");
+                _logger.LogError("Exception Type: {Type}", ex.GetType().Name);
+                _logger.LogError("Message: {Message}", ex.Message);
+                _logger.LogError("StackTrace: {Stack}", ex.StackTrace);
+                if (ex.InnerException != null)
+                {
+                    _logger.LogError("Inner Exception: {InnerMsg}", ex.InnerException.Message);
+                }
+                return StatusCode(500, new { success = false, error = "Failed to create schedule", details = ex.Message, innerError = ex.InnerException?.Message });
             }
         }
 
@@ -128,11 +223,11 @@ namespace HealthySystem.API.Controllers
                 if (!string.IsNullOrEmpty(dto.StartTime)) schedule.StartTime = TimeOnly.Parse(dto.StartTime);
                 if (!string.IsNullOrEmpty(dto.EndTime)) schedule.EndTime = TimeOnly.Parse(dto.EndTime);
                 if (dto.IsAvailable.HasValue) schedule.IsAvailable = dto.IsAvailable.Value;
-                if (dto.MaxAppointmentsPerSlot.HasValue) schedule.MaxAppointmentsPerSlot = dto.MaxAppointmentsPerSlot.Value;
-                schedule.UpdatedAt = DateTime.Now;
+                if (dto.MaxAppointmentsPerSlot.HasValue) schedule.SlotLengthMinutes = dto.MaxAppointmentsPerSlot.Value;  // Map to slot length
+                // Note: updated_at column doesn't exist in DB
 
                 await _context.SaveChangesAsync();
-                return Ok(new { success = true, data = new { id = schedule.Id, doctorId = schedule.DoctorId, dayOfWeek = schedule.DayOfWeek, startTime = schedule.StartTime.ToString("HH:mm"), endTime = schedule.EndTime.ToString("HH:mm"), isAvailable = schedule.IsAvailable, maxAppointmentsPerSlot = schedule.MaxAppointmentsPerSlot } });
+                return Ok(new { success = true, data = new { id = schedule.Id, doctorId = schedule.DoctorId, scheduleDate = schedule.ScheduleDate.ToString("yyyy-MM-dd"), dayOfWeek = schedule.DayOfWeek, startTime = schedule.StartTime.ToString("HH:mm"), endTime = schedule.EndTime.ToString("HH:mm"), isAvailable = schedule.IsAvailable, slotLengthMinutes = schedule.SlotLengthMinutes } });
             }
             catch (Exception ex)
             {
@@ -168,6 +263,7 @@ namespace HealthySystem.API.Controllers
         public string EndTime { get; set; } = string.Empty;
         public bool? IsAvailable { get; set; }
         public int? MaxAppointmentsPerSlot { get; set; }
+        public int? WeeksToRepeat { get; set; }  // Number of weeks to create recurring schedule (default 4)
     }
 
     public class UpdateScheduleDto

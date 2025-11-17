@@ -10,14 +10,13 @@ namespace HealthySystem.API.Models
         [Column("id")]
         public int Id { get; set; }
 
-        [Column("doctor_id")]
+        [Column("doctor_user_id")]  // Changed from doctor_id
         [Required]
         public long DoctorId { get; set; }
 
-        [Column("day_of_week")]
+        [Column("schedule_date")]  // Changed from day_of_week - storing actual date
         [Required]
-        [Range(0, 6)] // 0=Sunday, 1=Monday, ..., 6=Saturday
-        public int DayOfWeek { get; set; }
+        public DateTime ScheduleDate { get; set; }
 
         [Column("start_time")]
         [Required]
@@ -30,17 +29,21 @@ namespace HealthySystem.API.Models
         [Column("is_available")]
         public bool IsAvailable { get; set; } = true;
 
-        [Column("max_appointments_per_slot")]
-        public int MaxAppointmentsPerSlot { get; set; } = 4;
+        [Column("slot_length_minutes")]  // Changed from max_appointments_per_slot
+        public int SlotLengthMinutes { get; set; } = 15;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        [Column("updated_at")]
-        public DateTime? UpdatedAt { get; set; }
+        // Note: updated_at column doesn't exist in DB, removed
+        // public DateTime? UpdatedAt { get; set; }
 
         // Navigation property
         [ForeignKey("DoctorId")]
         public virtual User? Doctor { get; set; }
+        
+        // Helper property to get day of week from ScheduleDate
+        [NotMapped]
+        public int DayOfWeek => (int)ScheduleDate.DayOfWeek;
     }
 }

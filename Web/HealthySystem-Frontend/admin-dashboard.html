@@ -806,6 +806,19 @@
                                         </button>
                                     </div>
                                 </div>
+
+                                <!-- Weeks to repeat -->
+                                <div class="mb-3">
+                                    <label class="form-label">Số tuần lặp lại</label>
+                                    <select class="form-select" id="weeksToRepeat">
+                                        <option value="1">1 tuần (chỉ tạo cho tuần này)</option>
+                                        <option value="2">2 tuần</option>
+                                        <option value="4" selected>4 tuần (1 tháng)</option>
+                                        <option value="8">8 tuần (2 tháng)</option>
+                                        <option value="12">12 tuần (3 tháng)</option>
+                                    </select>
+                                    <small class="text-muted">Hệ thống sẽ tự động tạo lịch lặp lại cho các tuần tiếp theo</small>
+                                </div>
                             </div>
 
                             <div class="mb-3">
@@ -1930,6 +1943,7 @@
             const startTime = document.getElementById('quickStartTime').value;
             const endTime = document.getElementById('quickEndTime').value;
             const maxPatients = parseInt(document.getElementById('quickMaxPatients').value);
+            const weeksToRepeat = parseInt(document.getElementById('weeksToRepeat').value);
 
             if (!startTime || !endTime) {
                 alert('Vui lòng nhập giờ làm việc');
@@ -1941,7 +1955,8 @@
                 startTime: startTime,
                 endTime: endTime,
                 maxAppointmentsPerSlot: maxPatients,
-                isAvailable: true
+                isAvailable: true,
+                weeksToRepeat: weeksToRepeat
             }));
 
             await saveBulkSchedules(doctorId, schedules);
@@ -2053,16 +2068,27 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(schedule)
+                    }).then(async res => {
+                        const data = await res.json();
+                        return { ok: res.ok, data };
                     })
                 );
 
                 const results = await Promise.all(promises);
                 const failedCount = results.filter(r => !r.ok).length;
+                
+                // Count total schedules created (including recurring weeks)
+                let totalCreated = 0;
+                results.forEach(r => {
+                    if (r.ok && r.data.created) {
+                        totalCreated += r.data.created;
+                    }
+                });
 
                 if (failedCount > 0) {
-                    alert(`Đã lưu ${schedules.length - failedCount}/${schedules.length} ca làm việc. ${failedCount} ca bị lỗi.`);
+                    alert(`Đã tạo ${totalCreated} ca làm việc. ${failedCount} yêu cầu bị lỗi.`);
                 } else {
-                    alert(`Đã tạo ${schedules.length} ca làm việc thành công!`);
+                    alert(`✅ Thành công! Đã tạo ${totalCreated} ca làm việc (bao gồm các tuần lặp lại)`);
                 }
 
                 scheduleModal.hide();
