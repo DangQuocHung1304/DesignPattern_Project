@@ -185,9 +185,9 @@ namespace HealthySystem.API.Data
                 .HasForeignKey(ds => ds.DoctorId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Create unique constraint for doctor schedule
+            // Create unique constraint for doctor schedule (using ScheduleDate instead of DayOfWeek)
             modelBuilder.Entity<DoctorSchedule>()
-                .HasIndex(ds => new { ds.DoctorId, ds.DayOfWeek, ds.StartTime })
+                .HasIndex(ds => new { ds.DoctorId, ds.ScheduleDate, ds.StartTime })
                 .IsUnique()
                 .HasDatabaseName("UQ_doctor_schedule");
 
@@ -197,8 +197,8 @@ namespace HealthySystem.API.Data
                 .HasDatabaseName("IX_doctor_schedules_doctor_id");
 
             modelBuilder.Entity<DoctorSchedule>()
-                .HasIndex(ds => ds.DayOfWeek)
-                .HasDatabaseName("IX_doctor_schedules_day_of_week");
+                .HasIndex(ds => ds.ScheduleDate)
+                .HasDatabaseName("IX_doctor_schedules_schedule_date");
 
             modelBuilder.Entity<DoctorSchedule>()
                 .HasIndex(ds => ds.IsAvailable)

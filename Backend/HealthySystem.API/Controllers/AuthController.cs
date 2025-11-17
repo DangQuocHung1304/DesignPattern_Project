@@ -16,11 +16,28 @@ namespace HealthySystem.API.Controllers
     {
         private readonly HealthySystemDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(HealthySystemDbContext context, IConfiguration configuration)
+        public AuthController(HealthySystemDbContext context, IConfiguration configuration, ILogger<AuthController> logger)
         {
             _context = context;
             _configuration = configuration;
+            _logger = logger;
+        }
+
+        [HttpGet("test")]
+        public IActionResult Test()
+        {
+            try
+            {
+                _logger.LogInformation("Test endpoint called");
+                return Ok(new { message = "Backend is running", timestamp = DateTime.Now });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Test endpoint error");
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         [HttpPost("register")]
@@ -109,39 +126,39 @@ namespace HealthySystem.API.Controllers
         {
             try
             {
-                Console.WriteLine($"=== LOGIN ATTEMPT ===");
-                Console.WriteLine($"Email: {request.Email}");
-                Console.WriteLine($"Querying database...");
+                _logger.LogInformation("=== LOGIN ATTEMPT ===");
+                _logger.LogInformation("Email: {Email}", request.Email);
+                _logger.LogInformation("Querying database...");
                 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Email == request.Email && u.Status == "active");
                 
-                Console.WriteLine($"User found: {user != null}");
+                _logger.LogInformation("User found: {Found}", user != null);
                     
                 if (user == null)
                 {
-                    Console.WriteLine($"User not found or inactive");
+                    _logger.LogWarning("User not found or inactive");
                     return Unauthorized(new { message = "Email hoặc mật khẩu không chính xác" });
                 }
 
-                Console.WriteLine($"Verifying password...");
+                _logger.LogInformation("Verifying password...");
                 // Verify password
                 if (!VerifyPassword(request.Password, user.PasswordHash))
                 {
-                    Console.WriteLine($"Password verification failed");
+                    _logger.LogWarning("Password verification failed");
                     return Unauthorized(new { message = "Email hoặc mật khẩu không chính xác" });
                 }
 
-                Console.WriteLine($"Password verified, generating token...");
+                _logger.LogInformation("Password verified, generating token...");
                 // Generate JWT token
                 var token = GenerateJwtToken(user);
 
-                Console.WriteLine($"Token generated, updating last login...");
+                _logger.LogInformation("Token generated, updating last login...");
                 // Update last login
                 user.UpdatedAt = DateTimeOffset.UtcNow;
                 await _context.SaveChangesAsync();
 
-                Console.WriteLine($"Login successful for user: {user.Email}");
+                _logger.LogInformation("Login successful for user: {Email}", user.Email);
                 return Ok(new { 
                     message = "Đăng nhập thành công",
                     token = token,
@@ -156,13 +173,12 @@ namespace HealthySystem.API.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"=== LOGIN ERROR ===");
-                Console.WriteLine($"Exception: {ex.GetType().Name}");
-                Console.WriteLine($"Message: {ex.Message}");
-                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                _logger.LogError(ex, "=== LOGIN ERROR ===");
+                _logger.LogError("Exception: {Type}", ex.GetType().Name);
+                _logger.LogError("Message: {Message}", ex.Message);
                 if (ex.InnerException != null)
                 {
-                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                    _logger.LogError("Inner Exception: {InnerMsg}", ex.InnerException.Message);
                 }
                 return StatusCode(500, new { message = "Có lỗi xảy ra trong quá trình đăng nhập", error = ex.Message, details = ex.InnerException?.Message });
             }

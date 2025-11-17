@@ -113,8 +113,6 @@ namespace HealthySystem.API.Controllers
                 _logger.LogInformation("=== CREATE SCHEDULE REQUEST ===");
                 _logger.LogInformation("DoctorId: {DoctorId}", doctorId);
                 _logger.LogInformation("DTO received: {@Dto}", dto);
-                _logger.LogInformation("DayOfWeek: {Day}, StartTime: {Start}, EndTime: {End}, Weeks: {Weeks}", 
-                    dto.DayOfWeek, dto.StartTime, dto.EndTime, dto.WeeksToRepeat);
                 
                 var doctor = await _context.Users.FirstOrDefaultAsync(u => u.Id == doctorId && u.Role == "doctor");
                 if (doctor == null)
@@ -123,6 +121,14 @@ namespace HealthySystem.API.Controllers
                     return NotFound(new { success = false, error = "Doctor not found" });
                 }
                 _logger.LogInformation("Doctor found: {DoctorName}", doctor.FullName);
+
+                // Parse schedule date
+                DateTime scheduleDate;
+                if (string.IsNullOrEmpty(dto.ScheduleDate) || !DateTime.TryParse(dto.ScheduleDate, out scheduleDate))
+                {
+                    _logger.LogError("Invalid ScheduleDate format: {ScheduleDate}", dto.ScheduleDate);
+                    return BadRequest(new { success = false, error = "Invalid ScheduleDate format. Use yyyy-MM-dd" });
+                }
 
                 TimeOnly startTime, endTime;
                 if (!TimeOnly.TryParse(dto.StartTime, out startTime))
@@ -136,26 +142,19 @@ namespace HealthySystem.API.Controllers
                     return BadRequest(new { success = false, error = "Invalid EndTime format. Use HH:mm" });
                 }
 
-                // Create schedules for multiple weeks (default 4 weeks)
-                int weeksToCreate = dto.WeeksToRepeat ?? 4;
+                // Create schedules for multiple weeks (default 1 week)
+                int weeksToCreate = dto.WeeksToRepeat ?? 1;
                 List<DoctorSchedule> schedules = new List<DoctorSchedule>();
-                
-                // Find the first occurrence of this day of week
-                DateTime currentDate = DateTime.Today;
-                while ((int)currentDate.DayOfWeek != dto.DayOfWeek)
-                {
-                    currentDate = currentDate.AddDays(1);
-                }
                 
                 // Create schedule for each week
                 for (int week = 0; week < weeksToCreate; week++)
                 {
-                    DateTime scheduleDate = currentDate.AddDays(week * 7);
+                    DateTime weekScheduleDate = scheduleDate.AddDays(week * 7);
                     
                     // Check if schedule already exists for this date and time
                     bool exists = await _context.DoctorSchedules.AnyAsync(ds => 
                         ds.DoctorId == doctorId && 
-                        ds.ScheduleDate == scheduleDate && 
+                        ds.ScheduleDate == weekScheduleDate && 
                         ds.StartTime == startTime);
                     
                     if (!exists)
@@ -163,18 +162,18 @@ namespace HealthySystem.API.Controllers
                         schedules.Add(new DoctorSchedule
                         {
                             DoctorId = doctorId,
-                            ScheduleDate = scheduleDate,
+                            ScheduleDate = weekScheduleDate,
                             StartTime = startTime,
                             EndTime = endTime,
                             IsAvailable = dto.IsAvailable ?? true,
-                            SlotLengthMinutes = dto.MaxAppointmentsPerSlot ?? 15
+                            SlotLengthMinutes = dto.SlotLengthMinutes ?? 30
                         });
                     }
                 }
                 
                 if (schedules.Count == 0)
                 {
-                    return Ok(new { success = true, message = "All schedules already exist", created = 0 });
+                    return Ok(new { success = true, message = "All schedules already exist", createdCount = 0 });
                 }
                 
                 _logger.LogInformation("Adding {Count} schedules to context...", schedules.Count);
@@ -258,11 +257,11 @@ namespace HealthySystem.API.Controllers
 
     public class CreateScheduleDto
     {
-        public int DayOfWeek { get; set; }
+        public string? ScheduleDate { get; set; }  // Date string from frontend (yyyy-MM-dd)
         public string StartTime { get; set; } = string.Empty;
         public string EndTime { get; set; } = string.Empty;
         public bool? IsAvailable { get; set; }
-        public int? MaxAppointmentsPerSlot { get; set; }
+        public int? SlotLengthMinutes { get; set; }  // Changed from MaxAppointmentsPerSlot
         public int? WeeksToRepeat { get; set; }  // Number of weeks to create recurring schedule (default 4)
     }
 

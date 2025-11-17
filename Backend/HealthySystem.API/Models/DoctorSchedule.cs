@@ -8,7 +8,7 @@ namespace HealthySystem.API.Models
     {
         [Key]
         [Column("id")]
-        public int Id { get; set; }
+        public long Id { get; set; }  // Changed to long to match database bigint
 
         [Column("doctor_user_id")]  // Changed from doctor_id
         [Required]
@@ -42,21 +42,8 @@ namespace HealthySystem.API.Models
         [ForeignKey("DoctorId")]
         public virtual User? Doctor { get; set; }
         
-        // Helper property to get day of week from ScheduleDate
+        // Computed property cho frontend - tính từ ScheduleDate
         [NotMapped]
-        public int DayOfWeek 
-        { 
-            get 
-            {
-                try 
-                {
-                    return (int)ScheduleDate.DayOfWeek;
-                }
-                catch
-                {
-                    return 0;
-                }
-            }
-        }
+        public int DayOfWeek => (int)ScheduleDate.DayOfWeek;
     }
 }
