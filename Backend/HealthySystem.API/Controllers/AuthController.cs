@@ -109,27 +109,39 @@ namespace HealthySystem.API.Controllers
         {
             try
             {
+                Console.WriteLine($"=== LOGIN ATTEMPT ===");
+                Console.WriteLine($"Email: {request.Email}");
+                Console.WriteLine($"Querying database...");
+                
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Email == request.Email && u.Status == "active");
+                
+                Console.WriteLine($"User found: {user != null}");
                     
                 if (user == null)
                 {
+                    Console.WriteLine($"User not found or inactive");
                     return Unauthorized(new { message = "Email hoặc mật khẩu không chính xác" });
                 }
 
+                Console.WriteLine($"Verifying password...");
                 // Verify password
                 if (!VerifyPassword(request.Password, user.PasswordHash))
                 {
+                    Console.WriteLine($"Password verification failed");
                     return Unauthorized(new { message = "Email hoặc mật khẩu không chính xác" });
                 }
 
+                Console.WriteLine($"Password verified, generating token...");
                 // Generate JWT token
                 var token = GenerateJwtToken(user);
 
+                Console.WriteLine($"Token generated, updating last login...");
                 // Update last login
                 user.UpdatedAt = DateTimeOffset.UtcNow;
                 await _context.SaveChangesAsync();
 
+                Console.WriteLine($"Login successful for user: {user.Email}");
                 return Ok(new { 
                     message = "Đăng nhập thành công",
                     token = token,
@@ -144,8 +156,15 @@ namespace HealthySystem.API.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Login error: {ex.Message}");
-                return StatusCode(500, new { message = "Có lỗi xảy ra trong quá trình đăng nhập", error = ex.Message });
+                Console.WriteLine($"=== LOGIN ERROR ===");
+                Console.WriteLine($"Exception: {ex.GetType().Name}");
+                Console.WriteLine($"Message: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+                return StatusCode(500, new { message = "Có lỗi xảy ra trong quá trình đăng nhập", error = ex.Message, details = ex.InnerException?.Message });
             }
         }
 

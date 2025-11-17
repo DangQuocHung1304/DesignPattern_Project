@@ -44,6 +44,19 @@ namespace HealthySystem.API.Models
         
         // Helper property to get day of week from ScheduleDate
         [NotMapped]
-        public int DayOfWeek => (int)ScheduleDate.DayOfWeek;
+        public int DayOfWeek 
+        { 
+            get 
+            {
+                try 
+                {
+                    return (int)ScheduleDate.DayOfWeek;
+                }
+                catch
+                {
+                    return 0;
+                }
+            }
+        }
     }
 }
