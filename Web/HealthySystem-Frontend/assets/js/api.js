@@ -125,17 +125,24 @@ class ApiService {
     // Authentication
     async login(email, password) {
         try {
+            console.log('API: Attempting login with email:', email);
             const result = await this.post('/auth/login', { email, password }, false);
+            console.log('API: Login result from server:', result);
+            console.log('API: result.success:', result.success);
+            console.log('API: result.data:', result.data);
             
             if (result.success) {
+                console.log('API: Login successful, returning result');
                 return result;
             } else {
                 // Fallback to mock data for testing
-                console.log('API login failed, using mock data for testing');
+                console.log('API: Login failed, error:', result.error);
+                console.log('API: Using mock data for testing');
                 return this.getMockLoginData(email, password);
             }
         } catch (error) {
-            console.log('API connection failed, using mock data for testing');
+            console.error('API: Connection failed:', error);
+            console.log('API: Using mock data for testing');
             return this.getMockLoginData(email, password);
         }
     }

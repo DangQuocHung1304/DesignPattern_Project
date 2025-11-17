@@ -4,7 +4,7 @@
 -- Mật khẩu: Admin@123
 -- Hash method: SHA256 (matching AuthController.cs)
 -- ============================================================
-
+use QLPhongKham
 -- 1. Kiểm tra xem đã có admin chưa
 SELECT 
     id,
@@ -32,7 +32,7 @@ BEGIN
         email,
         phone,
         gender,
-        date_of_birth,
+        dob,
         password_hash,
         role,
         status,
@@ -45,7 +45,7 @@ BEGIN
         'System',
         'admin@healthysystem.com',
         '0900000000',
-        'Nam',
+        'N',
         '1990-01-01',
         'jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=', -- SHA256 hash of "Admin@123"
         'admin',

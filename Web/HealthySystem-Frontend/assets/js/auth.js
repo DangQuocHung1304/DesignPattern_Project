@@ -25,13 +25,21 @@ class AuthManager {
             console.log('AuthManager: Calling API login...');
             const response = await apiService.login(email, password);
             console.log('AuthManager: API response:', response);
+            console.log('AuthManager: API response.data:', response.data);
             
             if (response.success) {
                 const userData = response.data;
                 console.log('AuthManager: Login successful, userData:', userData);
+                console.log('AuthManager: userData.user:', userData.user);
+                console.log('AuthManager: userData.token:', userData.token);
                 
+                // Extract user and token from response
                 this.user = userData.user || userData;
                 this.token = userData.token || 'dummy-token';
+                
+                console.log('AuthManager: Extracted user:', this.user);
+                console.log('AuthManager: Extracted token:', this.token);
+                console.log('AuthManager: User role:', this.user.role);
                 
                 // Save to localStorage - save to both CONFIG keys and fallback keys for compatibility
                 if (typeof CONFIG !== 'undefined' && CONFIG.STORAGE_KEYS) {
@@ -40,13 +48,16 @@ class AuthManager {
                     console.log('AuthManager: Saved with CONFIG keys');
                 }
                 
-                // Also save to fallback keys for compatibility with login.html
-                localStorage.setItem('authToken', this.token);
+                // Also save to fallback keys for compatibility with all dashboard pages
+                localStorage.setItem('token', this.token); // Main token key
+                localStorage.setItem('authToken', this.token); // Backup token key
                 localStorage.setItem('user', JSON.stringify(this.user));
                 localStorage.setItem('userRole', this.user.role || this.user.Role);
-                localStorage.setItem('userName', `${this.user.firstName} ${this.user.lastName}` || this.user.fullName);
+                localStorage.setItem('userName', this.user.fullName || `${this.user.firstName} ${this.user.lastName}`);
                 localStorage.setItem('userEmail', this.user.email);
-                console.log('AuthManager: Saved with fallback keys, role:', this.user.role || this.user.Role);
+                console.log('AuthManager: Saved with fallback keys');
+                console.log('AuthManager: Saved role:', this.user.role || this.user.Role);
+                console.log('AuthManager: All localStorage keys:', Object.keys(localStorage));
                 
                 // Set token for API service if method exists
                 if (apiService && apiService.setToken) {

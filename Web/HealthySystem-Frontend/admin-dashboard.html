@@ -719,33 +719,49 @@
 
         // Check authentication
         function checkAuth() {
-            const token = localStorage.getItem('token') || localStorage.getItem('healthysystem_token');
+            // Try all possible token keys for compatibility
+            const token = localStorage.getItem('token') || 
+                         localStorage.getItem('authToken') ||
+                         localStorage.getItem('healthysystem_token');
+            
+            console.log('checkAuth: Looking for token...');
+            console.log('checkAuth: token found:', !!token);
             
             if (!token) {
+                console.log('checkAuth: No token found, redirecting to login');
                 window.location.href = 'login.html';
                 return null;
             }
 
             try {
+                console.log('checkAuth: Token found, verifying...');
                 const payload = JSON.parse(atob(token.split('.')[1]));
+                console.log('checkAuth: Token payload:', payload);
+                
                 const roleClaim = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
                 const role = roleClaim || payload.role;
+                console.log('checkAuth: User role:', role);
                 
-                if (role !== 'admin') {
+                if (role !== 'admin' && role !== 'Admin') {
+                    console.log('checkAuth: Not admin role, access denied');
                     alert('Chỉ Quản trị viên mới có quyền truy cập trang này!');
                     window.location.href = 'index.html';
                     return null;
                 }
                 
-                const nameClaim = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || payload.name;
+                console.log('checkAuth: Admin access granted');
+                const nameClaim = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || 
+                                 payload.name || 
+                                 payload.fullName;
                 if (nameClaim) {
                     document.getElementById('welcomeText').textContent = `Xin chào, ${nameClaim}`;
                 }
                 
                 return token;
             } catch (error) {
-                console.error('Invalid token:', error);
+                console.error('checkAuth: Invalid token:', error);
                 localStorage.removeItem('token');
+                localStorage.removeItem('authToken');
                 localStorage.removeItem('healthysystem_token');
                 window.location.href = 'login.html';
                 return null;
