@@ -76,13 +76,15 @@ namespace HealthySystem.API.Controllers
         {
             try
             {
+                _logger.LogInformation("Getting schedules for doctor {DoctorId}", doctorId);
                 var schedules = await _context.DoctorSchedules.Where(ds => ds.DoctorId == doctorId).OrderBy(ds => ds.DayOfWeek).ThenBy(ds => ds.StartTime).Select(ds => new { id = ds.Id, doctorId = ds.DoctorId, dayOfWeek = ds.DayOfWeek, startTime = ds.StartTime.ToString("HH:mm"), endTime = ds.EndTime.ToString("HH:mm"), isAvailable = ds.IsAvailable, maxAppointmentsPerSlot = ds.MaxAppointmentsPerSlot }).ToListAsync();
+                _logger.LogInformation("Found {Count} schedules", schedules.Count);
                 return Ok(new { success = true, data = schedules });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading doctor schedules");
-                return StatusCode(500, new { success = false, error = "Failed to load schedules" });
+                _logger.LogError(ex, "Error loading doctor schedules for doctor {DoctorId}", doctorId);
+                return StatusCode(500, new { success = false, error = "Failed to load schedules", details = ex.Message });
             }
         }
 
@@ -91,18 +93,27 @@ namespace HealthySystem.API.Controllers
         {
             try
             {
+                _logger.LogInformation("Creating schedule for doctor {DoctorId}: Day={Day}, Start={Start}, End={End}", 
+                    doctorId, dto.DayOfWeek, dto.StartTime, dto.EndTime);
+                
                 var doctor = await _context.Users.FirstOrDefaultAsync(u => u.Id == doctorId && u.Role == "doctor");
-                if (doctor == null) return NotFound(new { success = false, error = "Doctor not found" });
+                if (doctor == null)
+                {
+                    _logger.LogWarning("Doctor not found: {DoctorId}", doctorId);
+                    return NotFound(new { success = false, error = "Doctor not found" });
+                }
 
                 var schedule = new DoctorSchedule { DoctorId = doctorId, DayOfWeek = dto.DayOfWeek, StartTime = TimeOnly.Parse(dto.StartTime), EndTime = TimeOnly.Parse(dto.EndTime), IsAvailable = dto.IsAvailable ?? true, MaxAppointmentsPerSlot = dto.MaxAppointmentsPerSlot ?? 4 };
                 _context.DoctorSchedules.Add(schedule);
                 await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("Schedule created with ID {ScheduleId}", schedule.Id);
                 return Ok(new { success = true, data = new { id = schedule.Id, doctorId = schedule.DoctorId, dayOfWeek = schedule.DayOfWeek, startTime = schedule.StartTime.ToString("HH:mm"), endTime = schedule.EndTime.ToString("HH:mm"), isAvailable = schedule.IsAvailable, maxAppointmentsPerSlot = schedule.MaxAppointmentsPerSlot } });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating schedule");
-                return StatusCode(500, new { success = false, error = "Failed to create schedule" });
+                _logger.LogError(ex, "Error creating schedule for doctor {DoctorId}: {Message}", doctorId, ex.Message);
+                return StatusCode(500, new { success = false, error = "Failed to create schedule", details = ex.Message });
             }
         }
 

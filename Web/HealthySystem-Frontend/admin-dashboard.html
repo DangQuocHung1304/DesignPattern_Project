@@ -1937,11 +1937,11 @@
             }
 
             const schedules = selectedDays.map(day => ({
-                DayOfWeek: day,
-                StartTime: startTime,
-                EndTime: endTime,
-                MaxAppointmentsPerSlot: maxPatients,
-                IsAvailable: true
+                dayOfWeek: day,
+                startTime: startTime,
+                endTime: endTime,
+                maxAppointmentsPerSlot: maxPatients,
+                isAvailable: true
             }));
 
             await saveBulkSchedules(doctorId, schedules);
@@ -1960,11 +1960,11 @@
                 const max = parseInt(document.getElementById(`customMax-${id}`).value);
 
                 schedules.push({
-                    DayOfWeek: day,
-                    StartTime: start,
-                    EndTime: end,
-                    MaxAppointmentsPerSlot: max,
-                    IsAvailable: true
+                    dayOfWeek: day,
+                    startTime: start,
+                    endTime: end,
+                    maxAppointmentsPerSlot: max,
+                    isAvailable: true
                 });
             });
 
@@ -2013,11 +2013,11 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        DayOfWeek: dayOfWeek,
-                        StartTime: startTime,
-                        EndTime: endTime,
-                        MaxAppointmentsPerSlot: maxAppointments,
-                        IsAvailable: isAvailable
+                        dayOfWeek: dayOfWeek,
+                        startTime: startTime,
+                        endTime: endTime,
+                        maxAppointmentsPerSlot: maxAppointments,
+                        isAvailable: isAvailable
                     })
                 });
 
