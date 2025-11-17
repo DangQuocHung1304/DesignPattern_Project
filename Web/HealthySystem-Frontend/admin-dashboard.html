@@ -1528,8 +1528,8 @@
                 
                 allDoctors.forEach(doc => {
                     const option = document.createElement('option');
-                    option.value = doc.Id || doc.id;
-                    option.textContent = doc.FullName || doc.fullName;
+                    option.value = doc.userId || doc.UserId || doc.id || doc.Id;
+                    option.textContent = doc.fullName || doc.FullName;
                     select.appendChild(option);
                 });
             } catch (error) {
@@ -1566,14 +1566,40 @@
                 if (!response.ok) throw new Error('Failed to load schedules');
 
                 const result = await response.json();
-                const data = result.data;
-                currentDoctorSchedules = data.Schedules || data.schedules || [];
+                const schedules = result.data || [];
+                currentDoctorSchedules = Array.isArray(schedules) ? schedules : [];
 
-                renderScheduleCalendar(currentDoctorSchedules, data.DoctorName || data.doctorName);
-                renderScheduleList(currentDoctorSchedules);
+                // Get doctor name
+                const selectedDoctor = allDoctors.find(d => (d.userId || d.UserId) == doctorId);
+                const doctorName = selectedDoctor ? (selectedDoctor.fullName || selectedDoctor.FullName) : 'Bác sĩ';
+
+                if (currentDoctorSchedules.length === 0) {
+                    // No schedules yet - show friendly message
+                    document.getElementById('scheduleCalendar').innerHTML = `
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle fa-2x mb-3"></i>
+                            <h5>Bác sĩ ${doctorName} chưa có lịch làm việc</h5>
+                            <p class="mb-3">Vui lòng tạo lịch làm việc để bệnh nhân có thể đăng ký khám</p>
+                            <button class="btn btn-success" onclick="showAddScheduleModal()">
+                                <i class="fas fa-plus me-2"></i>Tạo lịch làm việc ngay
+                            </button>
+                        </div>
+                    `;
+                    document.getElementById('scheduleListContainer').innerHTML = '';
+                } else {
+                    renderScheduleCalendar(currentDoctorSchedules, doctorName);
+                    renderScheduleList(currentDoctorSchedules);
+                }
             } catch (error) {
                 console.error('Error loading schedules:', error);
-                alert('Không thể tải lịch làm việc');
+                document.getElementById('scheduleCalendar').innerHTML = `
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                        <h5>Không thể tải lịch làm việc</h5>
+                        <p>Vui lòng thử lại sau</p>
+                    </div>
+                `;
+                document.getElementById('scheduleListContainer').innerHTML = '';
             }
         }
 
@@ -1584,7 +1610,7 @@
 
             // Group schedules by day
             schedules.forEach(s => {
-                const day = s.DayOfWeek ?? s.dayOfWeek;
+                const day = s.dayOfWeek ?? s.DayOfWeek;
                 if (!schedulesByDay[day]) {
                     schedulesByDay[day] = [];
                 }
@@ -1614,20 +1640,20 @@
 
                 if (schedulesByDay[i] && schedulesByDay[i].length > 0) {
                     schedulesByDay[i].forEach(s => {
-                        const startTime = s.StartTime || s.startTime;
-                        const endTime = s.EndTime || s.endTime;
-                        const isAvailable = s.IsAvailable ?? s.isAvailable;
-                        const maxAppts = s.MaxAppointmentsPerSlot ?? s.maxAppointmentsPerSlot;
+                        const startTime = s.startTime || s.StartTime;
+                        const endTime = s.endTime || s.EndTime;
+                        const isAvailable = s.isAvailable ?? s.IsAvailable;
+                        const maxAppts = s.maxAppointmentsPerSlot ?? s.MaxAppointmentsPerSlot ?? 4;
 
                         html += `
                             <div class="badge ${isAvailable ? 'bg-success' : 'bg-secondary'} me-2 mb-2" style="font-size: 0.9rem;">
                                 <i class="fas fa-clock me-1"></i>
                                 ${startTime} - ${endTime}
                                 <span class="ms-2">(Tối đa: ${maxAppts} BN)</span>
-                                <button class="btn btn-sm btn-link text-white p-0 ms-2" onclick="editSchedule(${s.Id || s.id})" title="Sửa">
+                                <button class="btn btn-sm btn-link text-white p-0 ms-2" onclick="editSchedule(${s.id || s.Id})" title="Sửa">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-sm btn-link text-white p-0 ms-1" onclick="deleteSchedule(${s.Id || s.id})" title="Xóa">
+                                <button class="btn btn-sm btn-link text-white p-0 ms-1" onclick="deleteSchedule(${s.id || s.Id})" title="Xóa">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -1646,20 +1672,20 @@
             html += `<td>`;
             if (schedulesByDay[0] && schedulesByDay[0].length > 0) {
                 schedulesByDay[0].forEach(s => {
-                    const startTime = s.StartTime || s.startTime;
-                    const endTime = s.EndTime || s.endTime;
-                    const isAvailable = s.IsAvailable ?? s.isAvailable;
-                    const maxAppts = s.MaxAppointmentsPerSlot ?? s.maxAppointmentsPerSlot;
+                    const startTime = s.startTime || s.StartTime;
+                    const endTime = s.endTime || s.EndTime;
+                    const isAvailable = s.isAvailable ?? s.IsAvailable;
+                    const maxAppts = s.maxAppointmentsPerSlot ?? s.MaxAppointmentsPerSlot ?? 4;
 
                     html += `
                         <div class="badge ${isAvailable ? 'bg-success' : 'bg-secondary'} me-2 mb-2" style="font-size: 0.9rem;">
                             <i class="fas fa-clock me-1"></i>
                             ${startTime} - ${endTime}
                             <span class="ms-2">(Tối đa: ${maxAppts} BN)</span>
-                            <button class="btn btn-sm btn-link text-white p-0 ms-2" onclick="editSchedule(${s.Id || s.id})" title="Sửa">
+                            <button class="btn btn-sm btn-link text-white p-0 ms-2" onclick="editSchedule(${s.id || s.Id})" title="Sửa">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-link text-white p-0 ms-1" onclick="deleteSchedule(${s.Id || s.id})" title="Xóa">
+                            <button class="btn btn-sm btn-link text-white p-0 ms-1" onclick="deleteSchedule(${s.id || s.Id})" title="Xóa">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -1709,13 +1735,13 @@
             `;
 
             schedules.forEach(s => {
-                const dayOfWeek = s.DayOfWeek ?? s.dayOfWeek;
-                const dayName = s.DayName || s.dayName || days[dayOfWeek];
-                const startTime = s.StartTime || s.startTime;
-                const endTime = s.EndTime || s.endTime;
-                const isAvailable = s.IsAvailable ?? s.isAvailable;
-                const maxAppts = s.MaxAppointmentsPerSlot ?? s.maxAppointmentsPerSlot;
-                const id = s.Id || s.id;
+                const dayOfWeek = s.dayOfWeek ?? s.DayOfWeek;
+                const dayName = s.dayName || s.DayName || days[dayOfWeek];
+                const startTime = s.startTime || s.StartTime;
+                const endTime = s.endTime || s.EndTime;
+                const isAvailable = s.isAvailable ?? s.IsAvailable;
+                const maxAppts = s.maxAppointmentsPerSlot ?? s.MaxAppointmentsPerSlot ?? 4;
+                const id = s.id || s.Id;
 
                 html += `
                     <tr>
@@ -1757,8 +1783,12 @@
                 return;
             }
 
-            const doctor = allDoctors.find(d => (d.userId || d.UserId) == doctorId);
-            if (!doctor) return;
+            const doctor = allDoctors.find(d => (d.userId || d.UserId || d.id || d.Id) == doctorId);
+            if (!doctor) {
+                console.error('Doctor not found in allDoctors array', { doctorId, allDoctors });
+                alert('Không tìm thấy thông tin bác sĩ');
+                return;
+            }
 
             document.getElementById('scheduleModalTitle').innerHTML = '<i class="fas fa-calendar-plus me-2"></i>Thêm lịch làm việc';
             document.getElementById('scheduleId').value = '';
@@ -2047,21 +2077,27 @@
 
         // Edit schedule
         function editSchedule(scheduleId) {
-            const schedule = currentDoctorSchedules.find(s => (s.Id || s.id) == scheduleId);
-            if (!schedule) return;
+            const schedule = currentDoctorSchedules.find(s => (s.id || s.Id) == scheduleId);
+            if (!schedule) {
+                console.error('Schedule not found', { scheduleId, currentDoctorSchedules });
+                return;
+            }
 
             const doctorId = document.getElementById('doctorSelect').value;
-            const doctor = allDoctors.find(d => (d.Id || d.id) == doctorId);
+            const doctor = allDoctors.find(d => (d.userId || d.UserId || d.id || d.Id) == doctorId);
 
             document.getElementById('scheduleModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Sửa lịch làm việc';
             document.getElementById('scheduleId').value = scheduleId;
             document.getElementById('scheduleDoctorId').value = doctorId;
-            document.getElementById('scheduleDoctorName').value = doctor ? (doctor.FullName || doctor.fullName) : '';
-            document.getElementById('scheduleDayOfWeek').value = schedule.DayOfWeek ?? schedule.dayOfWeek;
-            document.getElementById('scheduleStartTime').value = schedule.StartTime || schedule.startTime;
-            document.getElementById('scheduleEndTime').value = schedule.EndTime || schedule.endTime;
-            document.getElementById('scheduleMaxAppointments').value = schedule.MaxAppointmentsPerSlot ?? schedule.maxAppointmentsPerSlot;
-            document.getElementById('scheduleIsAvailable').checked = schedule.IsAvailable ?? schedule.isAvailable;
+            document.getElementById('scheduleDoctorName').value = doctor ? (doctor.fullName || doctor.FullName) : '';
+            document.getElementById('scheduleDayOfWeek').value = schedule.dayOfWeek ?? schedule.DayOfWeek;
+            document.getElementById('scheduleStartTime').value = schedule.startTime || schedule.StartTime;
+            document.getElementById('scheduleEndTime').value = schedule.endTime || schedule.EndTime;
+            document.getElementById('scheduleMaxAppointments').value = schedule.maxAppointmentsPerSlot ?? schedule.MaxAppointmentsPerSlot ?? 4;
+            document.getElementById('scheduleIsAvailable').checked = schedule.isAvailable ?? schedule.IsAvailable ?? true;
+
+            // Switch to single mode tab for editing
+            document.getElementById('single-tab').click();
 
             scheduleModal.show();
         }
