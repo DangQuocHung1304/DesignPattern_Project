@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HealthySystem.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f64280a7c3cd7f7bfcd742890d43e7aea382110d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+03c015549b844937395e0b4c6dc79a786888a7cf")]
 [assembly: System.Reflection.AssemblyProductAttribute("HealthySystem.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HealthySystem.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

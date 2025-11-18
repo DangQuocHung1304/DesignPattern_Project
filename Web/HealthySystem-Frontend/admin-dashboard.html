@@ -1736,37 +1736,58 @@
                     <table class="data-table table table-hover">
                         <thead>
                             <tr>
+                                <th>Ngày làm việc</th>
                                 <th>Thứ</th>
                                 <th>Giờ bắt đầu</th>
                                 <th>Giờ kết thúc</th>
+                                <th>Slot (phút)</th>
                                 <th>Trạng thái</th>
-                                <th>Số BN tối đa</th>
                                 <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
             `;
 
-            schedules.forEach(s => {
+            // Sort schedules by date
+            const sortedSchedules = [...schedules].sort((a, b) => {
+                const dateA = new Date(a.scheduleDate || a.ScheduleDate || '2000-01-01');
+                const dateB = new Date(b.scheduleDate || b.ScheduleDate || '2000-01-01');
+                return dateA - dateB;
+            });
+
+            sortedSchedules.forEach(s => {
                 const dayOfWeek = s.dayOfWeek ?? s.DayOfWeek;
                 const dayName = s.dayName || s.DayName || days[dayOfWeek];
                 const startTime = s.startTime || s.StartTime;
                 const endTime = s.endTime || s.EndTime;
                 const isAvailable = s.isAvailable ?? s.IsAvailable;
                 const maxAppts = s.maxAppointmentsPerSlot ?? s.MaxAppointmentsPerSlot ?? 4;
+                const slotLength = s.slotLengthMinutes ?? s.SlotLengthMinutes ?? 30;
                 const id = s.id || s.Id;
+                
+                // Format schedule date
+                const scheduleDate = s.scheduleDate || s.ScheduleDate;
+                let formattedDate = 'N/A';
+                if (scheduleDate) {
+                    const date = new Date(scheduleDate);
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    formattedDate = `${day}/${month}/${year}`;
+                }
 
                 html += `
                     <tr>
-                        <td><strong>${dayName}</strong></td>
+                        <td><strong>${formattedDate}</strong></td>
+                        <td>${dayName}</td>
                         <td>${startTime}</td>
                         <td>${endTime}</td>
+                        <td>${slotLength} phút</td>
                         <td>
                             <span class="badge ${isAvailable ? 'bg-success' : 'bg-secondary'}">
                                 ${isAvailable ? 'Hoạt động' : 'Tạm dừng'}
                             </span>
                         </td>
-                        <td>${maxAppts} bệnh nhân</td>
                         <td>
                             <button class="btn btn-sm btn-primary-custom" onclick="editSchedule(${id})" title="Sửa">
                                 <i class="fas fa-edit"></i>
@@ -2059,8 +2080,30 @@
             try {
                 document.getElementById('saveButtonText').textContent = 'Đang lưu...';
                 
+                // Convert schedules to match backend API format
+                const convertedSchedules = schedules.map(schedule => {
+                    // Find next occurrence of this day of week
+                    const today = new Date();
+                    let nextDate = new Date(today);
+                    const targetDay = schedule.dayOfWeek;
+                    
+                    // Move to next occurrence of target day
+                    while (nextDate.getDay() !== targetDay) {
+                        nextDate.setDate(nextDate.getDate() + 1);
+                    }
+                    
+                    return {
+                        scheduleDate: nextDate.toISOString().split('T')[0], // yyyy-MM-dd format
+                        startTime: schedule.startTime,
+                        endTime: schedule.endTime,
+                        slotLengthMinutes: schedule.maxAppointmentsPerSlot || 30,
+                        isAvailable: schedule.isAvailable !== false,
+                        weeksToRepeat: schedule.weeksToRepeat || 1
+                    };
+                });
+                
                 // Call API for each schedule
-                const promises = schedules.map(schedule => 
+                const promises = convertedSchedules.map(schedule => 
                     fetch(`${API_URL}/admin/doctors/${doctorId}/schedules`, {
                         method: 'POST',
                         headers: {
