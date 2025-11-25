@@ -355,6 +355,16 @@
                         <i class="fas fa-calendar-alt me-2"></i>Lịch làm việc BS
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="health-news-tab" data-bs-toggle="tab" data-bs-target="#health-news" type="button">
+                        <i class="fas fa-newspaper me-2"></i>Tin tức Y tế
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="service-prices-tab" data-bs-toggle="tab" data-bs-target="#service-prices" type="button">
+                        <i class="fas fa-dollar-sign me-2"></i>Bảng giá DV
+                    </button>
+                </li>
             </ul>
 
             <div class="tab-content mt-3" id="adminTabsContent">
@@ -631,21 +641,317 @@
                     <!-- Schedule List View -->
                     <div id="scheduleListContainer"></div>
                 </div>
-            </div>
-        </div>
+                <!-- End Schedules Tab -->
 
-        <!-- Medical History Print View -->
-        <div id="printView" style="display: none;">
-            <div class="text-center mb-4">
-                <h2>LỊCH SỬ KHÁM BỆNH</h2>
-                <h4>PHÒNG KHÁM HEALTHY SYSTEM</h4>
-                <p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM | Điện thoại: (028) 1234 5678</p>
-            </div>
-            <div id="printContent"></div>
+<!-- Health News Tab -->
+<div class="tab-pane fade" id="health-news" role="tabpanel">
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">Quản lý Tin tức Y tế</h4>
+            <p class="text-muted mb-0">Tạo và quản lý các bài viết tin tức sức khỏe</p>
+        </div>
+        <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#healthNewsModal" onclick="resetHealthNewsForm()">
+            <i class="fas fa-plus me-2"></i>Tạo tin tức mới
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <label class="form-label">Lọc theo danh mục</label>
+            <select class="form-select" id="filterNewsCategory" onchange="loadHealthNews()">
+                <option value="">Tất cả danh mục</option>
+                <option value="Sức khỏe tổng quát">Sức khỏe tổng quát</option>
+                <option value="Dinh dưỡng">Dinh dưỡng</option>
+                <option value="Bệnh học">Bệnh học</option>
+                <option value="Phòng ngừa">Phòng ngừa</option>
+                <option value="Sống khỏe">Sống khỏe</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Trạng thái</label>
+            <select class="form-select" id="filterNewsPublished" onchange="loadHealthNews()">
+                <option value="">Tất cả</option>
+                <option value="true">Đã xuất bản</option>
+                <option value="false">Nháp</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Nổi bật</label>
+            <select class="form-select" id="filterNewsFeatured" onchange="loadHealthNews()">
+                <option value="">Tất cả</option>
+                <option value="true">Nổi bật</option>
+                <option value="false">Thường</option>
+            </select>
         </div>
     </div>
 
-    <!-- Add/Edit Schedule Modal - Quick Weekly Setup -->
+    <!-- News List -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Ảnh</th>
+                            <th>Tiêu đề</th>
+                            <th>Danh mục</th>
+                            <th>Tác giả</th>
+                            <th>Lượt xem</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="healthNewsList">
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Đang tải...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination -->
+            <nav id="newsPagination" class="mt-3">
+                <ul class="pagination justify-content-center mb-0">
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Health News Modal -->
+<div class="modal fade" id="healthNewsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="healthNewsModalTitle">Tạo tin tức mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="healthNewsForm">
+                    <input type="hidden" id="newsId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="newsTitle" required maxlength="200">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tóm tắt <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="newsSummary" rows="2" required maxlength="500"></textarea>
+                        <small class="text-muted">Tối đa 500 ký tự</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nội dung <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="newsContent" rows="8" required maxlength="5000"></textarea>
+                        <small class="text-muted">Tối đa 5000 ký tự</small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Hình ảnh</label>
+                            <div class="input-group mb-2">
+                                <input type="url" class="form-control" id="newsImageUrl" placeholder="https://example.com/image.jpg hoặc chọn ảnh từ máy">
+                                <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('newsImageFile').click()">
+                                    <i class="fas fa-upload me-1"></i>Chọn ảnh
+                                </button>
+                            </div>
+                            <input type="file" id="newsImageFile" accept="image/*" style="display: none;" onchange="handleImageUpload(event, 'news')">
+                            <div id="newsImagePreview" style="display: none;" class="mt-2">
+                                <img id="newsImagePreviewImg" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #dee2e6;">
+                                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeImagePreview('news')">
+                                    <i class="fas fa-times"></i> Xóa ảnh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+                            <select class="form-select" id="newsCategory" required>
+                                <option value="">Chọn danh mục</option>
+                                <option value="Sức khỏe tổng quát">Sức khỏe tổng quát</option>
+                                <option value="Dinh dưỡng">Dinh dưỡng</option>
+                                <option value="Bệnh học">Bệnh học</option>
+                                <option value="Phòng ngừa">Phòng ngừa</option>
+                                <option value="Sống khỏe">Sống khỏe</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tác giả <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="newsAuthor" required maxlength="100">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="newsIsFeatured">
+                                <label class="form-check-label" for="newsIsFeatured">
+                                    <i class="fas fa-star text-warning me-1"></i>Đánh dấu nổi bật
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="newsIsPublished">
+                                <label class="form-check-label" for="newsIsPublished">
+                                    <i class="fas fa-globe text-success me-1"></i>Xuất bản ngay
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-primary-custom" onclick="saveHealthNews()">
+                    <i class="fas fa-save me-1"></i>Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Service Prices Tab -->
+<div class="tab-pane fade" id="service-prices" role="tabpanel">
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">Quản lý Bảng giá Dịch vụ</h4>
+            <p class="text-muted mb-0">Cập nhật giá các dịch vụ khám và điều trị</p>
+        </div>
+        <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#servicePriceModal" onclick="resetServicePriceForm()">
+            <i class="fas fa-plus me-2"></i>Thêm dịch vụ mới
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <label class="form-label">Lọc theo danh mục</label>
+            <select class="form-select" id="filterPriceCategory" onchange="loadServicePrices()">
+                <option value="">Tất cả danh mục</option>
+                <option value="Khám bệnh">Khám bệnh</option>
+                <option value="Xét nghiệm">Xét nghiệm</option>
+                <option value="Chẩn đoán hình ảnh">Chẩn đoán hình ảnh</option>
+                <option value="Thủ thuật">Thủ thuật</option>
+                <option value="Phẫu thuật">Phẫu thuật</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Trạng thái</label>
+            <select class="form-select" id="filterPriceActive" onchange="loadServicePrices()">
+                <option value="">Tất cả</option>
+                <option value="true">Đang áp dụng</option>
+                <option value="false">Tạm ngưng</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Service Prices List -->
+    <div id="servicePricesList">
+        <div class="text-center py-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Service Price Modal -->
+<div class="modal fade" id="servicePriceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="servicePriceModalTitle">Thêm dịch vụ mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="servicePriceForm">
+                    <input type="hidden" id="priceId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tên dịch vụ <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="priceServiceName" required maxlength="200">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+                        <select class="form-select" id="priceCategory" required>
+                            <option value="">Chọn danh mục</option>
+                            <option value="Khám bệnh">Khám bệnh</option>
+                            <option value="Xét nghiệm">Xét nghiệm</option>
+                            <option value="Chẩn đoán hình ảnh">Chẩn đoán hình ảnh</option>
+                            <option value="Thủ thuật">Thủ thuật</option>
+                            <option value="Phẫu thuật">Phẫu thuật</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Giá <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="priceAmount" required min="0" step="1000">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Đơn vị</label>
+                            <input type="text" class="form-control" id="priceUnit" value="VNĐ" maxlength="20">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="priceDescription" rows="3" maxlength="500"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Thứ tự hiển thị</label>
+                        <input type="number" class="form-control" id="priceDisplayOrder" value="0" min="0">
+                        <small class="text-muted">Số nhỏ hơn sẽ hiển thị trước</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="priceIsActive" checked>
+                            <label class="form-check-label" for="priceIsActive">
+                                <i class="fas fa-check-circle text-success me-1"></i>Đang áp dụng
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-primary-custom" onclick="saveServicePrice()">
+                    <i class="fas fa-save me-1"></i>Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Medical History Print View -->
+    <div id="printView" style="display: none;">
+        <div class="text-center mb-4">
+            <h2>LỊCH SỬ KHÁM BỆNH</h2>
+            <h4>PHÒNG KHÁM HEALTHY SYSTEM</h4>
+            <p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM | Điện thoại: (028) 1234 5678</p>
+        </div>
+        <div id="printContent"></div>
+    </div>
+
+    <!-- Add/Edit Schedule Modal -->
     <div class="modal fade" id="scheduleModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -808,7 +1114,7 @@
                                 </div>
 
                                 <!-- Weeks to repeat -->
-                                <div class="mb-3">
+                                <div class="mb-3 mt-3">
                                     <label class="form-label">Số tuần lặp lại</label>
                                     <select class="form-select" id="weeksToRepeat">
                                         <option value="1">1 tuần (chỉ tạo cho tuần này)</option>
@@ -920,6 +1226,42 @@
             padding: 15px;
             margin-bottom: 10px;
             background: #f8f9fa;
+        }
+        
+        /* Service Price Table Column Widths */
+        .service-price-table th:nth-child(1),
+        .service-price-table td:nth-child(1) {
+            width: 60px !important;
+            min-width: 60px !important;
+            max-width: 60px !important;
+        }
+        
+        .service-price-table th:nth-child(2),
+        .service-price-table td:nth-child(2) {
+            width: 25% !important;
+            min-width: 200px !important;
+        }
+        
+        .service-price-table th:nth-child(3),
+        .service-price-table td:nth-child(3) {
+            width: 15% !important;
+            min-width: 120px !important;
+        }
+        
+        .service-price-table th:nth-child(5),
+        .service-price-table td:nth-child(5) {
+            width: 130px !important;
+            min-width: 130px !important;
+            max-width: 130px !important;
+            text-align: center !important;
+        }
+        
+        .service-price-table th:nth-child(6),
+        .service-price-table td:nth-child(6) {
+            width: 100px !important;
+            min-width: 100px !important;
+            max-width: 100px !important;
+            text-align: center !important;
         }
     </style>
 
@@ -1393,9 +1735,12 @@
             const isActive = document.getElementById('userStatus').value;
 
             try {
-                let url = `${API_URL}/admin/users?`;
-                if (role) url += `role=${role}&`;
-                if (isActive) url += `isActive=${isActive}&`;
+                const params = new URLSearchParams();
+                if (role) params.append('role', role);
+                if (isActive) params.append('isActive', isActive);
+                
+                const queryString = params.toString();
+                const url = `${API_URL}/admin/users${queryString ? '?' + queryString : ''}`;
 
                 const response = await fetch(url, {
                     headers: {
@@ -2487,12 +2832,591 @@
         // End Sprint 10 Functions
         // ============================================================
 
+        // ============================================================
+        // Health News Management Functions
+        // ============================================================
+
+        let currentNewsPage = 1;
+        const newsPageSize = 10;
+
+        async function loadHealthNews(page = 1) {
+            currentNewsPage = page;
+            const token = localStorage.getItem('token');
+            const category = document.getElementById('filterNewsCategory').value;
+            const isPublished = document.getElementById('filterNewsPublished').value;
+            const isFeatured = document.getElementById('filterNewsFeatured').value;
+
+            let url = `${API_URL}/healthnews?page=${page}&pageSize=${newsPageSize}`;
+            if (category) url += `&category=${encodeURIComponent(category)}`;
+            if (isPublished) url += `&isPublished=${isPublished}`;
+            if (isFeatured) url += `&isFeatured=${isFeatured}`;
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load health news');
+
+                const result = await response.json();
+                displayHealthNews(result.data);
+                displayNewsPagination(result.total, result.page, result.pageSize);
+            } catch (error) {
+                console.error('Error loading health news:', error);
+                document.getElementById('healthNewsList').innerHTML = `
+                    <tr><td colspan="8" class="text-center text-danger">Không thể tải dữ liệu</td></tr>
+                `;
+            }
+        }
+
+        function displayHealthNews(newsList) {
+            const tbody = document.getElementById('healthNewsList');
+            
+            if (!newsList || newsList.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="8" class="text-center text-muted">Chưa có tin tức nào</td></tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = newsList.map(news => `
+                <tr>
+                    <td>
+                        ${news.imageUrl ? 
+                            `<img src="${news.imageUrl}" alt="${news.title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">` :
+                            `<div style="width: 60px; height: 60px; background: #e9ecef; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-image text-muted"></i>
+                            </div>`
+                        }
+                    </td>
+                    <td>
+                        <div class="fw-bold">${news.title}</div>
+                        <small class="text-muted">${news.summary ? news.summary.substring(0, 60) + '...' : ''}</small>
+                        ${news.isFeatured ? '<span class="badge bg-warning ms-2"><i class="fas fa-star"></i> Nổi bật</span>' : ''}
+                    </td>
+                    <td>${news.category}</td>
+                    <td>${news.author}</td>
+                    <td><i class="fas fa-eye text-muted me-1"></i>${news.viewCount || 0}</td>
+                    <td>
+                        ${news.isPublished ? 
+                            '<span class="badge bg-success"><i class="fas fa-check"></i> Đã xuất bản</span>' :
+                            '<span class="badge bg-secondary"><i class="fas fa-file"></i> Nháp</span>'
+                        }
+                    </td>
+                    <td>${new Date(news.createdAt).toLocaleDateString('vi-VN')}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editHealthNews(${news.id})" title="Sửa">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteHealthNews(${news.id})" title="Xóa">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function displayNewsPagination(total, currentPage, pageSize) {
+            const totalPages = Math.ceil(total / pageSize);
+            const pagination = document.querySelector('#newsPagination ul');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            
+            // Previous button
+            html += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadHealthNews(${currentPage - 1}); return false;">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+            `;
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    html += `
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="loadHealthNews(${i}); return false;">${i}</a>
+                        </li>
+                    `;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+
+            // Next button
+            html += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadHealthNews(${currentPage + 1}); return false;">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+
+            pagination.innerHTML = html;
+        }
+
+        function resetHealthNewsForm() {
+            document.getElementById('healthNewsForm').reset();
+            document.getElementById('newsId').value = '';
+            document.getElementById('healthNewsModalTitle').textContent = 'Tạo tin tức mới';
+            removeImagePreview('news');
+        }
+
+        async function editHealthNews(id) {
+            const token = localStorage.getItem('token');
+            
+            try {
+                const response = await fetch(`${API_URL}/healthnews/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load news');
+
+                const news = await response.json();
+                
+                document.getElementById('newsId').value = news.id;
+                document.getElementById('newsTitle').value = news.title;
+                document.getElementById('newsSummary').value = news.summary || '';
+                document.getElementById('newsContent').value = news.content;
+                document.getElementById('newsImageUrl').value = news.imageUrl || '';
+                document.getElementById('newsCategory').value = news.category;
+                document.getElementById('newsAuthor').value = news.author;
+                document.getElementById('newsIsFeatured').checked = news.isFeatured;
+                document.getElementById('newsIsPublished').checked = news.isPublished;
+                
+                // Show image preview if exists
+                if (news.imageUrl) {
+                    showImagePreview('news', news.imageUrl);
+                }
+                
+                document.getElementById('healthNewsModalTitle').textContent = 'Chỉnh sửa tin tức';
+                
+                const modal = new bootstrap.Modal(document.getElementById('healthNewsModal'));
+                modal.show();
+            } catch (error) {
+                console.error('Error loading news:', error);
+                alert('Không thể tải thông tin tin tức');
+            }
+        }
+
+        async function saveHealthNews() {
+            const form = document.getElementById('healthNewsForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            const newsId = document.getElementById('newsId').value;
+            
+            const newsData = {
+                title: document.getElementById('newsTitle').value,
+                summary: document.getElementById('newsSummary').value,
+                content: document.getElementById('newsContent').value,
+                imageUrl: document.getElementById('newsImageUrl').value || null,
+                category: document.getElementById('newsCategory').value,
+                author: document.getElementById('newsAuthor').value,
+                isFeatured: document.getElementById('newsIsFeatured').checked,
+                isPublished: document.getElementById('newsIsPublished').checked
+            };
+            
+            // Add ID for update requests
+            if (newsId) {
+                newsData.id = parseInt(newsId);
+            }
+
+            // Log data for debugging
+            console.log('Saving news data:', {
+                ...newsData,
+                imageUrl: newsData.imageUrl ? `${newsData.imageUrl.substring(0, 50)}... (length: ${newsData.imageUrl.length})` : null
+            });
+
+            try {
+                let response;
+                if (newsId) {
+                    // Update
+                    response = await fetch(`${API_URL}/healthnews/${newsId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(newsData)
+                    });
+                } else {
+                    // Create
+                    response = await fetch(`${API_URL}/healthnews`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(newsData)
+                    });
+                }
+
+                if (!response.ok) {
+                    let errorMessage = `${response.status} ${response.statusText}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorData.message || errorMessage;
+                        console.error('Server error details:', errorData);
+                    } catch (e) {
+                        const errorText = await response.text();
+                        console.error('Server error text:', errorText);
+                        if (errorText) errorMessage = errorText;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const result = await response.json();
+                console.log('Save successful:', result);
+
+                alert(newsId ? 'Cập nhật tin tức thành công!' : 'Tạo tin tức mới thành công!');
+                
+                const modal = bootstrap.Modal.getInstance(document.getElementById('healthNewsModal'));
+                modal.hide();
+                
+                loadHealthNews(currentNewsPage);
+            } catch (error) {
+                console.error('Error saving news:', error);
+                alert('Không thể lưu tin tức: ' + error.message);
+            }
+        }
+
+        async function deleteHealthNews(id) {
+            if (!confirm('Bạn có chắc chắn muốn xóa tin tức này?')) return;
+
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await fetch(`${API_URL}/healthnews/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to delete news');
+
+                alert('Xóa tin tức thành công!');
+                loadHealthNews(currentNewsPage);
+            } catch (error) {
+                console.error('Error deleting news:', error);
+                alert('Không thể xóa tin tức');
+            }
+        }
+
+        // ============================================================
+        // Service Prices Management Functions
+        // ============================================================
+
+        async function loadServicePrices() {
+            const token = localStorage.getItem('token');
+            const category = document.getElementById('filterPriceCategory').value;
+            const isActive = document.getElementById('filterPriceActive').value;
+
+            let url = `${API_URL}/serviceprices`;
+            const params = [];
+            if (category) params.push(`category=${encodeURIComponent(category)}`);
+            if (isActive) params.push(`isActive=${isActive}`);
+            if (params.length > 0) url += '?' + params.join('&');
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load service prices');
+
+                const groupedData = await response.json();
+                displayServicePrices(groupedData);
+            } catch (error) {
+                console.error('Error loading service prices:', error);
+                document.getElementById('servicePricesList').innerHTML = `
+                    <div class="alert alert-danger">Không thể tải dữ liệu</div>
+                `;
+            }
+        }
+
+        function displayServicePrices(groupedData) {
+            const container = document.getElementById('servicePricesList');
+            
+            if (!groupedData || groupedData.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info text-center">Chưa có dịch vụ nào</div>
+                `;
+                return;
+            }
+
+            container.innerHTML = groupedData.map(group => `
+                <div class="card mb-3">
+                    <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                        <h5 class="mb-0 text-white"><i class="fas fa-folder-open me-2"></i>${group.category}</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 service-price-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">STT</th>
+                                        <th style="width: 25%;">Tên dịch vụ</th>
+                                        <th style="width: 15%;">Giá</th>
+                                        <th style="width: auto;">Mô tả</th>
+                                        <th style="width: 130px;">Trạng thái</th>
+                                        <th style="width: 100px;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${group.services.map((service, index) => `
+                                        <tr>
+                                            <td>${service.displayOrder || index + 1}</td>
+                                            <td><strong>${service.serviceName}</strong></td>
+                                            <td class="text-primary fw-bold">${formatCurrency(service.price)} ${service.unit}</td>
+                                            <td>${service.description || '-'}</td>
+                                            <td>
+                                                ${service.isActive ? 
+                                                    '<span class="badge bg-success"><i class="fas fa-check"></i> Áp dụng</span>' :
+                                                    '<span class="badge bg-secondary"><i class="fas fa-pause"></i> Tạm ngưng</span>'
+                                                }
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1" onclick="editServicePrice(${service.id})" title="Sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteServicePrice(${service.id})" title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN').format(amount);
+        }
+
+        function resetServicePriceForm() {
+            document.getElementById('servicePriceForm').reset();
+            document.getElementById('priceId').value = '';
+            document.getElementById('priceIsActive').checked = true;
+            document.getElementById('servicePriceModalTitle').textContent = 'Thêm dịch vụ mới';
+        }
+
+        async function editServicePrice(id) {
+            const token = localStorage.getItem('token');
+            
+            try {
+                const response = await fetch(`${API_URL}/serviceprices/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load service price');
+
+                const price = await response.json();
+                
+                document.getElementById('priceId').value = price.id;
+                document.getElementById('priceServiceName').value = price.serviceName;
+                document.getElementById('priceCategory').value = price.category;
+                document.getElementById('priceAmount').value = price.price;
+                document.getElementById('priceUnit').value = price.unit;
+                document.getElementById('priceDescription').value = price.description || '';
+                document.getElementById('priceDisplayOrder').value = price.displayOrder || 0;
+                document.getElementById('priceIsActive').checked = price.isActive;
+                
+                document.getElementById('servicePriceModalTitle').textContent = 'Chỉnh sửa dịch vụ';
+                
+                const modal = new bootstrap.Modal(document.getElementById('servicePriceModal'));
+                modal.show();
+            } catch (error) {
+                console.error('Error loading service price:', error);
+                alert('Không thể tải thông tin dịch vụ');
+            }
+        }
+
+        async function saveServicePrice() {
+            const form = document.getElementById('servicePriceForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            const priceId = document.getElementById('priceId').value;
+            
+            const priceData = {
+                serviceName: document.getElementById('priceServiceName').value,
+                category: document.getElementById('priceCategory').value,
+                price: parseFloat(document.getElementById('priceAmount').value),
+                unit: document.getElementById('priceUnit').value,
+                description: document.getElementById('priceDescription').value || null,
+                displayOrder: parseInt(document.getElementById('priceDisplayOrder').value),
+                isActive: document.getElementById('priceIsActive').checked
+            };
+
+            try {
+                let response;
+                if (priceId) {
+                    // Update
+                    response = await fetch(`${API_URL}/serviceprices/${priceId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(priceData)
+                    });
+                } else {
+                    // Create
+                    response = await fetch(`${API_URL}/serviceprices`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(priceData)
+                    });
+                }
+
+                if (!response.ok) throw new Error('Failed to save service price');
+
+                alert(priceId ? 'Cập nhật dịch vụ thành công!' : 'Thêm dịch vụ mới thành công!');
+                
+                const modal = bootstrap.Modal.getInstance(document.getElementById('servicePriceModal'));
+                modal.hide();
+                
+                loadServicePrices();
+            } catch (error) {
+                console.error('Error saving service price:', error);
+                alert('Không thể lưu dịch vụ');
+            }
+        }
+
+        async function deleteServicePrice(id) {
+            if (!confirm('Bạn có chắc chắn muốn xóa dịch vụ này?')) return;
+
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await fetch(`${API_URL}/serviceprices/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to delete service price');
+
+                alert('Xóa dịch vụ thành công!');
+                loadServicePrices();
+            } catch (error) {
+                console.error('Error deleting service price:', error);
+                alert('Không thể xóa dịch vụ');
+            }
+        }
+
+        // ============================================================
+        // Image Upload Functions
+        // ============================================================
+
+        function handleImageUpload(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Vui lòng chọn file ảnh!');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Kích thước ảnh không được vượt quá 5MB!');
+                return;
+            }
+
+            // Convert to base64
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Image = e.target.result;
+                
+                if (type === 'news') {
+                    document.getElementById('newsImageUrl').value = base64Image;
+                    showImagePreview('news', base64Image);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showImagePreview(type, imageSrc) {
+            if (type === 'news') {
+                const preview = document.getElementById('newsImagePreview');
+                const img = document.getElementById('newsImagePreviewImg');
+                img.src = imageSrc;
+                preview.style.display = 'block';
+            }
+        }
+
+        function removeImagePreview(type) {
+            if (type === 'news') {
+                const preview = document.getElementById('newsImagePreview');
+                const img = document.getElementById('newsImagePreviewImg');
+                const input = document.getElementById('newsImageUrl');
+                const fileInput = document.getElementById('newsImageFile');
+                
+                img.src = '';
+                input.value = '';
+                fileInput.value = '';
+                preview.style.display = 'none';
+            }
+        }
+
+        // ============================================================
+        // End CMS Functions
+        // ============================================================
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             const token = checkAuth();
             if (token) {
                 loadDashboard();
                 loadDoctors(); // Load doctors for schedule management
+            }
+
+            // Add event listeners for CMS tabs
+            const healthNewsTab = document.getElementById('health-news-tab');
+            const servicePricesTab = document.getElementById('service-prices-tab');
+
+            if (healthNewsTab) {
+                healthNewsTab.addEventListener('shown.bs.tab', function() {
+                    loadHealthNews();
+                });
+            }
+
+            if (servicePricesTab) {
+                servicePricesTab.addEventListener('shown.bs.tab', function() {
+                    loadServicePrices();
+                });
             }
         });
     </script>

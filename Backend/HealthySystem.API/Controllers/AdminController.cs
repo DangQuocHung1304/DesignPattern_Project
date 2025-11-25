@@ -56,6 +56,57 @@ namespace HealthySystem.API.Controllers
             }
         }
 
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers([FromQuery] string? role, [FromQuery] bool? isActive)
+        {
+            try
+            {
+                _logger.LogInformation("Getting users with role: {Role}, isActive: {IsActive}", role, isActive);
+                
+                var query = _context.Users.AsQueryable();
+                
+                // Filter by role if provided
+                if (!string.IsNullOrEmpty(role))
+                {
+                    query = query.Where(u => u.Role == role);
+                }
+                
+                // Filter by active status if provided
+                if (isActive.HasValue)
+                {
+                    var status = isActive.Value ? "active" : "inactive";
+                    query = query.Where(u => u.Status == status);
+                }
+                
+                var users = await query
+                    .OrderBy(u => u.FirstName)
+                    .ThenBy(u => u.LastName)
+                    .Select(u => new
+                    {
+                        id = u.Id,
+                        publicId = u.PublicId,
+                        fullName = u.FullName,
+                        email = u.Email,
+                        phoneNumber = u.Phone,
+                        role = u.Role,
+                        isActive = u.Status == "active",
+                        status = u.Status,
+                        dateOfBirth = u.DateOfBirth,
+                        gender = u.Gender,
+                        createdAt = u.CreatedAt
+                    })
+                    .ToListAsync();
+                
+                _logger.LogInformation("Found {Count} users", users.Count);
+                return Ok(new { success = true, data = users });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading users");
+                return StatusCode(500, new { success = false, error = "Failed to load users" });
+            }
+        }
+
         [HttpGet("doctors")]
         public async Task<IActionResult> GetAllDoctors()
         {
@@ -79,8 +130,9 @@ namespace HealthySystem.API.Controllers
                 _logger.LogInformation("Getting schedules for doctor {DoctorId}", doctorId);
                 
                 // Get schedules from today onwards, grouped by date
+                var today = DateOnly.FromDateTime(DateTime.Today);
                 var schedules = await _context.DoctorSchedules
-                    .Where(ds => ds.DoctorId == doctorId && ds.ScheduleDate >= DateTime.Today)
+                    .Where(ds => ds.DoctorId == doctorId && ds.ScheduleDate >= today)
                     .OrderBy(ds => ds.ScheduleDate)
                     .ThenBy(ds => ds.StartTime)
                     .Select(ds => new { 
@@ -149,7 +201,7 @@ namespace HealthySystem.API.Controllers
                 // Create schedule for each week
                 for (int week = 0; week < weeksToCreate; week++)
                 {
-                    DateTime weekScheduleDate = scheduleDate.AddDays(week * 7);
+                    var weekScheduleDate = DateOnly.FromDateTime(scheduleDate.AddDays(week * 7));
                     
                     // Check if schedule already exists for this date and time
                     bool exists = await _context.DoctorSchedules.AnyAsync(ds => 

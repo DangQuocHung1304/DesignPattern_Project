@@ -519,6 +519,7 @@ document.head.insertAdjacentHTML('beforeend', authStyles);
 
 // Create global auth manager instance
 const authManager = new AuthManager();
+const authService = authManager; // Alias for compatibility
 
 // Export functions to global scope for inline event handlers
 window.isAuthenticated = function() {

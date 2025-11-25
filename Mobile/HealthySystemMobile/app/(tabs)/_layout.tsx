@@ -44,8 +44,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="specialties"
         options={{
-          title: 'Chuyên khoa',
-          tabBarIcon: ({ color }) => <FontAwesome size={24} name="hospital-o" color={color} />,
+          href: null, // Hide from tabs but keep route accessible
         }}
       />
       <Tabs.Screen
@@ -53,6 +52,26 @@ export default function TabLayout() {
         options={{
           title: 'Bác sĩ',
           tabBarIcon: ({ color }) => <FontAwesome size={24} name="user-md" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="news"
+        options={{
+          title: 'Tin tức',
+          tabBarIcon: ({ color }) => <FontAwesome size={24} name="newspaper-o" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="chatbot"
+        options={{
+          href: null, // Hide from tabs
+        }}
+      />
+      <Tabs.Screen
+        name="pricing"
+        options={{
+          title: 'Bảng giá',
+          tabBarIcon: ({ color }) => <FontAwesome size={24} name="dollar" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -67,6 +86,12 @@ export default function TabLayout() {
         options={{
           title: 'Cá nhân',
           tabBarIcon: ({ color }) => <FontAwesome size={24} name="user" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          href: null, // Hide from tabs but keep route accessible
         }}
       />
     </Tabs>

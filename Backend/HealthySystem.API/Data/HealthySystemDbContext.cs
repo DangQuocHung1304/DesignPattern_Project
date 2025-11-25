@@ -34,6 +34,8 @@ namespace HealthySystem.API.Data
         public DbSet<Treatment> Treatments { get; set; }
         public DbSet<TreatmentItem> TreatmentItems { get; set; }
         public DbSet<DoctorSchedule> DoctorSchedules { get; set; }
+        public DbSet<HealthNews> HealthNews { get; set; }
+        public DbSet<ServicePrice> ServicePrices { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

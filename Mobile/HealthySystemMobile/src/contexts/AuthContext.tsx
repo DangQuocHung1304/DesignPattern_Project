@@ -64,8 +64,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(parsedUser);
         setIsAuthenticated(true);
         console.log('✅ User loaded from storage:', parsedUser.email);
+        console.log('🔑 Token from storage:', accessToken.substring(0, 50) + '...');
       } else {
         console.log('❌ No user data found in storage');
+        console.log('🔑 Token:', accessToken ? 'EXISTS' : 'MISSING');
+        console.log('👤 UserData:', userData ? 'EXISTS' : 'MISSING');
       }
     } catch (error) {
       console.error('Error loading user from storage:', error);
@@ -93,6 +96,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Save to AsyncStorage
         await AsyncStorage.setItem('accessToken', token);
         await AsyncStorage.setItem('userData', JSON.stringify(userData));
+
+        console.log('💾 Token saved to AsyncStorage:', token.substring(0, 50) + '...');
 
         // Update state
         setUser(userData);

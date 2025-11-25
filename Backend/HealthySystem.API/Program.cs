@@ -9,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 
+// Add HttpClient for external API calls
+builder.Services.AddHttpClient();
+
 // Configure Entity Framework
 builder.Services.AddDbContext<HealthySystemDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

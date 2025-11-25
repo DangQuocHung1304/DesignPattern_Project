@@ -13,6 +13,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
 import api from '../../src/services/api';
 import { router } from 'expo-router';
+import FloatingChatbot from '../../src/components/FloatingChatbot';
 
 const { width } = Dimensions.get('window');
 
@@ -89,22 +90,22 @@ export default function HomeScreen() {
       onPress: () => router.push('/doctors'),
     },
     {
+      title: 'Tin tức Y tế',
+      icon: 'newspaper-o',
+      color: '#00a86b',
+      onPress: () => router.push('/(tabs)/news' as any),
+    },
+    {
+      title: 'Bảng giá',
+      icon: 'dollar',
+      color: '#ff6b35',
+      onPress: () => router.push('/(tabs)/pricing' as any),
+    },
+    {
       title: 'Lịch hẹn',
       icon: 'calendar',
-      color: '#00a86b',
-      onPress: () => router.push('/appointments'),
-    },
-    {
-      title: 'Bác sĩ',
-      icon: 'user-md',
-      color: '#ff6b35',
-      onPress: () => router.push('/doctors'),
-    },
-    {
-      title: 'Hồ sơ',
-      icon: 'user',
       color: '#6c5ce7',
-      onPress: () => router.push('/profile'),
+      onPress: () => router.push('/appointments'),
     },
   ];
 
@@ -163,12 +164,13 @@ export default function HomeScreen() {
   );
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <>
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
       {loading ? (
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Đang tải...</Text>
@@ -262,7 +264,11 @@ export default function HomeScreen() {
       </View>
         </>
       )}
-    </ScrollView>
+      </ScrollView>
+      
+      {/* Floating Chatbot */}
+      <FloatingChatbot />
+    </>
   );
 }
 

@@ -16,7 +16,7 @@ namespace HealthySystem.API.Models
 
         [Column("schedule_date")]  // Changed from day_of_week - storing actual date
         [Required]
-        public DateTime ScheduleDate { get; set; }
+        public DateOnly ScheduleDate { get; set; }
 
         [Column("start_time")]
         [Required]
@@ -33,7 +33,7 @@ namespace HealthySystem.API.Models
         public int SlotLengthMinutes { get; set; } = 15;
 
         [Column("created_at")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 
         // Note: updated_at column doesn't exist in DB, removed
         // public DateTime? UpdatedAt { get; set; }

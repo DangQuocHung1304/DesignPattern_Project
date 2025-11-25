@@ -499,62 +499,33 @@ class BookAppointmentPage {
         console.log('Loading time slots for date:', date);
         
         try {
-            // Try to get real available slots
+            // Get real available slots from API
             const response = await apiService.getDoctorAvailableSlots(this.selectedDoctor.id, date);
             
-            if (response.success && response.data) {
+            console.log('API response:', response);
+            
+            // API returns {success: true, data: [...]} wrapper
+            if (response.success && Array.isArray(response.data)) {
                 console.log('Got real API data:', response.data);
                 this.availableSlots = response.data;
+            } else if (response.success && response.data && response.data.length === 0) {
+                console.log('No slots available for this date');
+                this.availableSlots = [];
             } else {
-                console.log('Using mock data instead');
-                // Use mock data
-                this.availableSlots = this.getMockTimeSlots(date);
+                console.error('API error or invalid response:', response);
+                this.availableSlots = [];
             }
             
             this.renderTimeSlots();
         } catch (error) {
             console.error('Error loading time slots:', error);
-            console.log('Falling back to mock data');
-            this.availableSlots = this.getMockTimeSlots(date);
-            this.renderTimeSlots();
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Không thể tải lịch khám. Vui lòng thử lại sau.
+                </div>
+            `;
         }
-    }
-
-    getMockTimeSlots(date) {
-        const slots = [];
-        const selectedDate = new Date(date);
-        const dayOfWeek = selectedDate.getDay();
-        
-        // Skip weekends
-        if (dayOfWeek === 0 || dayOfWeek === 6) {
-            return [];
-        }
-        
-        // Morning slots (8:00 - 11:30)
-        const morningSlots = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30'];
-        // Afternoon slots (14:00 - 17:30)
-        const afternoonSlots = ['14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'];
-        
-        // Add morning slots
-        morningSlots.forEach(time => {
-            slots.push({
-                time: time,
-                available: Math.random() > 0.2, // 80% chance of being available
-                period: 'morning'
-            });
-        });
-        
-        // Add afternoon slots
-        afternoonSlots.forEach(time => {
-            slots.push({
-                time: time,
-                available: Math.random() > 0.2, // 80% chance of being available
-                period: 'afternoon'
-            });
-        });
-        
-        console.log('Generated mock time slots:', slots); // Debug log
-        return slots;
     }
 
     renderTimeSlots() {
@@ -573,15 +544,27 @@ class BookAppointmentPage {
             return;
         }
         
-        const morningSlots = this.availableSlots.filter(slot => slot.period === 'morning');
-        const afternoonSlots = this.availableSlots.filter(slot => slot.period === 'afternoon');
+        // Separate slots by time period (morning: before 12:00, afternoon: 12:00 and after)
+        const morningSlots = this.availableSlots.filter(slot => {
+            // time format is "08:00 - 10:15", extract start hour
+            const startTime = slot.time.split(' - ')[0];
+            const hour = parseInt(startTime.split(':')[0]);
+            return hour < 12;
+        });
+        
+        const afternoonSlots = this.availableSlots.filter(slot => {
+            // time format is "08:00 - 10:15", extract start hour
+            const startTime = slot.time.split(' - ')[0];
+            const hour = parseInt(startTime.split(':')[0]);
+            return hour >= 12;
+        });
         
         let html = '';
         
         if (morningSlots.length > 0) {
             html += `
                 <div class="mb-3">
-                    <h6 class="mb-2"><i class="fas fa-sun text-warning"></i> Buổi sáng (8:00 - 12:00)</h6>
+                    <h6 class="mb-2"><i class="fas fa-sun text-warning"></i> Buổi sáng (Trước 12:00)</h6>
                     <div class="time-slots-wrapper">
                         ${morningSlots.map(slot => `
                             <div class="time-slot ${slot.available ? '' : 'unavailable'}" 
@@ -599,7 +582,7 @@ class BookAppointmentPage {
         if (afternoonSlots.length > 0) {
             html += `
                 <div class="mb-3">
-                    <h6 class="mb-2"><i class="fas fa-sun text-primary"></i> Buổi chiều (14:00 - 18:00)</h6>
+                    <h6 class="mb-2"><i class="fas fa-sun text-primary"></i> Buổi chiều (Từ 12:00)</h6>
                     <div class="time-slots-wrapper">
                         ${afternoonSlots.map(slot => `
                             <div class="time-slot ${slot.available ? '' : 'unavailable'}" 

@@ -10,10 +10,12 @@ namespace HealthySystem.API.Controllers
     public class DoctorsController : ControllerBase
     {
         private readonly HealthySystemDbContext _context;
+        private readonly ILogger<DoctorsController> _logger;
 
-        public DoctorsController(HealthySystemDbContext context)
+        public DoctorsController(HealthySystemDbContext context, ILogger<DoctorsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/doctors
@@ -84,12 +86,12 @@ namespace HealthySystem.API.Controllers
                     }).ToList(),
                     AverageRating = u.DoctorRatings.Any() ? u.DoctorRatings.Average(r => r.RatingValue) : 0,
                     TotalRatings = u.DoctorRatings.Count(),
-                    Ratings = u.DoctorRatings.OrderByDescending(r => r.CreatedDate).Take(10).Select(r => new
+                    Ratings = u.DoctorRatings.OrderByDescending(r => r.CreatedAt).Take(10).Select(r => new
                     {
                         Id = r.Id,
                         RatingValue = r.RatingValue,
-                        ReviewText = r.ReviewText ?? "",
-                        CreatedDate = r.CreatedDate,
+                        ReviewText = r.Comment ?? "",
+                        CreatedAt = r.CreatedAt,
                         PatientName = r.Patient != null ? (r.Patient.FullName ?? "Ẩn danh") : "Ẩn danh"
                     }).ToList()
                 })
@@ -141,48 +143,117 @@ namespace HealthySystem.API.Controllers
         [HttpGet("{publicId}/available-slots")]
         public async Task<ActionResult<IEnumerable<object>>> GetAvailableSlots(string publicId, [FromQuery] DateTime date)
         {
+            _logger.LogInformation("GetAvailableSlots called - publicId: {PublicId}, date: {Date}, date.Date: {DateOnly}", 
+                publicId, date, date.Date);
+            
+            // Try to find doctor by PublicId (GUID) or StaffCode
             var doctor = await _context.Users
-                .FirstOrDefaultAsync(u => u.PublicId.ToString() == publicId && u.Role == "doctor" && u.Status == "active" && u.DeletedAt == null);
+                .Include(u => u.StaffProfile)
+                .FirstOrDefaultAsync(u => 
+                    (u.PublicId.ToString() == publicId || 
+                     (u.StaffProfile != null && u.StaffProfile.StaffCode == publicId)) &&
+                    u.Role == "doctor" && 
+                    u.Status == "active" && 
+                    u.DeletedAt == null);
 
             if (doctor == null)
             {
-                return NotFound();
+                return NotFound(new { success = false, error = "Doctor not found" });
+            }
+
+            // Get doctor's schedule for the specified date
+            var scheduleDateOnly = DateOnly.FromDateTime(date.Date);
+            _logger.LogInformation("Searching for schedule - DoctorId: {DoctorId}, ScheduleDate: {ScheduleDate}", 
+                doctor.Id, scheduleDateOnly);
+            
+            var daySchedule = await _context.DoctorSchedules
+                .Where(ds => ds.DoctorId == doctor.Id && 
+                           ds.ScheduleDate == scheduleDateOnly && 
+                           ds.IsAvailable)
+                .FirstOrDefaultAsync();
+
+            _logger.LogInformation("Schedule found: {Found}, Schedule: {@Schedule}", 
+                daySchedule != null, daySchedule);
+
+            if (daySchedule == null)
+            {
+                // No schedule found for this date - return empty slots
+                return Ok(new List<object>());
             }
 
             // Get existing appointments for the date
+            var dateStart = new DateTimeOffset(date.Date, TimeSpan.Zero);
+            var dateEnd = dateStart.AddDays(1);
             var existingAppointments = await _context.Appointments
                 .Where(a => a.DoctorId == doctor.Id && 
-                           a.AppointmentStart.Date == date.Date &&
+                           a.AppointmentStart >= dateStart &&
+                           a.AppointmentStart < dateEnd &&
                            a.Status != "cancelled")
                 .Select(a => new { a.AppointmentStart, a.AppointmentEnd })
                 .ToListAsync();
 
-            // Generate available time slots (8 AM to 5 PM, 30-minute slots)
+            // Generate 30-minute time slots from work schedule
             var availableSlots = new List<object>();
-            var startTime = date.Date.AddHours(8); // 8 AM
-            var endTime = date.Date.AddHours(17); // 5 PM
-
-            while (startTime < endTime)
+            var workStart = daySchedule.StartTime.ToTimeSpan();
+            var workEnd = daySchedule.EndTime.ToTimeSpan();
+            
+            // Generate slots in 30-minute intervals
+            var slotDuration = TimeSpan.FromMinutes(30);
+            var currentTime = workStart;
+            
+            while (currentTime < workEnd)
             {
-                var slotEnd = startTime.AddMinutes(30);
-                
-                // Check if this slot conflicts with existing appointments
-                var isAvailable = !existingAppointments.Any(a => 
-                    (startTime >= a.AppointmentStart && startTime < a.AppointmentEnd) ||
-                    (slotEnd > a.AppointmentStart && slotEnd <= a.AppointmentEnd) ||
-                    (startTime <= a.AppointmentStart && slotEnd >= a.AppointmentEnd));
-
-                if (isAvailable)
+                var nextTime = currentTime.Add(slotDuration);
+                if (nextTime > workEnd)
                 {
-                    availableSlots.Add(new
-                    {
-                        StartTime = startTime,
-                        EndTime = slotEnd,
-                        IsAvailable = true
-                    });
+                    // Don't create partial slots beyond work hours
+                    break;
                 }
+                
+                var startTime = date.Date.Add(currentTime);
+                var endTime = date.Date.Add(nextTime);
+                var slotStartOffset = new DateTimeOffset(startTime, TimeSpan.Zero);
+                var slotEndOffset = new DateTimeOffset(endTime, TimeSpan.Zero);
+                
+                // Check if this 30-minute slot conflicts with existing appointments
+                var isAvailable = !existingAppointments.Any(a => 
+                    (slotStartOffset >= a.AppointmentStart && slotStartOffset < a.AppointmentEnd) ||
+                    (slotEndOffset > a.AppointmentStart && slotEndOffset <= a.AppointmentEnd) ||
+                    (slotStartOffset <= a.AppointmentStart && slotEndOffset >= a.AppointmentEnd));
 
-                startTime = startTime.AddMinutes(30);
+                availableSlots.Add(new
+                {
+                    time = $"{currentTime:hh\\:mm} - {nextTime:hh\\:mm}",
+                    available = isAvailable,
+                    StartTime = startTime,
+                    EndTime = endTime,
+                    IsAvailable = isAvailable
+                });
+                
+                currentTime = nextTime;
+            }
+            
+            // If no slots were generated (shouldn't happen), return empty list
+            if (availableSlots.Count == 0)
+            {
+                var startTime = date.Date.Add(workStart);
+                var endTime = date.Date.Add(workEnd);
+                var slotStartOffset = new DateTimeOffset(startTime, TimeSpan.Zero);
+                var slotEndOffset = new DateTimeOffset(endTime, TimeSpan.Zero);
+                
+                var isAvailable = !existingAppointments.Any(a => 
+                    (slotStartOffset >= a.AppointmentStart && slotStartOffset < a.AppointmentEnd) ||
+                    (slotEndOffset > a.AppointmentStart && slotEndOffset <= a.AppointmentEnd) ||
+                    (slotStartOffset <= a.AppointmentStart && slotEndOffset >= a.AppointmentEnd));
+
+                availableSlots.Add(new
+                {
+                    time = $"{startTime:HH:mm} - {endTime:HH:mm}",
+                    available = isAvailable,
+                    StartTime = startTime,
+                    EndTime = endTime,
+                    IsAvailable = isAvailable
+                });
             }
 
             return Ok(availableSlots);

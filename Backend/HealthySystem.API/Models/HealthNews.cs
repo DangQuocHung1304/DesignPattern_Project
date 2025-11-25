@@ -24,12 +24,10 @@ namespace HealthySystem.API.Models
         public string Summary { get; set; } = string.Empty; // Tóm tắt ngắn
 
         [Column("content")]
-        [MaxLength(5000)]
         public string Content { get; set; } = string.Empty; // Nội dung đầy đủ
 
         [Column("image_url")]
-        [MaxLength(500)]
-        public string? ImageUrl { get; set; } // URL ảnh đại diện
+        public string? ImageUrl { get; set; } // URL ảnh đại diện hoặc base64
 
         [Column("category")]
         [MaxLength(100)]

@@ -7,6 +7,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  Alert,
+  Modal,
+  ScrollView,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -43,6 +46,11 @@ export default function AppointmentsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState<any[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   useEffect(() => {
     fetchAppointments();
@@ -81,6 +89,95 @@ export default function AppointmentsScreen() {
     setRefreshing(true);
     fetchAppointments();
   };
+
+  const handleCancelAppointment = (appointment: Appointment) => {
+    Alert.alert(
+      'Xác nhận hủy lịch',
+      `Bạn có chắc muốn hủy lịch hẹn với ${appointment.doctor.title} ${appointment.doctor.fullName}?`,
+      [
+        { text: 'Không', style: 'cancel' },
+        {
+          text: 'Hủy lịch',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.delete(`/appointments/${appointment.id}`);
+              Alert.alert('Thành công', 'Đã hủy lịch hẹn');
+              fetchAppointments();
+            } catch (err: any) {
+              console.error('Error canceling appointment:', err);
+              Alert.alert('Lỗi', err.response?.data?.message || 'Không thể hủy lịch hẹn');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleRescheduleAppointment = async (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setSelectedDate(new Date(appointment.appointmentStart));
+    setShowRescheduleModal(true);
+    
+    // Load available slots for this doctor
+    try {
+      setLoadingSlots(true);
+      const date = new Date(appointment.appointmentStart).toISOString().split('T')[0];
+      const response = await api.get(`/doctors/${appointment.doctor.publicId}/available-slots`, {
+        params: { date }
+      });
+      setAvailableSlots(response.data || []);
+    } catch (err) {
+      console.error('Error loading slots:', err);
+      Alert.alert('Lỗi', 'Không thể tải lịch trống');
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
+  const handleConfirmReschedule = async (newSlot: any) => {
+    if (!selectedAppointment) return;
+
+    Alert.alert(
+      'Xác nhận đổi giờ',
+      `Đổi sang ${newSlot.time} ngày ${selectedDate.toLocaleDateString('vi-VN')}?`,
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Xác nhận',
+          onPress: async () => {
+            try {
+              await api.put(`/appointments/${selectedAppointment.id}/status`, {
+                status: 'scheduled',
+                notes: `Đã đổi lịch sang ${newSlot.time}`,
+              });
+              
+              // Create new appointment with new time
+              await api.post('/appointments', {
+                patientPublicId: selectedAppointment.patient?.publicId,
+                doctorPublicId: selectedAppointment.doctor.publicId,
+                appointmentStart: newSlot.startTime,
+                appointmentEnd: newSlot.endTime,
+                notes: selectedAppointment.notes,
+                isEmergency: selectedAppointment.isEmergency,
+              });
+
+              // Cancel old appointment
+              await api.delete(`/appointments/${selectedAppointment.id}`);
+
+              Alert.alert('Thành công', 'Đã đổi giờ hẹn');
+              setShowRescheduleModal(false);
+              fetchAppointments();
+            } catch (err: any) {
+              console.error('Error rescheduling:', err);
+              Alert.alert('Lỗi', err.response?.data?.message || 'Không thể đổi giờ hẹn');
+            }
+          },
+        },
+      ]
+    );
+  };
+
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -197,6 +294,29 @@ export default function AppointmentsScreen() {
             </View>
           </>
         )}
+
+        {/* Action Buttons - Only show for scheduled/confirmed appointments */}
+        {(item.status.toLowerCase() === 'scheduled' || item.status.toLowerCase() === 'confirmed') && (
+          <>
+            <View style={styles.divider} />
+            <View style={styles.actionsContainer}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => handleRescheduleAppointment(item)}
+              >
+                <FontAwesome name="calendar" size={16} color="#0066cc" />
+                <Text style={styles.actionButtonText}>Đổi giờ</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.cancelButton]}
+                onPress={() => handleCancelAppointment(item)}
+              >
+                <FontAwesome name="times-circle" size={16} color="#ff4444" />
+                <Text style={[styles.actionButtonText, styles.cancelButtonText]}>Hủy lịch</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </TouchableOpacity>
     );
   };
@@ -234,7 +354,7 @@ export default function AppointmentsScreen() {
       <FlatList
         data={appointments}
         renderItem={renderAppointment}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => item?.id?.toString() || `appointment-${index}`}
         contentContainerStyle={styles.listContainer}
         refreshControl={
           <RefreshControl
@@ -260,6 +380,77 @@ export default function AppointmentsScreen() {
           </View>
         }
       />
+
+      {/* Reschedule Modal */}
+      <Modal
+        visible={showRescheduleModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowRescheduleModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Chọn giờ khám mới</Text>
+              <TouchableOpacity onPress={() => setShowRescheduleModal(false)}>
+                <FontAwesome name="times" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            {selectedAppointment && (
+              <View style={styles.modalDoctorInfo}>
+                <FontAwesome name="user-md" size={20} color="#0066cc" />
+                <Text style={styles.modalDoctorText}>
+                  {selectedAppointment.doctor.title} {selectedAppointment.doctor.fullName}
+                </Text>
+              </View>
+            )}
+
+            <ScrollView style={styles.slotsContainer}>
+              {loadingSlots ? (
+                <ActivityIndicator size="large" color="#0066cc" style={styles.modalLoading} />
+              ) : availableSlots.length === 0 ? (
+                <View style={styles.noSlotsContainer}>
+                  <FontAwesome name="calendar-times-o" size={48} color="#ccc" />
+                  <Text style={styles.noSlotsText}>Không có lịch trống</Text>
+                </View>
+              ) : (
+                availableSlots.map((slot, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.slotItem,
+                      !slot.available && styles.slotItemDisabled
+                    ]}
+                    disabled={!slot.available}
+                    onPress={() => handleConfirmReschedule(slot)}
+                  >
+                    <View style={styles.slotInfo}>
+                      <FontAwesome name="clock-o" size={16} color={slot.available ? "#0066cc" : "#ccc"} />
+                      <Text style={[
+                        styles.slotTime,
+                        !slot.available && styles.slotTimeDisabled
+                      ]}>
+                        {slot.time}
+                      </Text>
+                    </View>
+                    {!slot.available && (
+                      <Text style={styles.slotUnavailable}>Đã đặt</Text>
+                    )}
+                  </TouchableOpacity>
+                ))
+              )}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowRescheduleModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Đóng</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -476,5 +667,130 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
     marginLeft: 8,
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingTop: 8,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#0066cc',
+    backgroundColor: '#fff',
+    gap: 6,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0066cc',
+  },
+  cancelButton: {
+    borderColor: '#ff4444',
+  },
+  cancelButtonText: {
+    color: '#ff4444',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  modalDoctorInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#f5f5f5',
+    gap: 10,
+  },
+  modalDoctorText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  slotsContainer: {
+    maxHeight: 400,
+    padding: 16,
+  },
+  modalLoading: {
+    marginVertical: 40,
+  },
+  noSlotsContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  noSlotsText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#999',
+  },
+  slotItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  slotItemDisabled: {
+    backgroundColor: '#f5f5f5',
+    borderColor: '#e0e0e0',
+  },
+  slotInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  slotTime: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  slotTimeDisabled: {
+    color: '#999',
+  },
+  slotUnavailable: {
+    fontSize: 14,
+    color: '#999',
+  },
+  modalCloseButton: {
+    margin: 16,
+    backgroundColor: '#e0e0e0',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalCloseButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#666',
   },
 });

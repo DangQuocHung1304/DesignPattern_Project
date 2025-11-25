@@ -47,9 +47,23 @@ export default function DoctorDetailScreen() {
       setLoading(true);
       setError(null);
 
+      if (!id) {
+        console.error('Doctor id is undefined');
+        setError('Doctor ID is missing');
+        setLoading(false);
+        return;
+      }
+
+      console.log('Fetching doctor with id:', id);
       const response = await api.get(`/doctors/${id}`);
+      console.log('Doctor detail API response:', response.data);
+      
+      if (!response.data) {
+        throw new Error('No doctor data received');
+      }
+      
       setDoctor(response.data);
-      console.log('Doctor loaded:', response.data);
+      console.log('Doctor loaded successfully');
     } catch (err: any) {
       console.error('Error loading doctor details:', err);
       setError(err.response?.data?.message || 'Không thể tải thông tin bác sĩ');
@@ -111,14 +125,14 @@ export default function DoctorDetailScreen() {
             <FontAwesome name="user-md" size={60} color="#0066cc" />
           </View>
           <Text style={styles.doctorName}>
-            {doctor.title} {doctor.fullName}
+            {doctor.title || 'Bác sĩ'} {doctor.fullName || 'N/A'}
           </Text>
-          <Text style={styles.department}>{doctor.department}</Text>
+          <Text style={styles.department}>{doctor.department || 'Không xác định'}</Text>
           
           <View style={styles.experienceBadge}>
             <FontAwesome name="briefcase" size={14} color="#fff" />
             <Text style={styles.experienceText}>
-              {doctor.yearsOfExperience} năm kinh nghiệm
+              {doctor.yearsOfExperience || 0} năm kinh nghiệm
             </Text>
           </View>
         </View>

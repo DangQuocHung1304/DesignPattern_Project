@@ -14,6 +14,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import api from '../../src/services/api';
+import { useAuth } from '../../src/contexts/AuthContext';
 
 interface Doctor {
   id: number;
@@ -24,25 +25,29 @@ interface Doctor {
   specialties: { id: number; name: string }[];
 }
 
+interface TimeSlot {
+  time: string;
+  available: boolean;
+  startTime: string;
+  endTime: string;
+  isAvailable: boolean;
+}
+
 export default function BookAppointmentScreen() {
   const { doctorId } = useLocalSearchParams();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   
   // Form state
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedTime, setSelectedTime] = useState('');
+  const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
+  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [notes, setNotes] = useState('');
   const [isEmergency, setIsEmergency] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  
-  // Available time slots
-  const timeSlots = [
-    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
-    '11:00', '11:30', '13:00', '13:30', '14:00', '14:30',
-    '15:00', '15:30', '16:00', '16:30', '17:00'
-  ];
 
   const fetchDoctorDetails = useCallback(async () => {
     try {
@@ -57,14 +62,38 @@ export default function BookAppointmentScreen() {
     }
   }, [doctorId]);
 
+  const fetchAvailableSlots = useCallback(async (date: Date) => {
+    try {
+      setLoadingSlots(true);
+      const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      const response = await api.get(`/doctors/${doctorId}/available-slots?date=${formattedDate}`);
+      console.log('Available slots:', response.data);
+      setAvailableSlots(response.data || []);
+      setSelectedSlot(null); // Reset selection when date changes
+    } catch (error) {
+      console.error('Error fetching available slots:', error);
+      setAvailableSlots([]);
+      Alert.alert('Thông báo', 'Không thể tải lịch làm việc của bác sĩ');
+    } finally {
+      setLoadingSlots(false);
+    }
+  }, [doctorId]);
+
   useEffect(() => {
     fetchDoctorDetails();
   }, [fetchDoctorDetails]);
+
+  useEffect(() => {
+    if (doctorId) {
+      fetchAvailableSlots(selectedDate);
+    }
+  }, [selectedDate, doctorId, fetchAvailableSlots]);
 
   const handleDateChange = (event: any, date?: Date) => {
     setShowDatePicker(Platform.OS === 'ios');
     if (date) {
       setSelectedDate(date);
+      // fetchAvailableSlots will be called by useEffect
     }
   };
 
@@ -79,26 +108,35 @@ export default function BookAppointmentScreen() {
 
   const handleSubmit = async () => {
     // Validation
-    if (!selectedTime) {
-      Alert.alert('Thông báo', 'Vui lòng chọn giờ khám');
+    if (!selectedSlot) {
+      Alert.alert('Thông báo', 'Vui lòng chọn ca khám');
+      return;
+    }
+
+    if (!selectedSlot.available) {
+      Alert.alert('Thông báo', 'Ca khám đã chọn không còn trống. Vui lòng chọn ca khác.');
+      return;
+    }
+
+    if (!user) {
+      Alert.alert('Lỗi', 'Vui lòng đăng nhập để đặt lịch khám');
+      router.push('/login');
       return;
     }
 
     try {
       setSubmitting(true);
 
-      // Create appointment datetime
-      const [hours, minutes] = selectedTime.split(':');
-      const appointmentDate = new Date(selectedDate);
-      appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0);
-
       const appointmentData = {
+        patientPublicId: user.publicId,
         doctorPublicId: doctorId,
-        appointmentStart: appointmentDate.toISOString(),
+        appointmentStart: selectedSlot.startTime,
+        appointmentEnd: selectedSlot.endTime,
         notes: notes || null,
         isEmergency,
       };
 
+      console.log('Booking appointment:', appointmentData);
       await api.post('/appointments', appointmentData);
 
       Alert.alert(
@@ -164,9 +202,9 @@ export default function BookAppointmentScreen() {
           </View>
           <View style={styles.doctorInfo}>
             <Text style={styles.doctorName}>
-              {doctor.title} {doctor.fullName}
+              {doctor.title || 'Bác sĩ'} {doctor.fullName || 'N/A'}
             </Text>
-            <Text style={styles.doctorDepartment}>{doctor.department}</Text>
+            <Text style={styles.doctorDepartment}>{doctor.department || 'Không xác định'}</Text>
             {doctor.specialties && doctor.specialties.length > 0 && (
               <View style={styles.specialtiesRow}>
                 {doctor.specialties.slice(0, 2).map((specialty) => (
@@ -207,29 +245,53 @@ export default function BookAppointmentScreen() {
         {/* Time Selection */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            <FontAwesome name="clock-o" size={16} color="#0066cc" /> Chọn giờ khám
+            <FontAwesome name="clock-o" size={16} color="#0066cc" /> Chọn ca khám
           </Text>
-          <View style={styles.timeSlotsContainer}>
-            {timeSlots.map((time) => (
-              <TouchableOpacity
-                key={time}
-                style={[
-                  styles.timeSlot,
-                  selectedTime === time && styles.timeSlotSelected,
-                ]}
-                onPress={() => setSelectedTime(time)}
-              >
-                <Text
+          
+          {loadingSlots ? (
+            <View style={styles.loadingSlotsContainer}>
+              <ActivityIndicator size="small" color="#0066cc" />
+              <Text style={styles.loadingSlotsText}>Đang tải lịch làm việc...</Text>
+            </View>
+          ) : availableSlots.length === 0 ? (
+            <View style={styles.noSlotsContainer}>
+              <FontAwesome name="calendar-times-o" size={32} color="#999" />
+              <Text style={styles.noSlotsText}>
+                Bác sĩ không có lịch làm việc trong ngày này
+              </Text>
+              <Text style={styles.noSlotsSubText}>
+                Vui lòng chọn ngày khác
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.timeSlotsContainer}>
+              {availableSlots.map((slot, index) => (
+                <TouchableOpacity
+                  key={index}
                   style={[
-                    styles.timeSlotText,
-                    selectedTime === time && styles.timeSlotTextSelected,
+                    styles.timeSlot,
+                    selectedSlot?.time === slot.time && styles.timeSlotSelected,
+                    !slot.available && styles.timeSlotDisabled,
                   ]}
+                  onPress={() => slot.available && setSelectedSlot(slot)}
+                  disabled={!slot.available}
                 >
-                  {time}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+                  <Text
+                    style={[
+                      styles.timeSlotText,
+                      selectedSlot?.time === slot.time && styles.timeSlotTextSelected,
+                      !slot.available && styles.timeSlotTextDisabled,
+                    ]}
+                  >
+                    {slot.time}
+                  </Text>
+                  {!slot.available && (
+                    <Text style={styles.slotUnavailableText}>(Đã đặt)</Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Emergency Toggle */}
@@ -282,7 +344,7 @@ export default function BookAppointmentScreen() {
           <View style={styles.summaryRow}>
             <FontAwesome name="user-md" size={16} color="#666" />
             <Text style={styles.summaryText}>
-              {doctor.title} {doctor.fullName}
+              {doctor.title || 'Bác sĩ'} {doctor.fullName || 'N/A'}
             </Text>
           </View>
           <View style={styles.summaryRow}>
@@ -292,7 +354,7 @@ export default function BookAppointmentScreen() {
           <View style={styles.summaryRow}>
             <FontAwesome name="clock-o" size={16} color="#666" />
             <Text style={styles.summaryText}>
-              {selectedTime || 'Chưa chọn giờ'}
+              {selectedSlot ? selectedSlot.time : 'Chưa chọn ca khám'}
             </Text>
           </View>
           {isEmergency && (
@@ -577,6 +639,45 @@ const styles = StyleSheet.create({
     color: '#ff6b35',
     fontWeight: 'bold',
     marginLeft: 10,
+  },
+  loadingSlotsContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  loadingSlotsText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#666',
+  },
+  noSlotsContainer: {
+    padding: 30,
+    alignItems: 'center',
+  },
+  noSlotsText: {
+    marginTop: 15,
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  noSlotsSubText: {
+    marginTop: 5,
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+  },
+  timeSlotDisabled: {
+    backgroundColor: '#f5f5f5',
+    borderColor: '#ddd',
+    opacity: 0.6,
+  },
+  timeSlotTextDisabled: {
+    color: '#999',
+  },
+  slotUnavailableText: {
+    fontSize: 10,
+    color: '#999',
+    marginTop: 2,
   },
   footer: {
     padding: 20,

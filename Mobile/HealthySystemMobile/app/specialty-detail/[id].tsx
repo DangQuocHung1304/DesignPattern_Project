@@ -50,14 +50,16 @@ export default function SpecialtyDetailScreen() {
 
       // Fetch specialty info
       const specialtyResponse = await api.get(`/specialties/${id}`);
+      console.log('Specialty API response:', specialtyResponse.data);
       setSpecialty(specialtyResponse.data);
 
       // Fetch doctors in this specialty
       const doctorsResponse = await api.get(`/specialties/${id}/doctors`);
-      setDoctors(doctorsResponse.data);
-
-      console.log('Specialty loaded:', specialtyResponse.data);
-      console.log('Doctors loaded:', doctorsResponse.data.length);
+      console.log('Doctors in specialty API response:', doctorsResponse.data);
+      
+      const doctorsData = Array.isArray(doctorsResponse.data) ? doctorsResponse.data : [];
+      console.log('Doctors in specialty count:', doctorsData.length);
+      setDoctors(doctorsData);
     } catch (err: any) {
       console.error('Error loading specialty details:', err);
       setError(err.response?.data?.message || 'Không thể tải thông tin chuyên khoa');
@@ -66,22 +68,28 @@ export default function SpecialtyDetailScreen() {
     }
   };
 
-  const renderDoctorCard = ({ item }: { item: Doctor }) => (
+  const renderDoctor = ({ item }: { item: Doctor }) => (
     <TouchableOpacity
       style={styles.doctorCard}
-      onPress={() => router.push(`/doctor-detail/${item.publicId}` as any)}
+      onPress={() => {
+        if (item.publicId) {
+          router.push(`/doctor-detail/${item.publicId}` as any);
+        } else {
+          console.error('Doctor publicId is undefined:', item);
+        }
+      }}
       activeOpacity={0.7}
     >
       <View style={styles.doctorAvatar}>
         <FontAwesome name="user-md" size={32} color="#0066cc" />
       </View>
       <View style={styles.doctorInfo}>
-        <Text style={styles.doctorName}>{item.title} {item.fullName}</Text>
-        <Text style={styles.doctorDepartment}>{item.department}</Text>
+        <Text style={styles.doctorName}>{item.title || 'Bác sĩ'} {item.fullName || 'N/A'}</Text>
+        <Text style={styles.doctorDepartment}>{item.department || 'Không xác định'}</Text>
         <View style={styles.experienceContainer}>
           <FontAwesome name="briefcase" size={12} color="#666" />
           <Text style={styles.experienceText}>
-            {item.yearsOfExperience} năm kinh nghiệm
+            {item.yearsOfExperience || 0} năm kinh nghiệm
           </Text>
         </View>
         {item.description && (
@@ -128,7 +136,7 @@ export default function SpecialtyDetailScreen() {
         <Text style={styles.headerTitle}>Chi tiết chuyên khoa</Text>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Specialty Info */}
         <View style={styles.specialtyInfoCard}>
           <View style={styles.specialtyIcon}>
@@ -138,6 +146,66 @@ export default function SpecialtyDetailScreen() {
           {specialty.description && (
             <Text style={styles.specialtyDescription}>{specialty.description}</Text>
           )}
+        </View>
+
+        {/* Specialty Details */}
+        <View style={styles.detailsCard}>
+          <Text style={styles.detailsTitle}>Giới thiệu chuyên khoa</Text>
+          
+          <View style={styles.detailItem}>
+            <View style={styles.detailIconContainer}>
+              <FontAwesome name="info-circle" size={20} color="#0066cc" />
+            </View>
+            <View style={styles.detailContent}>
+              <Text style={styles.detailLabel}>Về chuyên khoa</Text>
+              <Text style={styles.detailText}>
+                {specialty.description || 'Chuyên khoa ' + specialty.name + ' cung cấp dịch vụ khám, chẩn đoán và điều trị các bệnh lý liên quan.'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.detailItem}>
+            <View style={styles.detailIconContainer}>
+              <FontAwesome name="user-md" size={20} color="#0066cc" />
+            </View>
+            <View style={styles.detailContent}>
+              <Text style={styles.detailLabel}>Đội ngũ y bác sĩ</Text>
+              <Text style={styles.detailText}>
+                {doctors.length > 0 
+                  ? `Chuyên khoa có ${doctors.length} bác sĩ với nhiều năm kinh nghiệm trong lĩnh vực chuyên môn.`
+                  : 'Đội ngũ bác sĩ đang được cập nhật.'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.detailItem}>
+            <View style={styles.detailIconContainer}>
+              <FontAwesome name="stethoscope" size={20} color="#0066cc" />
+            </View>
+            <View style={styles.detailContent}>
+              <Text style={styles.detailLabel}>Dịch vụ khám chữa bệnh</Text>
+              <Text style={styles.detailText}>
+                • Khám và tư vấn chuyên khoa{'\n'}
+                • Chẩn đoán và điều trị bệnh{'\n'}
+                • Theo dõi và tái khám{'\n'}
+                • Tư vấn phòng ngừa bệnh
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.detailItem}>
+            <View style={styles.detailIconContainer}>
+              <FontAwesome name="clock-o" size={20} color="#0066cc" />
+            </View>
+            <View style={styles.detailContent}>
+              <Text style={styles.detailLabel}>Thời gian làm việc</Text>
+              <Text style={styles.detailText}>
+                • Thứ 2 - Thứ 6: 8:00 - 17:30{'\n'}
+                • Thứ 7: 8:00 - 12:00{'\n'}
+                • Chủ nhật: Nghỉ
+              </Text>
+            </View>
+          </View>
         </View>
 
         {/* Doctors Section */}
@@ -159,8 +227,8 @@ export default function SpecialtyDetailScreen() {
           ) : (
             <FlatList
               data={doctors}
-              renderItem={renderDoctorCard}
-              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderDoctor}
+              keyExtractor={(item, index) => item?.id?.toString() || item?.publicId || `doc-${index}`}
               scrollEnabled={false}
             />
           )}
@@ -235,6 +303,51 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     lineHeight: 24,
+  },
+  detailsCard: {
+    backgroundColor: 'white',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  detailsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  detailIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#e6f2ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  detailContent: {
+    flex: 1,
+  },
+  detailLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 6,
+  },
+  detailText: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 22,
   },
   section: {
     marginTop: 8,

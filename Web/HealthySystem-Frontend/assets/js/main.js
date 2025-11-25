@@ -211,6 +211,172 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Check for demo mode
     window.mainApp.initDemoMode();
+
+    // Load homepage content
+    loadHealthNews();
+    loadServicePrices();
+});
+
+// ============================================================
+// Health News Functions
+// ============================================================
+
+async function loadHealthNews() {
+    const API_URL = CONFIG?.API_BASE_URL || 'http://localhost:5102/api';
+    const newsList = document.getElementById('news-list');
+    
+    if (!newsList) return;
+
+    try {
+        const response = await fetch(`${API_URL}/healthnews?isFeatured=true&pageSize=3`);
+        
+        if (!response.ok) throw new Error('Failed to load health news');
+
+        const result = await response.json();
+        
+        if (result.data && result.data.length > 0) {
+            newsList.innerHTML = result.data.map(news => `
+                <div class="col-md-4">
+                    <div class="card h-100 news-card">
+                        ${news.imageUrl ? `
+                            <img src="${news.imageUrl}" class="card-img-top" alt="${news.title}" style="height: 200px; object-fit: cover;">
+                        ` : `
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="fas fa-newspaper fa-3x text-muted"></i>
+                            </div>
+                        `}
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-primary">${news.category}</span>
+                                ${news.isFeatured ? '<span class="badge bg-warning"><i class="fas fa-star"></i> Nổi bật</span>' : ''}
+                            </div>
+                            <h5 class="card-title">${news.title}</h5>
+                            <p class="card-text text-muted">${news.summary || ''}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i>${news.author}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fas fa-eye me-1"></i>${news.viewCount || 0}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-top-0">
+                            <a href="news-detail.html?id=${news.id}" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fas fa-arrow-right me-1"></i>Đọc thêm
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            newsList.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle me-2"></i>Hiện chưa có tin tức nào
+                    </div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading health news:', error);
+        newsList.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-warning text-center">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Không thể tải tin tức
+                </div>
+            </div>
+        `;
+    }
+}
+
+// ============================================================
+// Service Prices Functions
+// ============================================================
+
+async function loadServicePrices() {
+    const API_URL = CONFIG?.API_BASE_URL || 'http://localhost:5102/api';
+    const pricingPreview = document.getElementById('pricing-preview');
+    
+    if (!pricingPreview) return;
+
+    try {
+        const response = await fetch(`${API_URL}/serviceprices`);
+        
+        if (!response.ok) throw new Error('Failed to load service prices');
+
+        const groupedData = await response.json();
+        
+        if (groupedData && groupedData.length > 0) {
+            // Only show first 2 categories for preview
+            const previewData = groupedData.slice(0, 2);
+            
+            pricingPreview.innerHTML = previewData.map(group => `
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-folder-open me-2"></i>${group.category}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                ${group.services.slice(0, 5).map(service => `
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            ${service.serviceName}
+                                        </span>
+                                        <span class="text-primary fw-bold">
+                                            ${formatCurrency(service.price)} ${service.unit}
+                                        </span>
+                                    </li>
+                                `).join('')}
+                                ${group.services.length > 5 ? `
+                                    <li class="list-group-item text-center text-muted">
+                                        <i class="fas fa-ellipsis-h"></i> Và ${group.services.length - 5} dịch vụ khác
+                                    </li>
+                                ` : ''}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            pricingPreview.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle me-2"></i>Hiện chưa có bảng giá nào
+                    </div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading service prices:', error);
+        pricingPreview.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-warning text-center">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Không thể tải bảng giá
+                </div>
+            </div>
+        `;
+    }
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN').format(amount);
+}
+
+// Initialize app when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    window.mainApp = new MainApp();
+    
+    // Check for demo mode
+    window.mainApp.initDemoMode();
+
+    // Load homepage content
+    loadHealthNews();
+    loadServicePrices();
 });
 
 // Export for other modules

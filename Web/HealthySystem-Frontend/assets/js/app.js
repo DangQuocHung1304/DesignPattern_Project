@@ -637,24 +637,86 @@ async function loadPricingPreview() {
     try {
         const response = await apiService.getServices();
         if (response.success && response.data) {
-            const servicesData = response.data;
+            // Handle both array and object with items property
+            const servicesData = Array.isArray(response.data) ? response.data : (response.data.items || []);
             
             // Take first 3 categories
             const previewCategories = servicesData.slice(0, 3);
             
-            pricingContainer.innerHTML = previewCategories.map(category => `
+            // Define gradient colors for each card
+            const gradients = [
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+            ];
+            
+            pricingContainer.innerHTML = previewCategories.map((category, index) => `
                 <div class="col-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h4 style="color: var(--primary-color); margin-bottom: 15px;">
-                                ${getCategoryIcon(category.Category)} ${category.CategoryName}
-                            </h4>
-                            <ul style="list-style: none; padding: 0;">
-                                ${category.Services.slice(0, 4).map(service => `
-                                    <li style="padding: 8px 0; border-bottom: 1px solid #f0f2f5;">
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <span>${service.Name}</span>
-                                            <strong style="color: var(--primary-color);">
+                    <div class="pricing-card" style="
+                        height: 400px;
+                        border-radius: 20px;
+                        background: white;
+                        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+                        overflow: hidden;
+                        transition: all 0.3s ease;
+                        border: none;
+                    " onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 60px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 40px rgba(0,0,0,0.1)'">
+                        <!-- Gradient Header -->
+                        <div style="
+                            background: ${gradients[index]};
+                            padding: 30px 20px;
+                            text-align: center;
+                            color: white;
+                        ">
+                            <div style="font-size: 48px; margin-bottom: 10px;">
+                                ${getCategoryIcon(category.Category)}
+                            </div>
+                            <h4 style="
+                                color: white;
+                                font-weight: 700;
+                                font-size: 22px;
+                                margin: 0;
+                                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                            ">${category.CategoryName}</h4>
+                        </div>
+                        
+                        <!-- Services List -->
+                        <div style="padding: 25px 20px; height: calc(100% - 170px); overflow-y: auto;">
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                ${category.Services.slice(0, 4).map((service, idx) => `
+                                    <li style="
+                                        padding: 15px 0;
+                                        border-bottom: ${idx < 3 ? '1px solid #f0f2f5' : 'none'};
+                                        animation: fadeInUp 0.5s ease ${idx * 0.1}s backwards;
+                                    ">
+                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                            <div style="display: flex; align-items: center; flex: 1;">
+                                                <span style="
+                                                    display: inline-flex;
+                                                    align-items: center;
+                                                    justify-content: center;
+                                                    width: 8px;
+                                                    height: 8px;
+                                                    background: ${gradients[index]};
+                                                    border-radius: 50%;
+                                                    margin-right: 12px;
+                                                "></span>
+                                                <span style="
+                                                    font-size: 14px;
+                                                    color: #2d3748;
+                                                    font-weight: 500;
+                                                ">${service.Name}</span>
+                                            </div>
+                                            <strong style="
+                                                background: ${gradients[index]};
+                                                -webkit-background-clip: text;
+                                                -webkit-text-fill-color: transparent;
+                                                background-clip: text;
+                                                font-weight: 700;
+                                                font-size: 15px;
+                                                white-space: nowrap;
+                                                margin-left: 10px;
+                                            ">
                                                 ${formatCurrency(service.DefaultPrice)}
                                             </strong>
                                         </div>
@@ -679,23 +741,24 @@ async function loadNewsPreview() {
     try {
         const response = await apiService.getFeaturedNews(4);
         if (response.success && response.data) {
-            const newsList = response.data;
+            // Handle both array and object with items property
+            const newsList = Array.isArray(response.data) ? response.data : (response.data.items || []);
             
             newsContainer.innerHTML = `
                 <div class="row">
                     ${newsList.map(news => `
                         <div class="col-3">
-                            <div class="card" style="cursor: pointer;" onclick="window.location.href='news-detail.html?id=${news.Id}'">
+                            <div class="card" style="height: 500px; display: flex; flex-direction: column; cursor: pointer;" onclick="window.location.href='news-detail.html?id=${news.Id}'">
                                 <img src="${news.Image}" alt="${news.Title}" style="width: 100%; height: 200px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/400x200?text=News'">
-                                <div class="card-body">
+                                <div class="card-body" style="flex: 1; display: flex; flex-direction: column;">
                                     <span style="display: inline-block; padding: 4px 10px; background: #e8f5e9; color: #2e7d32; border-radius: 6px; font-size: 12px; margin-bottom: 10px;">
                                         ${news.CategoryName}
                                     </span>
-                                    <h4 style="font-size: 18px; margin-bottom: 10px; line-height: 1.4;">${news.Title}</h4>
-                                    <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">${news.Summary}</p>
+                                    <h4 style="font-size: 18px; margin-bottom: 10px; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${news.Title}</h4>
+                                    <p style="color: #6c757d; font-size: 14px; line-height: 1.6; flex: 1; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">${news.Summary}</p>
                                     <div style="display: flex; justify-content: space-between; font-size: 13px; color: #6c757d; margin-top: 10px;">
                                         <span><i class="fas fa-user-md"></i> ${news.Author}</span>
-                                        <span><i class="fas fa-eye"></i> ${news.Views}</span>
+                                        <span><i class="fas fa-eye"></i> ${news.Views || 0}</span>
                                     </div>
                                 </div>
                             </div>

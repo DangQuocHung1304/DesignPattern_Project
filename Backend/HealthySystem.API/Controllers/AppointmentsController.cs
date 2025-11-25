@@ -56,8 +56,8 @@ namespace HealthySystem.API.Controllers
                     AppointmentStart = a.AppointmentStart,
                     AppointmentEnd = a.AppointmentEnd,
                     Status = a.Status,
-                    Notes = a.Notes,
-                    IsEmergency = a.IsEmergency,
+                    Notes = a.Reason,
+                    IsEmergency = a.Source == "emergency",
                     // Support both registered patients and walk-in patients
                     Patient = a.Patient != null ? new
                     {
@@ -89,8 +89,8 @@ namespace HealthySystem.API.Controllers
                             Name = ds.Specialty.Name
                         }).ToList()
                     },
-                    CreatedDate = a.CreatedDate,
-                    UpdatedDate = a.UpdatedDate
+                    CreatedDate = a.CreatedAt,
+                    UpdatedDate = a.UpdatedAt
                 })
                 .ToListAsync();
 
@@ -138,8 +138,8 @@ namespace HealthySystem.API.Controllers
                 AppointmentStart = appointment.AppointmentStart,
                 AppointmentEnd = appointment.AppointmentEnd,
                 Status = appointment.Status,
-                Notes = appointment.Notes,
-                IsEmergency = appointment.IsEmergency,
+                Notes = appointment.Reason,
+                IsEmergency = appointment.Source == "emergency",
                 Patient = appointment.Patient != null ? new
                 {
                     Id = appointment.Patient.Id,
@@ -179,8 +179,8 @@ namespace HealthySystem.API.Controllers
                         Description = ds.Specialty.Description
                     }).ToList()
                 },
-                CreatedDate = appointment.CreatedDate,
-                UpdatedDate = appointment.UpdatedDate
+                CreatedDate = appointment.CreatedAt,
+                UpdatedDate = appointment.UpdatedAt
             };
 
             return Ok(result);
@@ -211,7 +211,7 @@ namespace HealthySystem.API.Controllers
 
             // Validate doctor
             var doctor = await _context.Users
-                .FirstOrDefaultAsync(u => u.PublicId.ToString() == request.DoctorPublicId && u.Role == "doctor" && u.IsActive);
+                .FirstOrDefaultAsync(u => u.PublicId.ToString() == request.DoctorPublicId && u.Role == "doctor" && u.Status == "active" && u.DeletedAt == null);
             
             if (doctor == null)
             {
@@ -238,7 +238,7 @@ namespace HealthySystem.API.Controllers
                 AppointmentStart = new DateTimeOffset(request.AppointmentStart),
                 AppointmentEnd = new DateTimeOffset(request.AppointmentEnd),
                 Status = "scheduled",
-                Reason = request.Notes,
+                Reason = request.Notes ?? "",
                 Source = request.IsEmergency == true ? "emergency" : "online",
                 CreatedBy = userId,
                 CreatedAt = DateTimeOffset.UtcNow,
@@ -261,8 +261,8 @@ namespace HealthySystem.API.Controllers
                     AppointmentStart = a.AppointmentStart,
                     AppointmentEnd = a.AppointmentEnd,
                     Status = a.Status,
-                    Notes = a.Notes,
-                    IsEmergency = a.IsEmergency,
+                    Notes = a.Reason,
+                    IsEmergency = a.Source == "emergency",
                     Patient = a.Patient != null ? new
                     {
                         Id = a.Patient.Id,
@@ -283,7 +283,7 @@ namespace HealthySystem.API.Controllers
                         FullName = a.Doctor.FullName,
                         Title = a.Doctor.StaffProfile!.Title
                     },
-                    CreatedDate = a.CreatedDate
+                    CreatedDate = a.CreatedAt
                 })
                 .FirstOrDefaultAsync();
 

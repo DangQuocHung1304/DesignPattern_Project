@@ -48,22 +48,20 @@ namespace HealthySystem.API.Controllers
                 .Where(ds => ds.SpecialtyId == id)
                 .Include(ds => ds.Doctor)
                 .ThenInclude(d => d.StaffProfile)
+                .Where(ds => ds.Doctor.Status == "active" && ds.Doctor.DeletedAt == null)
                 .Select(ds => new
                 {
                     Id = ds.Doctor.Id,
-                    PublicId = ds.Doctor.PublicId,
-                    FullName = ds.Doctor.FullName,
+                    PublicId = ds.Doctor.PublicId.ToString(),
+                    FullName = (ds.Doctor.FirstName + " " + ds.Doctor.LastName).Trim(),
                     Phone = ds.Doctor.Phone,
                     Email = ds.Doctor.Email,
-                    Gender = ds.Doctor.Gender,
-                    DateOfBirth = ds.Doctor.DateOfBirth,
-                    Title = ds.Doctor.StaffProfile!.Title,
-                    Department = ds.Doctor.StaffProfile.Department,
-                    Description = ds.Doctor.StaffProfile.Description,
-                    YearsOfExperience = ds.Doctor.StaffProfile.YearsOfExperience,
-                    IsAvailable = ds.Doctor.Status == "active" && ds.Doctor.DeletedAt == null
+                    Title = ds.Doctor.StaffProfile != null ? ds.Doctor.StaffProfile.Position : "Bác sĩ",
+                    Department = ds.Doctor.StaffProfile != null ? ds.Doctor.StaffProfile.Department : "Không xác định",
+                    Description = ds.Doctor.StaffProfile != null ? ds.Doctor.StaffProfile.Description : "",
+                    YearsOfExperience = ds.Doctor.StaffProfile != null ? ds.Doctor.StaffProfile.YearsOfExperience : 0,
+                    IsAvailable = true
                 })
-                .Where(d => d.IsAvailable)
                 .ToListAsync();
 
             return Ok(doctors);

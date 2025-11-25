@@ -16,6 +16,7 @@ import api from '../../src/services/api';
 interface Specialty {
   id: number;
   name: string;
+  description?: string;
 }
 
 interface Doctor {
@@ -29,6 +30,8 @@ interface Doctor {
   description?: string;
   yearsOfExperience: number;
   specialties: Specialty[];
+  averageRating?: number;
+  totalRatings?: number;
 }
 
 export default function DoctorsScreen() {
@@ -52,9 +55,19 @@ export default function DoctorsScreen() {
     try {
       setError(null);
       const response = await api.get('/doctors');
-      console.log('Doctors fetched:', response.data);
-      setDoctors(response.data);
-      setFilteredDoctors(response.data);
+      console.log('Doctors API response:', JSON.stringify(response.data).substring(0, 500));
+      
+      const doctorsData = Array.isArray(response.data) ? response.data : [];
+      console.log('Doctors count:', doctorsData.length);
+      
+      if (doctorsData.length > 0) {
+        console.log('First doctor sample:', JSON.stringify(doctorsData[0]));
+        console.log('First doctor id:', doctorsData[0]?.id);
+        console.log('First doctor publicId:', doctorsData[0]?.publicId);
+      }
+      
+      setDoctors(doctorsData);
+      setFilteredDoctors(doctorsData);
     } catch (err: any) {
       console.error('Error fetching doctors:', err);
       setError(err.response?.data?.message || 'Không thể tải danh sách bác sĩ');
@@ -73,9 +86,9 @@ export default function DoctorsScreen() {
     const query = searchQuery.toLowerCase().trim();
     const filtered = doctors.filter(
       (doctor) =>
-        doctor.fullName.toLowerCase().includes(query) ||
-        doctor.department.toLowerCase().includes(query) ||
-        doctor.specialties.some((s) => s.name.toLowerCase().includes(query))
+        doctor.FullName.toLowerCase().includes(query) ||
+        doctor.Department.toLowerCase().includes(query) ||
+        doctor.Specialties.some((s) => s.Name.toLowerCase().includes(query))
     );
     setFilteredDoctors(filtered);
   };
@@ -88,7 +101,13 @@ export default function DoctorsScreen() {
   const renderDoctor = ({ item }: { item: Doctor }) => (
     <TouchableOpacity
       style={styles.doctorCard}
-      onPress={() => router.push(`/doctor-detail/${item.publicId}` as any)}
+      onPress={() => {
+        if (item.publicId) {
+          router.push(`/doctor-detail/${item.publicId}` as any);
+        } else {
+          console.error('Doctor publicId is undefined:', item);
+        }
+      }}
       activeOpacity={0.7}
     >
       <View style={styles.doctorAvatar}>
@@ -96,20 +115,20 @@ export default function DoctorsScreen() {
       </View>
       <View style={styles.doctorInfo}>
         <Text style={styles.doctorName}>
-          {item.title} {item.fullName}
+          {item.title || 'Bác sĩ'} {item.fullName || 'N/A'}
         </Text>
-        <Text style={styles.doctorDepartment}>{item.department}</Text>
+        <Text style={styles.doctorDepartment}>{item.department || 'Không xác định'}</Text>
         <View style={styles.experienceContainer}>
           <FontAwesome name="briefcase" size={12} color="#666" />
           <Text style={styles.experienceText}>
-            {item.yearsOfExperience} năm kinh nghiệm
+            {item.yearsOfExperience || 0} năm kinh nghiệm
           </Text>
         </View>
-        {item.specialties.length > 0 && (
+        {item.specialties && item.specialties.length > 0 && (
           <View style={styles.specialtiesRow}>
             {item.specialties.slice(0, 2).map((specialty) => (
               <View key={specialty.id} style={styles.specialtyBadge}>
-                <Text style={styles.specialtyBadgeText}>{specialty.name}</Text>
+                <Text style={styles.specialtyText}>{specialty.name}</Text>
               </View>
             ))}
             {item.specialties.length > 2 && (
@@ -173,7 +192,7 @@ export default function DoctorsScreen() {
       <FlatList
         data={filteredDoctors}
         renderItem={renderDoctor}
-        keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item, index) => item?.id?.toString() || item?.publicId || `doctor-${index}`}
         contentContainerStyle={styles.listContainer}
         refreshControl={
           <RefreshControl

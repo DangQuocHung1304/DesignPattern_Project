@@ -13,9 +13,9 @@ import { FontAwesome } from '@expo/vector-icons';
 import api from '../../src/services/api';
 
 interface Specialty {
-  id: number;
-  name: string;
-  description?: string;
+  Id: number;
+  Name: string;
+  Description?: string;
 }
 
 export default function SpecialtiesScreen() {
@@ -66,17 +66,17 @@ export default function SpecialtiesScreen() {
   const renderSpecialty = ({ item }: { item: Specialty }) => (
     <TouchableOpacity
       style={styles.specialtyCard}
-      onPress={() => router.push(`/specialty-detail/${item.id}` as any)}
+      onPress={() => router.push(`/specialty-detail/${item.Id}` as any)}
       activeOpacity={0.7}
     >
       <View style={styles.iconContainer}>
-        <FontAwesome name={getSpecialtyIcon(item.name)} size={32} color="#0066cc" />
+        <FontAwesome name={getSpecialtyIcon(item.Name)} size={32} color="#0066cc" />
       </View>
       <View style={styles.specialtyInfo}>
-        <Text style={styles.specialtyName}>{item.name}</Text>
-        {item.description && (
+        <Text style={styles.specialtyName}>{item.Name}</Text>
+        {item.Description && (
           <Text style={styles.specialtyDescription} numberOfLines={2}>
-            {item.description}
+            {item.Description}
           </Text>
         )}
       </View>
@@ -117,7 +117,7 @@ export default function SpecialtiesScreen() {
       <FlatList
         data={specialties}
         renderItem={renderSpecialty}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => item?.Id?.toString() || `specialty-${index}`}
         contentContainerStyle={styles.listContainer}
         refreshControl={
           <RefreshControl

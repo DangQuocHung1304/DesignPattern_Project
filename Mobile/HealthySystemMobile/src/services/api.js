@@ -25,8 +25,12 @@ api.interceptors.request.use(
     console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
     try {
       const token = await AsyncStorage.getItem('accessToken');
+      console.log('🔑 Token exists:', !!token);
+      console.log('🔑 Token preview:', token ? token.substring(0, 50) + '...' : 'NO TOKEN');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        console.warn('⚠️ No token found in AsyncStorage');
       }
     } catch (error) {
       console.error('Error getting token:', error);
