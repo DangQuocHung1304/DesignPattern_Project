@@ -324,7 +324,7 @@ Overall Total: 22 points ✅
 1. Deploy 3 new HTML files
 2. Verify login redirects work
 3. Test all dashboard features
-4. Check responsive design on mobile
+4. Check responsive design on small screens
 
 ---
 
@@ -446,7 +446,7 @@ JWT Token → Role Claim → Authorization Filter → Controller Action
    - Create test accounts in database
    - End-to-end testing each dashboard
    - Cross-browser testing
-   - Mobile responsiveness check
+   - Small-screen responsiveness check
 
 2. **Integration:**
    - Verify doctor can see lab results
@@ -507,3 +507,5 @@ For issues or questions:
 **Version:** 1.0  
 **Commit:** b2869da  
 **Branch:** new-branch
+
+

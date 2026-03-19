@@ -39,13 +39,7 @@ Web App: Mở browser → http://localhost:5000
 API Documentation: http://localhost:5000/swagger
 API Test: http://localhost:5000/api/test/ping
 
-📱 Để khởi động Mobile App (terminal riêng):
-# Mở terminal mới
-cd "D:\2.CNPMNangCao\LyThuyet\Project\Mobile\HealthySystemMobile"
-npx expo start --tunnel -c
-
 🔧 Nếu gặp lỗi:
 Port bị chiếm: Get-NetTCPConnection -LocalPort 5000
 Process zombie: Get-Process dotnet | Stop-Process -Force
 Build error: dotnet clean && dotnet build
-

@@ -115,8 +115,6 @@ Project/
 │   └── Sprint_Planning_S1.docx
 │
 ├── Infrastructure/               # Infrastructure code
-├── Mobile/                      # Mobile app (Future)
-│
 ├── firebase.json                # Firebase project config
 ├── firestore.rules              # Security rules (200+ lines)
 ├── firestore.indexes.json       # Composite indexes (11 indexes)
@@ -470,9 +468,6 @@ Các PowerShell scripts tiện ích trong root folder:
 
 # Start development server
 .\start-dev.ps1
-
-# Test mobile connection
-.\test-mobile-connection.ps1
 
 # Update API URL
 .\update-api-url.ps1

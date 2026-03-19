@@ -23,7 +23,7 @@
    - Dịch vụ Chẩn đoán hình ảnh
    - Dịch vụ khác
 4. ✅ Check: Giá tiền format đúng (VND)
-5. ✅ Check: Responsive trên mobile
+5. ✅ Check: Responsive trên màn hình nhỏ
 
 **Expected:** Tất cả dịch vụ hiển thị với giá chuẩn
 
@@ -411,4 +411,5 @@ DELETE FROM users WHERE email LIKE '%sprint11%';
 **Testing Time Estimate:** 25-30 minutes total  
 **Priority:** HIGH (Sprint 11 deployment blocker)  
 **Status:** Ready for Testing ✅
+
 

@@ -1,4 +1,4 @@
-🌐 Cách sử dụng hệ thống thống nhất:
+🌐 Cách sử dụng hệ thống (Web + Backend):
 🖥️ Web App:
 # Truy cập web app
 http://localhost:5000
@@ -8,46 +8,30 @@ http://localhost:5000/api/test/ping
 http://localhost:5000/api/auth/login
 http://localhost:5000/api/auth/register
 
-📱 Mobile App:
-# API base URL trong mobile
-http://10.20.15.108:5000/api
-
-# Tunnel mode vẫn hoạt động
-exp://im09imo-anonymous-8081.exp.direct
-
 🚀 Khởi động hệ thống:
-1. Khởi động Server (phục vụ cả web và API):
+1. Khởi động Server (phục vụ web và API):
 cd Backend\HealthySystem.API
 dotnet run --urls="http://0.0.0.0:5000"
-
-2. Khởi động Mobile App:
-cd Mobile\HealthySystemMobile
-npx expo start --tunnel -c
 
 📊 Kiểm tra hoạt động:
 Web App: Mở browser → http://localhost:5000
 API Test: Click các nút test API trong web interface
-Mobile App: Quét QR code từ Expo tunnel
-Cross-Platform: Cả web và mobile đều gọi cùng API server💡 Lợi ích của cấu hình này:
-✅ Single Server: Chỉ cần chạy 1 server cho cả web và mobile
+
+💡 Lợi ích của cấu hình này:
+✅ Single Server: Chỉ cần chạy 1 server cho web và API
 ✅ Consistent API: Cùng endpoints, cùng business logic
-✅ Easy Deployment: Deploy 1 lần, serve nhiều client
-✅ Development Friendly: Hot reload web, tunnel cho mobile
+✅ Easy Deployment: Deploy 1 lần
+✅ Development Friendly: Hot reload frontend
 ✅ Production Ready: Có thể scale và load balance
 
 🔧 Cấu trúc thư mục sau khi setup:
 Backend/HealthySystem.API/
-├── wwwroot/          # Web app static files  
+├── wwwroot/          # Web app static files
 ├── Controllers/      # API controllers
 ├── Program.cs        # Server configuration
 └── Properties/launchSettings.json  # Launch profiles
 
-Mobile/HealthySystemMobile/
-├── src/services/api.js    # API client config
-└── ...                    # Mobile app files
-
-
-Chạy lệnh này để kiểm tra IP hiện tại:
+Chạy lệnh này để kiểm tra IP hiện tại (nếu cần truy cập LAN):
 # Lấy IP hiện tại
 $ip = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.IPAddress -like "172.*" -or $_.IPAddress -like "192.168.*"}).IPAddress
 Write-Host "Current IP: $ip" -ForegroundColor Cyan
@@ -58,6 +42,4 @@ Invoke-RestMethod -Uri "http://${ip}:5000/api/health"
 
 📝 GHI CHÚ QUAN TRỌNG
 ✅ Server phải chạy với http://0.0.0.0:5000 (không phải localhost)
-✅ Mobile và máy tính phải cùng mạng WiFi
 ✅ Tường lửa Windows phải cho phép port 5000
-⚠️ Mỗi khi IP thay đổi, cần cập nhật lại api.js

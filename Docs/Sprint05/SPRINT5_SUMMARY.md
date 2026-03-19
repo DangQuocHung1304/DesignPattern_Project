@@ -263,7 +263,7 @@ public DbSet<TreatmentItem> TreatmentItems { get; set; }
   - Type badges: Yellow/Gray/Purple/Light Blue
 - Loading spinners
 - Empty states với icons
-- Responsive cho mobile
+- Responsive cho màn hình nhỏ
 
 **JavaScript Functions:**
 ```javascript
@@ -364,7 +364,7 @@ Headers: Authorization: Bearer {token}
    - Click "Xem chi tiết" để mở modal
    - Progress bar hiển thị đúng %
    - Danh sách thuốc hiển thị đầy đủ
-   - Responsive trên mobile
+   - Responsive trên màn hình nhỏ
 
 ---
 
@@ -442,3 +442,5 @@ Headers: Authorization: Bearer {token}
 **Người thực hiện:** GitHub Copilot  
 **Ngày:** 27/10/2025  
 **Sprint:** Sprint 5 (22/10 - 27/10/2025)
+
+

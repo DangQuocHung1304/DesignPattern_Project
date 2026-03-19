@@ -71,7 +71,7 @@ Dành cho người dùng để kiểm tra và chấp nhận Sprint 5 US-01.
 
 ### Bước 7: Kiểm tra Responsive
 - [ ] Thu nhỏ cửa sổ browser (< 768px)
-- [ ] Layout tự động chuyển sang mobile view
+- [ ] Layout tự động chuyển sang giao diện màn hình nhỏ
 - [ ] Cards hiển thị full width
 - [ ] Text vẫn đọc được
 - [ ] Nút vẫn click được
@@ -180,3 +180,4 @@ Nếu gặp vấn đề:
 **Contact:** GitHub Copilot Assistant  
 **Date:** 27/10/2025  
 **Sprint:** Sprint 5 (22/10 - 27/10/2025)
+

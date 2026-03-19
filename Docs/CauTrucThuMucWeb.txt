@@ -30,7 +30,7 @@ Web/HealthySystem-Frontend/
 ✅ US-06: Quản lý lịch hẹn cá nhân
 ✅ US-07: Tạo tài khoản bệnh nhân
 🎨 UI/UX Features:
-✅ Responsive design (Mobile-first)
+✅ Responsive design (Web-first)
 ✅ Modern UI với gradient và animations
 ✅ Loading states và error handling
 ✅ Toast notifications

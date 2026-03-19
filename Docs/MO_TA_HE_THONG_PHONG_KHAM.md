@@ -12,7 +12,7 @@
 
 **Nền tảng**: 
 - Web Application (cho nhân viên và bệnh nhân)
-- Mobile Application (Android & iOS - cho bệnh nhân)
+- Web Application (cho nhân viên và bệnh nhân)
 - RESTful API Backend (ASP.NET Core)
 
 ### 1.2. Phạm vi hệ thống
@@ -873,7 +873,7 @@ Hệ thống quản lý đầy đầu quy trình khám chữa bệnh từ đặt
 
 **Frontend**:
 - Web: HTML5, CSS3, JavaScript (Vanilla), Bootstrap 5
-- Mobile: React Native (Android & iOS)
+- Frontend: HTML5, CSS3, JavaScript (Vanilla), Bootstrap 5
 
 **Libraries/Frameworks**:
 - Chart.js (Biểu đồ)
@@ -953,3 +953,5 @@ Hệ thống Phòng khám "Healthy System" là một giải pháp toàn diện, 
 **Phiên bản**: 1.0  
 **Ngày cập nhật**: 08/11/2025  
 **Người soạn**: Nhóm 8 - Hệ thống Phòng khám Healthy System
+
+

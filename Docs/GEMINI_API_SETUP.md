@@ -121,7 +121,7 @@ curl -X POST http://localhost:5000/api/chatbot/message \
 }
 ```
 
-## 📱 Test trên Mobile App
+## 🌐 Test trên Web App
 
 1. Mở app
 2. Tap vào nút **AI** (góc dưới bên phải)
@@ -196,7 +196,7 @@ var apiKey = "AIzaSyXXXXXXXXXXXX";
 
 ### 2. Rate Limiting:
 ```typescript
-// Mobile App - Giới hạn số lần gọi
+// Web App - Giới hạn số lần gọi
 let lastRequestTime = 0;
 const MIN_INTERVAL = 2000; // 2 giây
 
@@ -237,3 +237,5 @@ Nếu gặp vấn đề:
 
 **Phát triển bởi:** Nhóm 8 - CNPM Nâng Cao
 **Cập nhật:** November 2025
+
+

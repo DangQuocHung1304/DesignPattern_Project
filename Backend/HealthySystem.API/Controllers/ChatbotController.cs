@@ -53,18 +53,36 @@ namespace HealthySystem.API.Controllers
                     });
                 }
 
-                // Call Gemini API
-                var response = await CallGemini(request.Message, apiKey);
-
-                return Ok(new
+                // Call Gemini API with error handling
+                try
                 {
-                    success = true,
-                    data = new
+                    var response = await CallGemini(request.Message, apiKey);
+
+                    return Ok(new
                     {
-                        reply = response,
-                        source = "gemini"
-                    }
-                });
+                        success = true,
+                        data = new
+                        {
+                            reply = response,
+                            source = "gemini"
+                        }
+                    });
+                }
+                catch (Exception geminiEx)
+                {
+                    _logger.LogWarning(geminiEx, "Gemini API failed, using fallback response");
+                    
+                    // Return fallback response if Gemini fails
+                    return Ok(new
+                    {
+                        success = true,
+                        data = new
+                        {
+                            reply = GetFallbackResponse(request.Message),
+                            source = "fallback"
+                        }
+                    });
+                }
             }
             catch (Exception ex)
             {

@@ -315,7 +315,7 @@ a:hover {
     color: var(--primary-color);
 }
 
-/* Mobile responsive for auth container */
+/* Responsive rules for auth container */
 @media (max-width: 768px) {
     .user-dropdown {
         left: 0;

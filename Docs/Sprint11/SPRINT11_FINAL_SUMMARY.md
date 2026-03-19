@@ -19,7 +19,7 @@
 - ✅ API Endpoint: `GET /api/public/service-prices`
 - ✅ Tính năng:
   - Hiển thị đầy đủ bảng giá 4 danh mục dịch vụ
-  - Responsive design, mobile-friendly
+  - Responsive design, small-screen friendly
   - Định dạng tiền tệ VND chuẩn
   - Breadcrumb navigation
   - Print-friendly styling
@@ -623,4 +623,5 @@ Sprint 11 đã hoàn thành **100%** các yêu cầu với chất lượng cao:
 **Generated:** November 11, 2025  
 **Sprint Status:** ✅ COMPLETED  
 **Next Sprint:** Sprint 12 - Admin Health News Management
+
 

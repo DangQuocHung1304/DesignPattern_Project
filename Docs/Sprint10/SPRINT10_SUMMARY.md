@@ -377,11 +377,11 @@ Authorization: Bearer {token}
 - [ ] Email notification khi publish news
 - [ ] SEO optimization cho news
 
-### Mobile App
-- [ ] Service prices screen
-- [ ] Health news screen
-- [ ] News detail with share feature
-- [ ] Bookmark favorite articles
+### Kênh Web Mở Rộng
+- [ ] Service prices web page
+- [ ] Health news web page
+- [ ] News detail with share feature on web
+- [ ] Bookmark favorite articles (web)
 
 ---
 
@@ -410,3 +410,8 @@ Tất cả đã được **commit và push** lên GitHub thành công! 🚀
 **Repository**: DangQuocHung1304/Project_CNPMNangCao  
 **Branch**: new-branch  
 **Latest Commit**: 271a2e6
+
+
+
+
+

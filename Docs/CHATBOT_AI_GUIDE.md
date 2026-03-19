@@ -80,7 +80,7 @@ dotnet run
 
 ## 📱 Sử dụng Chatbot
 
-### Trên Mobile App:
+### Trên Web App:
 
 1. Mở app
 2. Thấy nút tròn **AI** ở góc dưới bên phải
@@ -173,3 +173,4 @@ Nếu không có OpenAI API key hoặc API lỗi, chatbot tự động chuyển 
 
 **Phát triển bởi:** Nhóm 8 - CNPM Nâng Cao
 **Cập nhật:** November 2025
+

@@ -589,7 +589,7 @@ dotnet run
 2. **Recurring Schedules**: Template lịch để copy nhanh
 3. **Holiday Management**: Đánh dấu ngày nghỉ lễ
 4. **Statistics Dashboard**: Thống kê công việc của bác sĩ
-5. **Mobile App**: Ứng dụng mobile cho bác sĩ xem lịch
+5. **Web Dashboard**: Giao diện web cho bác sĩ xem lịch
 6. **Calendar Sync**: Đồng bộ với Google Calendar, Outlook
 7. **Overtime Tracking**: Theo dõi giờ làm thêm
 8. **Shift Swap**: Bác sĩ đổi ca với nhau (cần admin approve)
@@ -615,3 +615,4 @@ Nếu có vấn đề, liên hệ:
 - Developer: Healthy System Team
 - Email: support@healthysystem.vn
 - Documentation Date: 2025-11-04
+

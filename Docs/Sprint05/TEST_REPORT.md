@@ -383,7 +383,7 @@
 1. [ ] Fix doctor navigation property (minor issue)
 2. [ ] Test main treatment-history.html page in browser
 3. [ ] Verify modal detail view
-4. [ ] Test responsive design on mobile
+4. [ ] Test responsive design on small screens
 
 ### Short Term (Medium Priority)
 1. [ ] Test doctor role access (progress update endpoint)
@@ -426,3 +426,4 @@ Tất cả các API endpoints hoạt động chính xác:
 **Tested By:** GitHub Copilot Automated Testing  
 **API Version:** Sprint 5 Release Candidate  
 **Status:** APPROVED FOR STAGING DEPLOYMENT ✅
+

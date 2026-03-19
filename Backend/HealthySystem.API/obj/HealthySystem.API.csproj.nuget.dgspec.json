@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\2.CNPMNangCao\\LyThuyet\\Project\\Backend\\HealthySystem.API\\HealthySystem.API.csproj": {}
+    "D:\\1.MTKPM_TT_Done\\LyThuyet\\Project\\Backend\\HealthySystem.API\\HealthySystem.API.csproj": {}
   },
   "projects": {
-    "D:\\2.CNPMNangCao\\LyThuyet\\Project\\Backend\\HealthySystem.API\\HealthySystem.API.csproj": {
+    "D:\\1.MTKPM_TT_Done\\LyThuyet\\Project\\Backend\\HealthySystem.API\\HealthySystem.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\2.CNPMNangCao\\LyThuyet\\Project\\Backend\\HealthySystem.API\\HealthySystem.API.csproj",
+        "projectUniqueName": "D:\\1.MTKPM_TT_Done\\LyThuyet\\Project\\Backend\\HealthySystem.API\\HealthySystem.API.csproj",
         "projectName": "HealthySystem.API",
-        "projectPath": "D:\\2.CNPMNangCao\\LyThuyet\\Project\\Backend\\HealthySystem.API\\HealthySystem.API.csproj",
+        "projectPath": "D:\\1.MTKPM_TT_Done\\LyThuyet\\Project\\Backend\\HealthySystem.API\\HealthySystem.API.csproj",
         "packagesPath": "C:\\Users\\YLC\\.nuget\\packages\\",
-        "outputPath": "D:\\2.CNPMNangCao\\LyThuyet\\Project\\Backend\\HealthySystem.API\\obj\\",
+        "outputPath": "D:\\1.MTKPM_TT_Done\\LyThuyet\\Project\\Backend\\HealthySystem.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
