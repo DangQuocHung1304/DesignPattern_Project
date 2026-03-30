@@ -12,7 +12,7 @@
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--font-body);
         }
         
         .profile-container {
@@ -231,8 +231,42 @@
             height: 2rem;
         }
     </style>
+    <link rel="stylesheet" href="assets/css/design-system.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
 </head>
 <body>
+    <div class="page-shell">
+        <aside class="app-sidebar">
+            <div class="brand-panel">
+                <div class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></div>
+                <div>
+                    <div class="brand-name">HealthySystem</div>
+                    <div class="brand-caption">Unified Workspace</div>
+                </div>
+            </div>
+            <div class="nav-section-title">Điều hướng</div>
+            <ul class="app-nav">
+                <li><a class="active" href="index.html"><i class="fas fa-house"></i> Trang chủ</a></li>
+                <li><a class="" href="doctor-dashboard.html"><i class="fas fa-user-doctor"></i> Dashboard bác sĩ</a></li>
+                <li><a class="" href="lab-technician-dashboard.html"><i class="fas fa-flask-vial"></i> Dashboard xét nghiệm</a></li>
+                <li><a class="" href="reception-appointments.html"><i class="fas fa-calendar-check"></i> Lịch hẹn</a></li>
+                <li><a class="" href="doctor-schedule.html"><i class="fas fa-calendar-days"></i> Lịch làm việc</a></li>
+            </ul>
+            <div class="nav-section-title">Liên kết</div>
+            <ul class="app-nav mb-0">
+                <li><a href="pricing.html"><i class="fas fa-file-invoice-dollar"></i> Bảng giá</a></li>
+                <li><a href="news.html"><i class="fas fa-newspaper"></i> Tin tức</a></li>
+                <li><a href="login.html"><i class="fas fa-right-to-bracket"></i> Đăng nhập</a></li>
+            </ul>
+        </aside>
+        <main class="app-main">
+            <header class="app-topbar">
+                <div>
+                    <h2 class="mb-1">Hồ sơ của tôi - HealthySystem</h2>
+                    <p class="text-muted">Giao diện đồng bộ theo Modern Healthcare</p>
+                </div>
+            </header>
     <div class="profile-container">
         <div class="container">
             <a href="index.html" class="back-btn">
@@ -845,5 +879,9 @@
             new SimpleProfileService();
         });
     </script>
+        </main>
+    </div>
 </body>
 </html>
+
+

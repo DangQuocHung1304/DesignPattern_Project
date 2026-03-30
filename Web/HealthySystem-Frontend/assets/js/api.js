@@ -473,3 +473,30 @@ class ApiService {
 
 // Tạo instance global
 const apiService = new ApiService();
+
+// Reusable loading skeleton helper for list containers.
+window.renderSkeletons = function(containerId, count = 4) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const skeletonItems = Array.from({ length: count }).map(() => `
+        <article class="skeleton-card" aria-hidden="true">
+            <div class="skeleton-row">
+                <div class="skeleton-line" style="width: 36%; height: 14px;"></div>
+                <div class="skeleton-line" style="width: 24%; height: 14px;"></div>
+            </div>
+            <div class="skeleton-line" style="width: 65%; margin-bottom: 0.55rem;"></div>
+            <div class="skeleton-line" style="width: 48%; margin-bottom: 0.55rem;"></div>
+            <div class="skeleton-line" style="width: 30%;"></div>
+        </article>
+    `).join('');
+
+    container.setAttribute('aria-busy', 'true');
+    container.innerHTML = `<div class="skeleton-list">${skeletonItems}</div>`;
+};
+
+window.clearSkeletons = function(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.removeAttribute('aria-busy');
+};

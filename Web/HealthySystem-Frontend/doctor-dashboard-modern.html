@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - Modern Healthcare</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="assets/css/design-system.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+</head>
+<body>
+    <div class="page-shell">
+        <aside class="app-sidebar">
+            <div class="brand-panel">
+                <div class="brand-mark">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div>
+                    <div class="brand-name">HealthySystem</div>
+                    <div class="brand-caption">Doctor Workspace</div>
+                </div>
+            </div>
+
+            <div class="nav-section-title">Điều hướng</div>
+            <ul class="app-nav">
+                <li><a class="active" href="#"><i class="fa-solid fa-chart-line"></i> Tổng quan</a></li>
+                <li><a href="#"><i class="fa-solid fa-calendar-check"></i> Lịch hẹn</a></li>
+                <li><a href="#"><i class="fa-solid fa-clock"></i> Lịch làm việc</a></li>
+                <li><a href="#"><i class="fa-solid fa-file-medical"></i> Hồ sơ bệnh án</a></li>
+                <li><a href="#"><i class="fa-solid fa-vials"></i> Yêu cầu xét nghiệm</a></li>
+                <li><a href="#"><i class="fa-solid fa-star"></i> Đánh giá bệnh nhân</a></li>
+            </ul>
+
+            <div class="nav-section-title">Hỗ trợ</div>
+            <ul class="app-nav mb-0">
+                <li><a href="#"><i class="fa-solid fa-gear"></i> Cài đặt</a></li>
+                <li><a href="#"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a></li>
+            </ul>
+        </aside>
+
+        <main class="app-main">
+            <header class="app-topbar">
+                <div>
+                    <h2 class="mb-1">Xin chào, BS. Minh Anh</h2>
+                    <p class="text-muted">Thứ Hai, 30/03/2026 • Bạn có 12 lịch hẹn hôm nay</p>
+                </div>
+                <div class="topbar-meta">
+                    <button class="btn btn-soft"><i class="fa-regular fa-bell me-2"></i>Thông báo</button>
+                    <div class="avatar-pill">MA</div>
+                </div>
+            </header>
+
+            <section class="hero mb-4">
+                <h1 class="hero-title">Luồng khám bệnh hôm nay đang vận hành ổn định</h1>
+                <p class="hero-subtitle">Tập trung vào lịch ưu tiên cao, phản hồi xét nghiệm nhanh và tối ưu trải nghiệm bệnh nhân trong từng điểm chạm.</p>
+            </section>
+
+            <section class="dashboard-grid mb-4">
+                <article class="kpi-card">
+                    <div class="kpi-meta">
+                        <span class="kpi-label">Lịch hẹn hôm nay</span>
+                        <span class="kpi-icon"><i class="fa-solid fa-calendar-day"></i></span>
+                    </div>
+                    <div class="kpi-value">12</div>
+                    <div class="kpi-trend">+8% so với tuần trước</div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-meta">
+                        <span class="kpi-label">Đã hoàn tất</span>
+                        <span class="kpi-icon"><i class="fa-solid fa-circle-check"></i></span>
+                    </div>
+                    <div class="kpi-value">07</div>
+                    <div class="kpi-trend">Hiệu suất đúng giờ: 96%</div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-meta">
+                        <span class="kpi-label">Đang chờ khám</span>
+                        <span class="kpi-icon"><i class="fa-solid fa-user-clock"></i></span>
+                    </div>
+                    <div class="kpi-value">03</div>
+                    <div class="kpi-trend text-warning">2 ca cần ưu tiên</div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-meta">
+                        <span class="kpi-label">Điểm hài lòng</span>
+                        <span class="kpi-icon"><i class="fa-solid fa-star"></i></span>
+                    </div>
+                    <div class="kpi-value">4.9</div>
+                    <div class="kpi-trend">Tăng 0.2 điểm tháng này</div>
+                </article>
+            </section>
+
+            <section class="row g-4 mb-4">
+                <div class="col-12 col-xl-7">
+                    <article class="modern-card h-100">
+                        <div class="card-header-modern">
+                            <h3>Lịch hẹn tiếp theo</h3>
+                            <span class="info-chip success"><i class="fa-solid fa-circle"></i>Live</span>
+                        </div>
+
+                        <div class="appointment-list">
+                            <div class="appointment-item">
+                                <div class="patient-meta">
+                                    <div class="patient-name">Nguyễn Thanh Hằng</div>
+                                    <div class="patient-sub">08:45 - Nội tổng quát • Tái khám huyết áp</div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <span class="info-chip primary">Đang chờ</span>
+                                    <button class="btn btn-sm btn-soft">Mở hồ sơ</button>
+                                </div>
+                            </div>
+
+                            <div class="appointment-item">
+                                <div class="patient-meta">
+                                    <div class="patient-name">Lê Minh Khôi</div>
+                                    <div class="patient-sub">09:30 - Tim mạch • Theo dõi sau điều trị</div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <span class="info-chip warning">Ưu tiên</span>
+                                    <button class="btn btn-sm btn-soft">Xử lý</button>
+                                </div>
+                            </div>
+
+                            <div class="appointment-item">
+                                <div class="patient-meta">
+                                    <div class="patient-name">Phạm Bảo Trân</div>
+                                    <div class="patient-sub">10:15 - Nội tiết • Tư vấn chế độ thuốc</div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <span class="info-chip success">Xác nhận</span>
+                                    <button class="btn btn-sm btn-soft">Nhắc lịch</button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="col-12 col-xl-5">
+                    <article class="glass-card p-4 h-100">
+                        <div class="card-header-modern">
+                            <h3>Thao tác nhanh</h3>
+                            <span class="info-chip primary">Bác sĩ</span>
+                        </div>
+
+                        <div class="card-quick-actions">
+                            <button class="quick-action">
+                                <span class="quick-action-icon"><i class="fa-solid fa-notes-medical"></i></span>
+                                <span>Tạo chỉ định mới</span>
+                            </button>
+                            <button class="quick-action">
+                                <span class="quick-action-icon"><i class="fa-solid fa-vial-circle-check"></i></span>
+                                <span>Duyệt xét nghiệm</span>
+                            </button>
+                            <button class="quick-action">
+                                <span class="quick-action-icon"><i class="fa-solid fa-calendar-plus"></i></span>
+                                <span>Mở slot khám</span>
+                            </button>
+                            <button class="quick-action">
+                                <span class="quick-action-icon"><i class="fa-solid fa-comment-medical"></i></span>
+                                <span>Nhắn bệnh nhân</span>
+                            </button>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="modern-card">
+                <div class="card-header-modern">
+                    <h3>Bảng theo dõi điều trị trong ngày</h3>
+                    <button class="btn btn-brand">Xuất báo cáo</button>
+                </div>
+
+                <div class="modern-table-wrap">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Bệnh nhân</th>
+                                <th>Dịch vụ</th>
+                                <th>Khung giờ</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Nguyễn Thanh Hằng</td>
+                                <td>Khám Nội tổng quát</td>
+                                <td>08:45</td>
+                                <td><span class="info-chip success">Đang khám</span></td>
+                                <td><button class="btn btn-sm btn-soft">Chi tiết</button></td>
+                            </tr>
+                            <tr>
+                                <td>Lê Minh Khôi</td>
+                                <td>Theo dõi tim mạch</td>
+                                <td>09:30</td>
+                                <td><span class="info-chip warning">Chờ gọi</span></td>
+                                <td><button class="btn btn-sm btn-soft">Mời vào phòng</button></td>
+                            </tr>
+                            <tr>
+                                <td>Phạm Bảo Trân</td>
+                                <td>Tư vấn nội tiết</td>
+                                <td>10:15</td>
+                                <td><span class="info-chip primary">Đã xác nhận</span></td>
+                                <td><button class="btn btn-sm btn-soft">Chuẩn bị hồ sơ</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

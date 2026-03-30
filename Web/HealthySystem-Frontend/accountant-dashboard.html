@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kế toán - Healthy System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/design-system.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -18,7 +21,7 @@
 
         body {
             background: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--font-body);
         }
 
         .page-header {
@@ -197,28 +200,39 @@
         }
     </style>
 </head>
-<body>
-    <!-- Header -->
-    <div class="page-header">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
+<body class="dashboard-page dashboard-accountant">
+    <div class="page-shell">
+        <aside class="app-sidebar">
+            <div class="brand-panel">
+                <div class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></div>
                 <div>
-                    <h1 class="h3 mb-0">
-                        <i class="fas fa-calculator me-2"></i>
-                        Kế toán
-                    </h1>
-                    <p class="mb-0 mt-2 opacity-75" id="welcomeText">Quản lý tài chính và lương</p>
+                    <div class="brand-name">HealthySystem</div>
+                    <div class="brand-caption">Accounting Workspace</div>
                 </div>
-                <button class="btn btn-logout" onclick="logout()">
-                    <i class="fas fa-sign-out-alt me-2"></i>
-                    Đăng xuất
-                </button>
             </div>
-        </div>
-    </div>
+            <div class="nav-section-title">Kế toán</div>
+            <ul class="app-nav">
+                <li><a class="active" href="accountant-dashboard.html"><i class="fas fa-gauge"></i> Tổng quan</a></li>
+                <li><a href="#billing" onclick="document.getElementById('billing-tab').click()"><i class="fas fa-file-invoice-dollar"></i> Báo cáo chi phí</a></li>
+                <li><a href="#salary" onclick="document.getElementById('salary-tab').click()"><i class="fas fa-hand-holding-usd"></i> Tính lương</a></li>
+                <li><a href="#statistics" onclick="document.getElementById('statistics-tab').click()"><i class="fas fa-chart-pie"></i> Thống kê</a></li>
+            </ul>
+            <div class="nav-section-title">Tài khoản</div>
+            <ul class="app-nav mb-0">
+                <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+            </ul>
+        </aside>
 
-    <!-- Main Content -->
-    <div class="container">
+        <main class="app-main">
+            <header class="app-topbar">
+                <div>
+                    <h2 class="mb-1"><i class="fas fa-calculator me-2"></i>Kế toán</h2>
+                    <p class="text-muted" id="welcomeText">Quản lý tài chính và lương</p>
+                </div>
+                <button class="btn btn-soft" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</button>
+            </header>
+
+            <div class="container">
         <!-- Statistics -->
         <div class="row">
             <div class="col-md-3 mb-3">
@@ -395,6 +409,9 @@
         </div>
     </div>
 
+        </main>
+    </div>
+
     <!-- Encounter Detail Modal -->
     <div class="modal fade" id="encounterDetailModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -413,7 +430,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API_URL = 'http://localhost:5000/api';
         let revenueChart = null;
@@ -885,3 +902,4 @@
     </script>
 </body>
 </html>
+

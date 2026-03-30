@@ -17,7 +17,7 @@
 
         body {
             background: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--font-body);
         }
 
         .page-header {
@@ -197,8 +197,38 @@
             opacity: 0.3;
         }
     </style>
+    <link rel="stylesheet" href="assets/css/design-system.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
 </head>
-<body>
+<body class="dashboard-page dashboard-lab">
+    <div class="page-shell">
+        <aside class="app-sidebar">
+            <div class="brand-panel">
+                <div class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></div>
+                <div>
+                    <div class="brand-name">HealthySystem</div>
+                    <div class="brand-caption">Unified Workspace</div>
+                </div>
+            </div>
+            <div class="nav-section-title">Xét nghiệm</div>
+            <ul class="app-nav">
+                <li><a class="active" href="lab-technician-dashboard.html"><i class="fas fa-gauge"></i> Tổng quan xét nghiệm</a></li>
+                <li><a href="lab-request.html"><i class="fas fa-vials"></i> Phiếu xét nghiệm</a></li>
+                <li><a href="patient-lookup.html"><i class="fas fa-user-injured"></i> Tra cứu bệnh nhân</a></li>
+            </ul>
+            <div class="nav-section-title">Tài khoản</div>
+            <ul class="app-nav mb-0">
+                <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+            </ul>
+        </aside>
+        <main class="app-main">
+            <header class="app-topbar">
+                <div>
+                    <h2 class="mb-1">Bác sĩ Xét nghiệm - Healthy System</h2>
+                    <p class="text-muted">Giao diện đồng bộ theo Modern Healthcare</p>
+                </div>
+            </header>
     <!-- Header -->
     <div class="page-header">
         <div class="container">
@@ -800,5 +830,10 @@
             }
         });
     </script>
+        </main>
+    </div>
 </body>
 </html>
+
+
+

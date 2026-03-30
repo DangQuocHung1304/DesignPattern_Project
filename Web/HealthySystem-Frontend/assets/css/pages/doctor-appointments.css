@@ -1,0 +1,169 @@
+.page-header {
+    background: linear-gradient(135deg, #16a085 0%, #27ae60 100%);
+    color: white;
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+}
+
+.doctor-info-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid #27ae60;
+}
+
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.appointment-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #16a085;
+    transition: all 0.3s;
+}
+
+.appointment-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateX(5px);
+}
+
+.appointment-card.status-scheduled {
+    border-left-color: #0958d9;
+}
+
+.appointment-card.status-confirmed {
+    border-left-color: #52c41a;
+}
+
+.appointment-card.status-rescheduled {
+    border-left-color: #faad14;
+}
+
+.appointment-card.status-cancelled {
+    border-left-color: #cf1322;
+}
+
+.appointment-card.status-completed {
+    border-left-color: #8c8c8c;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-scheduled {
+    background: #e6f7ff;
+    color: #0958d9;
+}
+
+.status-confirmed {
+    background: #f6ffed;
+    color: #52c41a;
+}
+
+.status-rescheduled {
+    background: #fffbe6;
+    color: #faad14;
+}
+
+.status-cancelled {
+    background: #fff1f0;
+    color: #cf1322;
+}
+
+.status-completed {
+    background: #f0f0f0;
+    color: #595959;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #16a085 0%, #27ae60 100%);
+    color: white;
+}
+
+.btn-reschedule {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+}
+
+.btn-reschedule:hover {
+    background: linear-gradient(135deg, #2980b9, #21618c);
+    color: white;
+}
+
+.btn-cancel-appointment {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+}
+
+.btn-cancel-appointment:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    color: white;
+}
+
+.filter-btn {
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #16a085 0%, #27ae60 100%);
+    color: white;
+    border-color: #16a085;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #8c8c8c;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+.patient-info {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.appointment-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.content-swap {
+    animation: content-swap 0.25s ease;
+}
+
+@keyframes content-swap {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

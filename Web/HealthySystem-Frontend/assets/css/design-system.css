@@ -1,0 +1,58 @@
+/* Modern Healthcare Design System */
+:root {
+    --color-slate-950: #0f172a;
+    --color-slate-900: #1c2740;
+    --color-slate-800: #2a3a57;
+    --color-slate-700: #405277;
+    --color-slate-100: #e7edf8;
+    --color-slate-50: #f5f8ff;
+
+    --color-emerald-700: #0f7a64;
+    --color-emerald-600: #14836d;
+    --color-emerald-500: #1f9f82;
+    --color-emerald-100: #d5f5ec;
+    --color-emerald-50: #eefcf7;
+
+    --color-rose-500: #ef5c7a;
+    --color-amber-500: #f4a340;
+    --color-sky-500: #3b82f6;
+
+    --color-bg: #f4f7fb;
+    --color-surface: #ffffff;
+    --color-surface-soft: #f8fbff;
+    --color-border: #dce5f3;
+
+    --color-text-strong: #1a2742;
+    --color-text: #344564;
+    --color-text-muted: #6c7f9f;
+
+    --gradient-brand: linear-gradient(135deg, #1c2740 0%, #2f4568 45%, #1f9f82 100%);
+    --gradient-hero: radial-gradient(circle at 20% 20%, rgba(31, 159, 130, 0.24), transparent 50%), radial-gradient(circle at 80% 0%, rgba(59, 130, 246, 0.18), transparent 45%), linear-gradient(150deg, #0f172a 0%, #1e2f4c 52%, #1b6f67 100%);
+
+    --radius-xs: 10px;
+    --radius-sm: 12px;
+    --radius-md: 16px;
+    --radius-lg: 22px;
+    --radius-pill: 999px;
+
+    --shadow-sm: 0 8px 20px rgba(17, 38, 86, 0.08);
+    --shadow-md: 0 16px 34px rgba(17, 38, 86, 0.12);
+    --shadow-lg: 0 28px 60px rgba(15, 23, 42, 0.18);
+    --shadow-glass: 0 20px 40px rgba(15, 23, 42, 0.16);
+
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+
+    --font-heading: 'Plus Jakarta Sans', 'Inter', 'Segoe UI', sans-serif;
+    --font-body: 'Inter', 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+
+    --transition-fast: 180ms ease;
+    --transition-smooth: 320ms cubic-bezier(0.2, 0.7, 0, 1);
+}

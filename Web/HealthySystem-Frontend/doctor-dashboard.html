@@ -7,243 +7,42 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/notifications.css">
-    <style>
-        :root {
-            --doctor-primary: #16a085;
-            --doctor-secondary: #27ae60;
-            --doctor-accent: #1abc9c;
-            --purple: #9333ea;
-        }
-
-        body {
-            background: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .bg-purple {
-            background-color: var(--purple) !important;
-        }
-
-        .bg-purple.bg-opacity-10 {
-            background-color: rgba(147, 51, 234, 0.1) !important;
-        }
-
-        .text-purple {
-            color: var(--purple) !important;
-        }
-
-        .page-header {
-            background: linear-gradient(135deg, var(--doctor-primary) 0%, var(--doctor-secondary) 100%);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .welcome-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .doctor-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: var(--doctor-primary);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .stats-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            border-left: 4px solid;
-            transition: all 0.3s;
-        }
-
-        .stats-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-        }
-
-        .stats-card.primary {
-            border-left-color: #0958d9;
-        }
-
-        .stats-card.success {
-            border-left-color: #52c41a;
-        }
-
-        .stats-card.warning {
-            border-left-color: #faad14;
-        }
-
-        .stats-card.info {
-            border-left-color: #1890ff;
-        }
-
-        .stats-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 0;
-        }
-
-        .stats-label {
-            color: #8c8c8c;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-        }
-
-        .appointment-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .appointment-card:hover {
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transform: translateX(5px);
-        }
-
-        .appointment-card.scheduled {
-            border-left-color: #0958d9;
-        }
-
-        .appointment-card.confirmed {
-            border-left-color: #52c41a;
-        }
-
-        .appointment-card.pending {
-            border-left-color: #faad14;
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .status-scheduled {
-            background: #e6f7ff;
-            color: #0958d9;
-        }
-
-        .status-confirmed {
-            background: #f6ffed;
-            color: #52c41a;
-        }
-
-        .status-pending {
-            background: #fffbe6;
-            color: #faad14;
-        }
-
-        .quick-action-btn {
-            width: 100%;
-            padding: 1rem;
-            border-radius: 8px;
-            border: 2px solid #e8e8e8;
-            background: white;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .quick-action-btn:hover {
-            border-color: var(--doctor-primary);
-            background: #f0fdf4;
-            transform: translateY(-2px);
-        }
-
-        .quick-action-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-
-        .section-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: #262626;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: #8c8c8c;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.3;
-        }
-
-        .btn-reschedule {
-            background: #faad14;
-            color: white;
-            border: none;
-        }
-
-        .btn-reschedule:hover {
-            background: #d48806;
-            color: white;
-        }
-
-        .btn-cancel {
-            background: #ff4d4f;
-            color: white;
-            border: none;
-        }
-
-        .btn-cancel:hover {
-            background: #cf1322;
-            color: white;
-        }
-
-        .btn-complete {
-            background: #52c41a;
-            color: white;
-            border: none;
-        }
-
-        .btn-complete:hover {
-            background: #389e0d;
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/design-system.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/pages/doctor-dashboard.css">
 </head>
-<body>
+<body class="dashboard-page dashboard-doctor">
+    <div class="page-shell">
+        <aside class="app-sidebar">
+            <div class="brand-panel">
+                <div class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></div>
+                <div>
+                    <div class="brand-name">HealthySystem</div>
+                    <div class="brand-caption">Unified Workspace</div>
+                </div>
+            </div>
+            <div class="nav-section-title">Bác sĩ</div>
+            <ul class="app-nav">
+                <li><a class="active" href="doctor-dashboard.html"><i class="fas fa-gauge"></i> Tổng quan</a></li>
+                <li><a href="doctor-appointments.html"><i class="fas fa-calendar-check"></i> Lịch hẹn của tôi</a></li>
+                <li><a href="doctor-schedule.html"><i class="fas fa-calendar-days"></i> Lịch làm việc</a></li>
+                <li><a href="patient-lookup.html"><i class="fas fa-user-injured"></i> Tra cứu bệnh nhân</a></li>
+                <li><a href="lab-request.html"><i class="fas fa-vial"></i> Yêu cầu xét nghiệm</a></li>
+                <li><a href="doctor-profile-edit.html"><i class="fas fa-user-gear"></i> Hồ sơ cá nhân</a></li>
+            </ul>
+            <div class="nav-section-title">Tài khoản</div>
+            <ul class="app-nav mb-0">
+                <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+            </ul>
+        </aside>
+        <main class="app-main">
+            <header class="app-topbar">
+                <div>
+                    <h2 class="mb-1">Trang chủ Bác sĩ - Healthy System</h2>
+                    <p class="text-muted">Giao diện đồng bộ theo Modern Healthcare</p>
+                </div>
+            </header>
     <!-- Header -->
     <div class="page-header">
         <div class="container">
@@ -510,6 +309,13 @@
         let allAppointments = [];
         let viewAppointmentModal, rescheduleModal;
 
+        function renderDashboardSkeletons() {
+            if (typeof renderSkeletons === 'function') {
+                renderSkeletons('todayAppointmentsList', 3);
+                renderSkeletons('upcomingAppointmentsList', 3);
+            }
+        }
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             // Check authentication
@@ -551,14 +357,13 @@
 
         // Load dashboard data
         async function loadDashboardData() {
-            loading.show('Đang tải dữ liệu...');
+            renderDashboardSkeletons();
 
             try {
                 // Get doctor's appointments
                 const result = await apiService.getDoctorAppointments();
                 
                 if (!result.success) {
-                    loading.hide();
                     console.error('API Error:', result.error);
                     
                     if (result.status === 401) {
@@ -572,6 +377,8 @@
                     }
                     
                     notification.error('Không thể tải dữ liệu: ' + result.error);
+                    displayTodayAppointments([]);
+                    displayUpcomingAppointments([]);
                     return;
                 }
 
@@ -583,12 +390,11 @@
                 // Display appointments
                 displayTodayAppointments(allAppointments);
                 displayUpcomingAppointments(allAppointments);
-                
-                loading.hide();
             } catch (error) {
                 console.error('Error loading dashboard:', error);
-                loading.hide();
                 notification.error('Đã xảy ra lỗi khi tải dữ liệu');
+                displayTodayAppointments([]);
+                displayUpcomingAppointments([]);
             }
         }
 
@@ -1043,5 +849,10 @@
     </div>
 
     <div id="notificationContainer" class="notification-container"></div>
+        </main>
+    </div>
 </body>
 </html>
+
+
+

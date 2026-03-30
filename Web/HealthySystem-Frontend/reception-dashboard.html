@@ -4,208 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Tiếp Tân - Healthy System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/design-system.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
     <link rel="stylesheet" href="assets/css/notifications.css">
-    <style>
-        .dashboard-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            transition: transform 0.3s, box-shadow 0.3s;
-            border: none;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-
-        .stat-card .icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 1rem;
-        }
-
-        .stat-card.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .stat-card.success {
-            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-            color: #2d3748;
-        }
-
-        .stat-card.warning {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-            color: #2d3748;
-        }
-
-        .stat-card.info {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            color: #2d3748;
-        }
-
-        .quick-action-btn {
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-            border: 2px solid #e2e8f0;
-            background: white;
-            transition: all 0.3s;
-            cursor: pointer;
-            text-decoration: none;
-            display: block;
-            color: #2d3748;
-        }
-
-        .quick-action-btn:hover {
-            border-color: #667eea;
-            background: #f7fafc;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
-        }
-
-        .quick-action-btn i {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            color: #667eea;
-        }
-
-        .appointment-item {
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            border-radius: 8px;
-            background: white;
-            border-left: 4px solid #667eea;
-            transition: all 0.2s;
-        }
-
-        .appointment-item:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transform: translateX(5px);
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .status-scheduled {
-            background: #e6f7ff;
-            color: #0958d9;
-        }
-
-        .status-confirmed {
-            background: #f6ffed;
-            color: #52c41a;
-        }
-
-        .status-pending {
-            background: #fff7e6;
-            color: #fa8c16;
-        }
-
-        .status-cancelled {
-            background: #fff1f0;
-            color: #cf1322;
-        }
-
-        .section-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #2d3748;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 2rem;
-            color: #718096;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: #cbd5e0;
-        }
-    </style>
 </head>
-<body>
-    <!-- Header -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="reception-dashboard.html">
-                <i class="fas fa-hospital-user me-2"></i>Healthy System - Tiếp Tân
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="reception-dashboard.html">
-                            <i class="fas fa-home me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="reception-appointments.html">
-                            <i class="fas fa-calendar-alt me-1"></i>Quản lý lịch hẹn
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle me-1"></i>
-                            <span id="userName">Tiếp Tân</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#" onclick="logout()">
-                                <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
-                            </a></li>
-                        </ul>
-                    </li>
-                </ul>
+<body class="dashboard-page dashboard-reception">
+    <div class="page-shell">
+        <aside class="app-sidebar">
+            <div class="brand-panel">
+                <div class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></div>
+                <div>
+                    <div class="brand-name">HealthySystem</div>
+                    <div class="brand-caption">Reception Workspace</div>
+                </div>
             </div>
-        </div>
-    </nav>
+            <div class="nav-section-title">Tiếp tân</div>
+            <ul class="app-nav">
+                <li><a class="active" href="reception-dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="reception-appointments.html?action=create"><i class="fas fa-user-plus"></i> Tiếp nhận bệnh nhân</a></li>
+                <li><a href="reception-appointments.html"><i class="fas fa-calendar-check"></i> Quản lý lịch hẹn</a></li>
+                <li><a href="patient-lookup.html"><i class="fas fa-user-injured"></i> Tra cứu bệnh nhân</a></li>
+            </ul>
+            <div class="nav-section-title">Tài khoản</div>
+            <ul class="app-nav mb-0">
+                <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+            </ul>
+        </aside>
 
-    <!-- Dashboard Header -->
-    <div class="dashboard-header">
-        <div class="container">
-            <h1 class="mb-2">
-                <i class="fas fa-chart-line me-2"></i>Dashboard Tiếp Tân
-            </h1>
-            <p class="mb-0 opacity-75">Chào mừng bạn đến với hệ thống quản lý phòng khám</p>
-        </div>
-    </div>
+        <main class="app-main">
+            <header class="app-topbar">
+                <div>
+                    <h2 class="mb-1">Dashboard Tiếp Tân</h2>
+                    <p class="text-muted">Xin chào, <span id="userName">Tiếp Tân</span></p>
+                </div>
+                <div class="topbar-meta">
+                    <a class="btn btn-soft" href="reception-appointments.html"><i class="fas fa-calendar-alt me-2"></i>Lịch hẹn</a>
+                </div>
+            </header>
 
-    <div class="container pb-5">
+            <div class="container pb-5">
         <!-- Statistics Cards -->
         <div class="row mb-4">
             <div class="col-md-3">
@@ -321,10 +161,12 @@
                 </div>
             </div>
         </div>
+            </div>
+        </main>
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/config.js"></script>
     <script src="assets/js/notifications.js"></script>
     <script src="assets/js/api.js"></script>

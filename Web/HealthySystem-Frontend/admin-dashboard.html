@@ -4,289 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản trị viên - Healthy System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #9c27b0;
-            --secondary-color: #673ab7;
-            --success-color: #52c41a;
-            --warning-color: #fa8c16;
-        }
-
-        body {
-            background: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .page-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            margin-bottom: 1.5rem;
-            border-left: 4px solid;
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-        }
-
-        .stat-card.users { border-left-color: #9c27b0; }
-        .stat-card.appointments { border-left-color: #ff9800; }
-        .stat-card.reminders { border-left-color: #f44336; }
-        .stat-card.patients { border-left-color: #2196f3; }
-
-        .stat-icon {
-            font-size: 2.5rem;
-            opacity: 0.8;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin: 0.5rem 0;
-        }
-
-        .stat-label {
-            color: #8c8c8c;
-            font-size: 0.9rem;
-        }
-
-        .content-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            margin-bottom: 1.5rem;
-        }
-
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #262626;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid var(--primary-color);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-tabs .nav-link {
-            color: #595959;
-            border: none;
-            border-bottom: 2px solid transparent;
-        }
-
-        .nav-tabs .nav-link.active {
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
-            background: transparent;
-        }
-
-        .data-table {
-            width: 100%;
-        }
-
-        .data-table th {
-            background: #f5f5f5;
-            font-weight: 600;
-            padding: 0.75rem;
-            border-bottom: 2px solid #e8e8e8;
-            font-size: 0.9rem;
-        }
-
-        .data-table td {
-            padding: 0.75rem;
-            border-bottom: 1px solid #f0f0f0;
-            vertical-align: middle;
-        }
-
-        .data-table tr:hover {
-            background: #fafafa;
-        }
-
-        .badge-urgent {
-            background: #ff4d4f;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.85rem;
-        }
-
-        .badge-soon {
-            background: #fa8c16;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.85rem;
-        }
-
-        .badge-normal {
-            background: #52c41a;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.85rem;
-        }
-
-        .btn-primary-custom {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border: none;
-            padding: 0.5rem 1.5rem;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-
-        .btn-primary-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(156,39,176,0.3);
-        }
-
-        .btn-logout {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            padding: 0.5rem 1.5rem;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-
-        .btn-logout:hover {
-            background: rgba(255, 255, 255, 0.3);
-            color: white;
-        }
-
-        .search-box {
-            background: #f5f5f5;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-        }
-
-        .modal-header .btn-close {
-            filter: brightness(0) invert(1);
-        }
-
-        .patient-info-card {
-            background: #f9f9f9;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-        .history-item {
-            background: white;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            border-left: 3px solid var(--primary-color);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .print-button {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            z-index: 1000;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #8c8c8c;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.3;
-        }
-
-        .reminder-message {
-            background: #f0f0f0;
-            padding: 1rem;
-            border-radius: 6px;
-            white-space: pre-line;
-            font-family: monospace;
-            font-size: 0.9rem;
-        }
-
-        /* Profile Image Upload Styles */
-        .staff-image-preview-container {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .staff-image-preview-img {
-            max-width: 150px;
-            max-height: 150px;
-            border-radius: 8px;
-            border: 2px solid #dee2e6;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            object-fit: cover;
-        }
-
-        .image-upload-hint {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 5px;
-        }
-
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-            .page-header {
-                background: none !important;
-                color: black !important;
-            }
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/design-system.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/pages/admin-dashboard.css">
 </head>
-<body>
-    <!-- Header -->
-    <div class="page-header no-print">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
+<body class="dashboard-page dashboard-admin">
+    <div class="page-shell">
+        <aside class="app-sidebar no-print">
+            <div class="brand-panel">
+                <div class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></div>
                 <div>
-                    <h1 class="h3 mb-0">
-                        <i class="fas fa-user-shield me-2"></i>
-                        Quản trị viên
-                    </h1>
-                    <p class="mb-0 mt-2 opacity-75" id="welcomeText">Quản lý hệ thống và nhắc lịch hẹn</p>
+                    <div class="brand-name">HealthySystem</div>
+                    <div class="brand-caption">Admin Workspace</div>
                 </div>
-                <button class="btn btn-logout" onclick="logout()">
-                    <i class="fas fa-sign-out-alt me-2"></i>
-                    Đăng xuất
-                </button>
             </div>
-        </div>
-    </div>
+            <div class="nav-section-title">Quản trị</div>
+            <ul class="app-nav">
+                <li><a class="active" href="admin-dashboard.html"><i class="fas fa-gauge"></i> Tổng quan</a></li>
+                <li><a href="#users" onclick="document.getElementById('users-tab').click()"><i class="fas fa-users"></i> Người dùng</a></li>
+                <li><a href="#schedules" onclick="document.getElementById('schedules-tab').click()"><i class="fas fa-calendar-alt"></i> Lịch bác sĩ</a></li>
+                <li><a href="#health-news" onclick="document.getElementById('health-news-tab').click()"><i class="fas fa-newspaper"></i> Tin tức</a></li>
+                <li><a href="#service-prices" onclick="document.getElementById('service-prices-tab').click()"><i class="fas fa-dollar-sign"></i> Bảng giá</a></li>
+            </ul>
+            <div class="nav-section-title">Tài khoản</div>
+            <ul class="app-nav mb-0">
+                <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+            </ul>
+        </aside>
 
-    <!-- Main Content -->
-    <div class="container">
+        <main class="app-main">
+            <header class="app-topbar no-print">
+                <div>
+                    <h2 class="mb-1"><i class="fas fa-user-shield me-2"></i>Quản trị viên</h2>
+                    <p class="text-muted" id="welcomeText">Quản lý hệ thống và nhắc lịch hẹn</p>
+                </div>
+                <button class="btn btn-soft" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</button>
+            </header>
+
+            <div class="container">
         <!-- Statistics -->
         <div class="row no-print">
             <div class="col-md-3 mb-3">
@@ -1204,68 +962,11 @@
         </div>
     </div>
 
-    <style>
-        .shift-template {
-            transition: all 0.3s ease;
-        }
-        .shift-template:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .shift-template.selected {
-            background-color: #e3f2fd;
-            border-color: #2196F3 !important;
-            border-width: 2px;
-        }
-        .cursor-pointer {
-            cursor: pointer;
-        }
-        .custom-shift-item {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            background: #f8f9fa;
-        }
-        
-        /* Service Price Table Column Widths */
-        .service-price-table th:nth-child(1),
-        .service-price-table td:nth-child(1) {
-            width: 60px !important;
-            min-width: 60px !important;
-            max-width: 60px !important;
-        }
-        
-        .service-price-table th:nth-child(2),
-        .service-price-table td:nth-child(2) {
-            width: 25% !important;
-            min-width: 200px !important;
-        }
-        
-        .service-price-table th:nth-child(3),
-        .service-price-table td:nth-child(3) {
-            width: 15% !important;
-            min-width: 120px !important;
-        }
-        
-        .service-price-table th:nth-child(5),
-        .service-price-table td:nth-child(5) {
-            width: 130px !important;
-            min-width: 130px !important;
-            max-width: 130px !important;
-            text-align: center !important;
-        }
-        
-        .service-price-table th:nth-child(6),
-        .service-price-table td:nth-child(6) {
-            width: 100px !important;
-            min-width: 100px !important;
-            max-width: 100px !important;
-            text-align: center !important;
-        }
-    </style>
+            </div>
+        </main>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API_URL = 'http://localhost:5000/api';
         let selectedReminders = new Set();
@@ -3422,3 +3123,4 @@
     </script>
 </body>
 </html>
+
