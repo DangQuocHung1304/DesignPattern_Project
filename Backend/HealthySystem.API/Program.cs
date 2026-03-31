@@ -3,6 +3,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using HealthySystem.API.Data;
+using HealthySystem.API.DesignPatterns.AbstractFactory;
+using HealthySystem.API.DesignPatterns.Adapter;
+using HealthySystem.API.DesignPatterns.Builder;
+using HealthySystem.API.DesignPatterns.Decorator;
+using HealthySystem.API.DesignPatterns.Facade;
+using HealthySystem.API.DesignPatterns.FactoryMethod;
+using HealthySystem.API.DesignPatterns.Observer;
+using HealthySystem.API.DesignPatterns.Proxy;
+using HealthySystem.API.DesignPatterns.Singleton;
+using HealthySystem.API.DesignPatterns.State;
+using HealthySystem.API.DesignPatterns.Strategy;
+using HealthySystem.API.DesignPatterns.TemplateMethod;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +23,56 @@ builder.Services.AddControllers();
 
 // Add HttpClient for external API calls
 builder.Services.AddHttpClient();
+
+// GoF Design Patterns registrations
+builder.Services.AddSingleton<ISystemConfigurationProvider, SystemConfigurationProvider>();
+
+builder.Services.AddScoped<ActorProfileCreator, DoctorProfileCreator>();
+builder.Services.AddScoped<ActorProfileCreator, PatientProfileCreator>();
+builder.Services.AddScoped<ActorProfileCreator, ReceptionProfileCreator>();
+builder.Services.AddScoped<IActorFactoryMethodService, ActorFactoryMethodService>();
+
+builder.Services.AddScoped<IAppointmentReminderFactory, DoctorReminderFactory>();
+builder.Services.AddScoped<IAppointmentReminderFactory, PatientReminderFactory>();
+builder.Services.AddScoped<IAppointmentCommunicationService, AppointmentCommunicationService>();
+
+builder.Services.AddScoped<IEncounterNoteDirector, EncounterNoteDirector>();
+
+builder.Services.AddScoped<IInsurancePartnerClient, InsurancePartnerClient>();
+builder.Services.AddScoped<IInsuranceGateway, InsuranceGatewayAdapter>();
+
+builder.Services.AddScoped<IMedicalRecordReader, MedicalRecordReader>();
+builder.Services.AddScoped<IMedicalRecordAccessPolicy, MedicalRecordAccessPolicy>();
+builder.Services.AddScoped<IMedicalRecordProxyService, MedicalRecordProxyService>();
+
+builder.Services.AddScoped<IAppointmentValidator, AppointmentValidator>();
+builder.Services.AddScoped<IEncounterDraftCreator, EncounterDraftCreator>();
+builder.Services.AddScoped<IInvoiceDraftCreator, InvoiceDraftCreator>();
+builder.Services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
+builder.Services.AddScoped<IVisitWorkflowFacade, VisitWorkflowFacade>();
+
+builder.Services.AddScoped<IInvoicePricingComposer, InvoicePricingComposer>();
+
+builder.Services.AddSingleton<IAppointmentStatusSubject>(_ =>
+{
+    var subject = new AppointmentStatusSubject();
+    subject.Subscribe(new DoctorScheduleObserver());
+    subject.Subscribe(new ReceptionDeskObserver());
+    subject.Subscribe(new PatientNotificationObserver());
+    return subject;
+});
+builder.Services.AddScoped<IAppointmentStatusCoordinator, AppointmentStatusCoordinator>();
+
+builder.Services.AddScoped<IAppointmentStateMachineService, AppointmentStateMachineService>();
+
+builder.Services.AddScoped<IPaymentStrategy, CashPaymentStrategy>();
+builder.Services.AddScoped<IPaymentStrategy, CardPaymentStrategy>();
+builder.Services.AddScoped<IPaymentStrategy, InsurancePaymentStrategy>();
+builder.Services.AddScoped<IPaymentProcessor, PaymentProcessor>();
+
+builder.Services.AddScoped<TreatmentPlanTemplate, AcuteTreatmentPlanTemplate>();
+builder.Services.AddScoped<TreatmentPlanTemplate, ChronicTreatmentPlanTemplate>();
+builder.Services.AddScoped<ITreatmentPlanService, TreatmentPlanService>();
 
 // Configure Entity Framework
 builder.Services.AddDbContext<HealthySystemDbContext>(options =>

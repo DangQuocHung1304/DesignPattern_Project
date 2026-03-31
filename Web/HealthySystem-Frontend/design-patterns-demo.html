@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Patterns Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <h1 class="mb-3">Frontend Design Patterns Demo</h1>
+        <p class="text-muted">Abstract Factory for role-based dashboard UI and Observer for appointment notifications.</p>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5">Abstract Factory: Role Dashboard UI</h2>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label" for="roleSelect">Role</label>
+                        <select id="roleSelect" class="form-select">
+                            <option value="doctor">Doctor</option>
+                            <option value="reception">Reception</option>
+                            <option value="accountant">Accountant</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button id="renderRoleUiBtn" class="btn btn-primary">Render role UI</button>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <i id="roleThemeIcon" class="fa-solid fa-stethoscope"></i>
+                        <span id="roleThemeLabel" class="ms-2">Theme ready</span>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3 class="h6">Sidebar</h3>
+                        <ul id="sidebarItems" class="list-unstyled"></ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h3 class="h6">Quick actions</h3>
+                        <div id="quickActions" class="d-flex flex-column gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h5">Observer: Appointment Notifications</h2>
+                <div class="d-flex gap-3 align-items-center mb-3">
+                    <button id="emitScheduledBtn" class="btn btn-outline-primary">Emit scheduled event</button>
+                    <button id="emitConfirmedBtn" class="btn btn-outline-success">Emit confirmed event</button>
+                    <span class="badge bg-danger" id="pendingBadge">0</span>
+                </div>
+                <p class="text-muted mb-0">Open browser console to inspect event payloads.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/design-patterns/role-ui-abstract-factory.js"></script>
+    <script src="assets/js/design-patterns/appointment-notification-observer.js"></script>
+    <script>
+        (function bootstrapDemo() {
+            const roleSelect = document.getElementById("roleSelect");
+            const renderRoleUiBtn = document.getElementById("renderRoleUiBtn");
+            const sidebarItems = document.getElementById("sidebarItems");
+            const quickActions = document.getElementById("quickActions");
+            const roleThemeIcon = document.getElementById("roleThemeIcon");
+            const roleThemeLabel = document.getElementById("roleThemeLabel");
+
+            function renderRoleUi() {
+                const role = roleSelect.value;
+                const theme = window.DesignPatterns.RoleUiAbstractFactory.renderRoleUi(role, {
+                    sidebarElement: sidebarItems,
+                    quickActionElement: quickActions
+                });
+                roleThemeLabel.className = "ms-2 " + theme.accentClass;
+                roleThemeLabel.textContent = "Theme: " + role;
+                roleThemeIcon.className = theme.iconClass;
+            }
+
+            renderRoleUiBtn.addEventListener("click", renderRoleUi);
+            renderRoleUi();
+
+            const pendingBadge = document.getElementById("pendingBadge");
+            const eventBus = window.DesignPatterns.AppointmentObserver.eventBus;
+            eventBus.subscribe("appointment.status.changed", function logEvent(payload) {
+                console.log("Observer payload", payload);
+            });
+            eventBus.subscribe(
+                "appointment.status.changed",
+                window.DesignPatterns.AppointmentObserver.createBadgeObserver(pendingBadge)
+            );
+            eventBus.subscribe(
+                "appointment.status.changed",
+                window.DesignPatterns.AppointmentObserver.createToastObserver()
+            );
+
+            document.getElementById("emitScheduledBtn").addEventListener("click", function emitScheduled() {
+                eventBus.publish("appointment.status.changed", {
+                    appointmentCode: "AP-1001",
+                    status: "scheduled",
+                    pendingCount: 3
+                });
+            });
+
+            document.getElementById("emitConfirmedBtn").addEventListener("click", function emitConfirmed() {
+                eventBus.publish("appointment.status.changed", {
+                    appointmentCode: "AP-1001",
+                    status: "confirmed",
+                    pendingCount: 1
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
