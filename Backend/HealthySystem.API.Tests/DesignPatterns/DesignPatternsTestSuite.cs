@@ -70,34 +70,34 @@ public class StatePatternTests
 public class StrategyPatternTests
 {
     [Fact]
-    public async Task ProcessAsync_WhenMethodIsCard_ShouldInvokeCardStrategyOnly()
+    public async Task ProcessAsync_WhenMethodIsInsurance_ShouldInvokeInsuranceStrategyOnly()
     {
         var cash = new Mock<IPaymentStrategy>();
         cash.SetupGet(s => s.Method).Returns("cash");
 
         var card = new Mock<IPaymentStrategy>();
         card.SetupGet(s => s.Method).Returns("card");
-        card.Setup(s => s.ExecuteAsync(It.IsAny<PaymentRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new PaymentResult(
-                Success: true,
-                Method: "card",
-                TransactionCode: "CARD-INV-001",
-                Message: "Card approved",
-                ProcessedAtUtc: DateTime.UtcNow));
 
         var insurance = new Mock<IPaymentStrategy>();
         insurance.SetupGet(s => s.Method).Returns("insurance");
+        insurance.Setup(s => s.ExecuteAsync(It.IsAny<PaymentRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PaymentResult(
+                Success: true,
+                Method: "insurance",
+                TransactionCode: "INS-INV-001",
+                Message: "Insurance approved",
+                ProcessedAtUtc: DateTime.UtcNow));
 
         var processor = new PaymentProcessor(new[] { cash.Object, card.Object, insurance.Object });
-        var request = new PaymentRequest("INV-001", 250000m, "VND", "card", "PAT-001");
+        var request = new PaymentRequest("INV-001", 250000m, "VND", "insurance", "PAT-001");
 
         var result = await processor.ProcessAsync(request);
 
         Assert.True(result.Success);
-        Assert.Equal("card", result.Method);
-        card.Verify(s => s.ExecuteAsync(It.IsAny<PaymentRequest>(), It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Equal("insurance", result.Method);
+        insurance.Verify(s => s.ExecuteAsync(It.IsAny<PaymentRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         cash.Verify(s => s.ExecuteAsync(It.IsAny<PaymentRequest>(), It.IsAny<CancellationToken>()), Times.Never);
-        insurance.Verify(s => s.ExecuteAsync(It.IsAny<PaymentRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        card.Verify(s => s.ExecuteAsync(It.IsAny<PaymentRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public class ProxyPatternTests
 public class ObserverPatternTests
 {
     [Fact]
-    public async Task NotifyAsync_WhenStatusChanges_ShouldNotifyDoctorAndReceptionObservers()
+    public async Task NotifyAsync_WhenStatusChanges_ShouldNotifyDoctorReceptionAndPatientObservers()
     {
         var doctor = new Mock<IAppointmentStatusObserver>();
         doctor.SetupGet(o => o.Name).Returns("doctor-observer");
@@ -211,9 +211,15 @@ public class ObserverPatternTests
         reception.Setup(o => o.OnStatusChangedAsync(It.IsAny<AppointmentStatusChangedEvent>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
+        var patient = new Mock<IAppointmentStatusObserver>();
+        patient.SetupGet(o => o.Name).Returns("patient-observer");
+        patient.Setup(o => o.OnStatusChangedAsync(It.IsAny<AppointmentStatusChangedEvent>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
         var subject = new AppointmentStatusSubject();
         subject.Subscribe(doctor.Object);
         subject.Subscribe(reception.Object);
+        subject.Subscribe(patient.Object);
 
         var eventData = new AppointmentStatusChangedEvent("APT-001", "scheduled", "checked-in", DateTime.UtcNow);
 
@@ -221,6 +227,7 @@ public class ObserverPatternTests
 
         doctor.Verify(o => o.OnStatusChangedAsync(It.IsAny<AppointmentStatusChangedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
         reception.Verify(o => o.OnStatusChangedAsync(It.IsAny<AppointmentStatusChangedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
+        patient.Verify(o => o.OnStatusChangedAsync(It.IsAny<AppointmentStatusChangedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

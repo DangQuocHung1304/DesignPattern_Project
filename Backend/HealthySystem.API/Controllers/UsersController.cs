@@ -32,7 +32,8 @@ namespace HealthySystem.API.Controllers
                 }
 
                 // For demo purposes, return mock data
-                var user = GetMockUserProfile(userId.Value);
+                await Task.Yield();
+                var user = await GetMockUserProfileAsync(userId.Value);
                 
                 return Ok(new
                 {
@@ -114,15 +115,8 @@ namespace HealthySystem.API.Controllers
                 }
 
                 // For demo purposes, return mock statistics
-                var stats = new
-                {
-                    totalAppointments = 8,
-                    completedAppointments = 6,
-                    cancelledAppointments = 1,
-                    upcomingAppointments = 1,
-                    activeTreatments = 2,
-                    completedTreatments = 3
-                };
+                await Task.Yield();
+                var stats = await GetMockUserStatisticsAsync();
 
                 return Ok(new
                 {
@@ -151,9 +145,9 @@ namespace HealthySystem.API.Controllers
             return null;
         }
 
-        private object GetMockUserProfile(int userId)
+        private Task<object> GetMockUserProfileAsync(int userId)
         {
-            return new
+            object user = new
             {
                 id = userId,
                 firstName = "Nguyễn Văn",
@@ -169,6 +163,23 @@ namespace HealthySystem.API.Controllers
                 emergencyContact = "0987654321",
                 bloodType = "O+"
             };
+
+            return Task.FromResult(user);
+        }
+
+        private Task<object> GetMockUserStatisticsAsync()
+        {
+            object stats = new
+            {
+                totalAppointments = 8,
+                completedAppointments = 6,
+                cancelledAppointments = 1,
+                upcomingAppointments = 1,
+                activeTreatments = 2,
+                completedTreatments = 3
+            };
+
+            return Task.FromResult(stats);
         }
     }
 

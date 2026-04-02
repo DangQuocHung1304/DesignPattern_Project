@@ -326,24 +326,6 @@ namespace HealthySystem.API.Controllers
                     .Include(lr => lr.LabResults)
                     .AsQueryable();
 
-                // Search by patient name
-                if (!string.IsNullOrEmpty(patientName))
-                {
-                    query = query.Where(lr => 
-                        lr.Encounter.Patient.FirstName.Contains(patientName) ||
-                        lr.Encounter.Patient.LastName.Contains(patientName) ||
-                        lr.Encounter.Patient.FullName.Contains(patientName));
-                }
-
-                // Search by doctor name
-                if (!string.IsNullOrEmpty(doctorName))
-                {
-                    query = query.Where(lr => 
-                        lr.RequestedByUser.FirstName.Contains(doctorName) ||
-                        lr.RequestedByUser.LastName.Contains(doctorName) ||
-                        lr.RequestedByUser.FullName.Contains(doctorName));
-                }
-
                 // Filter by date range
                 if (fromDate.HasValue)
                 {
@@ -360,20 +342,72 @@ namespace HealthySystem.API.Controllers
                     query = query.Where(lr => lr.Status == status);
                 }
 
-                var results = await query
+                var rawResults = await query
                     .OrderByDescending(lr => lr.RequestedAt)
-                    .Select(lr => new
+                    .ToListAsync();
+
+                // Search by patient name
+                if (!string.IsNullOrEmpty(patientName))
+                {
+                    rawResults = rawResults.Where(lr =>
+                    {
+                        var result = lr.Encounter?.Patient;
+                        if (result != null)
+                        {
+                            return (result.FirstName?.Contains(patientName) ?? false)
+                                || (result.LastName?.Contains(patientName) ?? false)
+                                || (result.FullName?.Contains(patientName) ?? false);
+                        }
+
+                        return false;
+                    }).ToList();
+                }
+
+                // Search by doctor name
+                if (!string.IsNullOrEmpty(doctorName))
+                {
+                    rawResults = rawResults.Where(lr =>
+                    {
+                        var result = lr.RequestedByUser;
+                        if (result != null)
+                        {
+                            return (result.FirstName?.Contains(doctorName) ?? false)
+                                || (result.LastName?.Contains(doctorName) ?? false)
+                                || (result.FullName?.Contains(doctorName) ?? false);
+                        }
+
+                        return false;
+                    }).ToList();
+                }
+
+                var results = rawResults.Select(lr =>
+                {
+                    var patientNameValue = "Không rõ bệnh nhân";
+                    var patientResult = lr.Encounter?.Patient;
+                    if (patientResult != null && !string.IsNullOrWhiteSpace(patientResult.FullName))
+                    {
+                        patientNameValue = patientResult.FullName;
+                    }
+
+                    var doctorNameValue = "Không rõ bác sĩ";
+                    var doctorResult = lr.RequestedByUser;
+                    if (doctorResult != null && !string.IsNullOrWhiteSpace(doctorResult.FullName))
+                    {
+                        doctorNameValue = doctorResult.FullName;
+                    }
+
+                    return new
                     {
                         Id = lr.Id,
                         EncounterId = lr.EncounterId,
-                        PatientName = lr.Encounter.Patient.FullName,
-                        DoctorName = lr.RequestedByUser.FullName,
+                        PatientName = patientNameValue,
+                        DoctorName = doctorNameValue,
                         RequestedAt = lr.RequestedAt,
                         Status = lr.Status,
                         TestCount = lr.LabResults.Count,
                         CompletedTestCount = lr.LabResults.Count(r => r.PerformedAt != null)
-                    })
-                    .ToListAsync();
+                    };
+                }).ToList();
 
                 return Ok(new
                 {

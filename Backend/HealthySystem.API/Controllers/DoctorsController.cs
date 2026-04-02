@@ -120,21 +120,33 @@ namespace HealthySystem.API.Controllers
             var start = startDate ?? DateTime.Today;
             var end = endDate ?? DateTime.Today.AddDays(7);
 
-            var appointments = await _context.Appointments
+            var appointmentRows = await _context.Appointments
+                .Include(a => a.Patient)
                 .Where(a => a.DoctorId == doctor.Id && 
                            a.AppointmentStart.Date >= start.Date && 
                            a.AppointmentStart.Date <= end.Date)
                 .OrderBy(a => a.AppointmentStart)
-                .Select(a => new
+                .ToListAsync();
+
+            var appointments = appointmentRows.Select(a =>
+            {
+                var patientName = "Không rõ bệnh nhân";
+                var result = a.Patient;
+                if (result != null && !string.IsNullOrWhiteSpace(result.FullName))
+                {
+                    patientName = result.FullName;
+                }
+
+                return new
                 {
                     Id = a.Id,
                     AppointmentStart = a.AppointmentStart,
                     AppointmentEnd = a.AppointmentEnd,
                     Status = a.Status,
-                    PatientName = a.Patient.FullName,
+                    PatientName = patientName,
                     Notes = a.Notes
-                })
-                .ToListAsync();
+                };
+            }).ToList();
 
             return Ok(appointments);
         }
