@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HealthySystem.API.Data;
+using HealthySystem.API.DesignPatterns.Proxy;
 using HealthySystem.API.Models;
+using System.Security.Claims;
 
 namespace HealthySystem.API.Controllers
 {
@@ -13,11 +15,41 @@ namespace HealthySystem.API.Controllers
     {
         private readonly HealthySystemDbContext _context;
         private readonly ILogger<MedicalHistoryController> _logger;
+        private readonly IMedicalRecordProxyService _medicalRecordProxyService;
 
-        public MedicalHistoryController(HealthySystemDbContext context, ILogger<MedicalHistoryController> logger)
+        public MedicalHistoryController(
+            HealthySystemDbContext context,
+            ILogger<MedicalHistoryController> logger,
+            IMedicalRecordProxyService medicalRecordProxyService)
         {
             _context = context;
             _logger = logger;
+            _medicalRecordProxyService = medicalRecordProxyService;
+        }
+
+        [HttpGet("secure-summary/{patientCode}")]
+        [Authorize(Roles = "doctor,admin,patient")]
+        public async Task<IActionResult> GetSecureMedicalSummary(string patientCode)
+        {
+            var requesterRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "guest";
+            var requesterCode = User.FindFirst("publicId")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
+
+            var result = await _medicalRecordProxyService.GetMedicalRecordAsync(new MedicalRecordAccessContext(
+                RequesterCode: requesterCode,
+                RequesterRole: requesterRole,
+                RequestedPatientCode: patientCode));
+
+            return Ok(new
+            {
+                success = true,
+                processingState = new
+                {
+                    phase = "ready",
+                    isLoading = false,
+                    skeletonHint = "medical-record-secure-summary"
+                },
+                data = result
+            });
         }
 
         /// <summary>

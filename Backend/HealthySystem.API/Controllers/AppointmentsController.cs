@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using HealthySystem.API.Data;
+using HealthySystem.API.DesignPatterns.AbstractFactory;
+using HealthySystem.API.DesignPatterns.Observer;
+using HealthySystem.API.DesignPatterns.State;
+using HealthySystem.API.DesignPatterns.Singleton;
 using HealthySystem.API.Models;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -14,10 +18,23 @@ namespace HealthySystem.API.Controllers
     public class AppointmentsController : ControllerBase
     {
         private readonly HealthySystemDbContext _context;
+        private readonly IAppointmentStateMachineService _appointmentStateMachineService;
+        private readonly IAppointmentStatusCoordinator _appointmentStatusCoordinator;
+        private readonly IAppointmentCommunicationService _appointmentCommunicationService;
+        private readonly ISystemConfigurationProvider _systemConfigurationProvider;
 
-        public AppointmentsController(HealthySystemDbContext context)
+        public AppointmentsController(
+            HealthySystemDbContext context,
+            IAppointmentStateMachineService appointmentStateMachineService,
+            IAppointmentStatusCoordinator appointmentStatusCoordinator,
+            IAppointmentCommunicationService appointmentCommunicationService,
+            ISystemConfigurationProvider systemConfigurationProvider)
         {
             _context = context;
+            _appointmentStateMachineService = appointmentStateMachineService;
+            _appointmentStatusCoordinator = appointmentStatusCoordinator;
+            _appointmentCommunicationService = appointmentCommunicationService;
+            _systemConfigurationProvider = systemConfigurationProvider;
         }
 
         // GET: api/appointments (for authenticated users)
@@ -322,6 +339,100 @@ namespace HealthySystem.API.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // PUT: api/appointments/{id}/status/pattern
+        // Pattern endpoint: State + Observer + AbstractFactory + Singleton-backed ui payload
+        [HttpPut("{id}/status/pattern")]
+        [Authorize]
+        public async Task<IActionResult> UpdateAppointmentStatusWithPatterns(long id, [FromBody] PatternStatusUpdateRequest request)
+        {
+            var userId = GetCurrentUserId();
+            var userRole = GetCurrentUserRole();
+
+            var appointment = await _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.WalkInPatient)
+                .Include(a => a.Doctor)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (appointment == null)
+            {
+                return NotFound(new { success = false, message = "Appointment not found." });
+            }
+
+            // Keep existing authorization behavior
+            if (userRole == "patient" && appointment.PatientId != userId)
+            {
+                return Forbid();
+            }
+            else if (userRole == "doctor" && appointment.DoctorId != userId)
+            {
+                return Forbid();
+            }
+
+            var previousStatus = appointment.Status;
+            var currentState = (appointment.Status ?? string.Empty).Trim().ToLowerInvariant();
+            var targetState = (request.TargetStatus ?? string.Empty).Trim().ToLowerInvariant();
+
+            string nextStatus;
+            if (TryMapStateAction(currentState, targetState, out var action))
+            {
+                var transition = _appointmentStateMachineService.Transit(currentState, action);
+                nextStatus = transition.CurrentState;
+            }
+            else
+            {
+                // Keep compatibility for non-state-machine statuses such as confirmed/rescheduled/no_show
+                nextStatus = targetState;
+            }
+
+            appointment.Status = nextStatus;
+            appointment.Reason = request.Notes ?? appointment.Reason;
+            appointment.UpdatedAt = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync();
+
+            // Observer: notify status change events
+            await _appointmentStatusCoordinator.ChangeStatusAsync(
+                appointmentCode: $"APT-{appointment.Id}",
+                currentStatus: previousStatus,
+                newStatus: appointment.Status);
+
+            // Abstract Factory: dispatch reminders when appointment becomes confirmed/rescheduled
+            DeliveryReceipt? doctorReceipt = null;
+            DeliveryReceipt? patientReceipt = null;
+
+            if (appointment.Status is "confirmed" or "rescheduled")
+            {
+                var snapshot = new AppointmentSnapshot(
+                    AppointmentCode: $"APT-{appointment.Id}",
+                    DoctorName: appointment.Doctor.FullName,
+                    PatientName: appointment.Patient?.FullName ?? appointment.WalkInPatient?.FullName ?? "Walk-in patient",
+                    StartAt: appointment.AppointmentStart.UtcDateTime,
+                    Room: _systemConfigurationProvider.GetValue("Clinic:DefaultRoom", "General"));
+
+                doctorReceipt = await _appointmentCommunicationService.SendReminderAsync("doctor", snapshot);
+                patientReceipt = await _appointmentCommunicationService.SendReminderAsync("patient", snapshot);
+            }
+
+            return Ok(new
+            {
+                success = true,
+                message = "Appointment status updated with pattern workflow.",
+                processingState = new
+                {
+                    phase = "ready",
+                    isLoading = false,
+                    skeletonHint = "appointment-status-card"
+                },
+                data = new
+                {
+                    appointmentId = appointment.Id,
+                    previousStatus,
+                    currentStatus = appointment.Status,
+                    reminders = new { doctor = doctorReceipt, patient = patientReceipt }
+                }
+            });
         }
 
         // DELETE: api/appointments/{id}
@@ -887,6 +998,37 @@ namespace HealthySystem.API.Controllers
                 return StatusCode(500, new { message = "Lỗi khi tạo lịch hẹn cho bệnh nhân walk-in", error = fullError, stackTrace = ex.StackTrace });
             }
         }
+
+        private static bool TryMapStateAction(string currentState, string targetState, out string action)
+        {
+            action = string.Empty;
+
+            if (currentState == "scheduled" && targetState == "checked-in")
+            {
+                action = "check-in";
+                return true;
+            }
+
+            if ((currentState == "scheduled" || currentState == "checked-in") && targetState == "in-progress")
+            {
+                action = "start-visit";
+                return true;
+            }
+
+            if (currentState == "in-progress" && targetState == "completed")
+            {
+                action = "complete";
+                return true;
+            }
+
+            if (targetState == "cancelled")
+            {
+                action = "cancel";
+                return true;
+            }
+
+            return false;
+        }
     }
 
     // DTOs for request bodies
@@ -921,6 +1063,12 @@ namespace HealthySystem.API.Controllers
     public class UpdateAppointmentStatusRequest
     {
         public string Status { get; set; } = "";
+        public string? Notes { get; set; }
+    }
+
+    public class PatternStatusUpdateRequest
+    {
+        public string TargetStatus { get; set; } = "";
         public string? Notes { get; set; }
     }
 
