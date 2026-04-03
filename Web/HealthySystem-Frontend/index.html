@@ -3,315 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HealthySystem - Hệ thống Quản lý Phòng khám</title>
+    <title>HealthySystem - Modern Healthcare Landing</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/design-system.css">
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/pages/home.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
 </head>
-<body>
-    <div class="page-shell">
-        <aside class="app-sidebar">
-            <div class="brand-panel">
-                <div class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></div>
-                <div>
-                    <div class="brand-name">HealthySystem</div>
-                    <div class="brand-caption">Healthcare Experience</div>
-                </div>
+<body class="home-page">
+    <div class="page-shell home-shell">
+        <header class="app-topbar workspace-topbar">
+            <a href="index.html" class="workspace-brand">
+                <span class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></span>
+                <span>
+                    <span class="brand-name">HealthySystem</span>
+                    <span class="brand-caption">Unified Workspace</span>
+                </span>
+            </a>
+
+            <nav class="workspace-nav" aria-label="Main Navigation">
+                <a class="active" href="#home">Trang chủ</a>
+                <a href="#services">Dịch vụ</a>
+                <a href="#specialties">Chuyên khoa</a>
+                <a href="#doctors">Bác sĩ</a>
+                <a href="#news">Tin tức</a>
+            </nav>
+
+            <div class="workspace-actions">
+                <a class="btn btn-outline-accent" href="pricing.html">Bảng giá</a>
+                <a class="btn btn-soft" href="login.html" id="login-btn">Đăng nhập</a>
+                <a class="btn btn-soft user-menu-btn" href="profile.html" id="user-menu"><span id="user-display-name">Tài khoản</span></a>
+                <a class="btn btn-soft" href="#" id="logout-btn">Đăng xuất</a>
+                <a class="btn btn-accent" href="book-appointment.html"><i class="fas fa-calendar-plus me-2"></i>Đặt lịch khám</a>
             </div>
+        </header>
 
-            <div class="nav-section-title">Khám phá</div>
-            <ul class="app-nav">
-                <li><a class="active" href="#home"><i class="fas fa-house"></i> Trang chủ</a></li>
-                <li><a href="#specialties"><i class="fas fa-stethoscope"></i> Chuyên khoa</a></li>
-                <li><a href="doctors.html"><i class="fas fa-user-md"></i> Bác sĩ</a></li>
-                <li><a href="pricing.html"><i class="fas fa-file-invoice-dollar"></i> Bảng giá</a></li>
-                <li><a href="news.html"><i class="fas fa-newspaper"></i> Tin tức</a></li>
-            </ul>
-
-            <div class="nav-section-title">Hành động nhanh</div>
-            <ul class="app-nav mb-0">
-                <li><a href="book-appointment.html"><i class="fas fa-calendar-plus"></i> Đặt lịch khám</a></li>
-                <li><a href="login.html" id="login-btn"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a></li>
-                <li id="user-menu" style="display:none;"><a href="profile.html"><i class="fas fa-user-circle"></i> <span id="user-display-name">Tài khoản</span></a></li>
-                <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
-            </ul>
-        </aside>
-
-        <main class="app-main">
-            <header class="app-topbar">
-                <div>
-                    <h2 class="mb-1">Hệ thống quản lý phòng khám hiện đại</h2>
-                    <p class="text-muted">Trải nghiệm chăm sóc sức khỏe cao cấp, đồng bộ và minh bạch</p>
-                </div>
-                <div class="topbar-meta">
-                    <a class="btn btn-brand" href="book-appointment.html"><i class="fas fa-calendar-plus me-2"></i>Đặt lịch khám</a>
-                </div>
-            </header>
-
-    <!-- Main Content -->
-    <main>
-        <!-- Hero Section -->
-        <section id="home" class="hero">
-            <div class="container">
-                <div class="hero-content text-center">
-                    <div class="hero-badge">
-                        <i class="fas fa-heartbeat"></i>
-                        Chăm sóc sức khỏe toàn diện
-                    </div>
-                    <h1>HealthySystem</h1>
-                    <h2 class="hero-subtitle">Hệ thống quản lý phòng khám hiện đại</h2>
-                    <p class="lead">
-                        <i class="fas fa-shield-alt"></i>
-                        Đặt lịch khám nhanh chóng • Bác sĩ chuyên nghiệp • Công nghệ hiện đại
-                    </p>
-                    <div class="hero-actions mt-4">
-                        <a href="book-appointment.html" class="btn btn-primary btn-lg">
-                            <i class="fas fa-calendar-plus"></i> Đặt lịch khám ngay
-                        </a>
-                        <a href="doctors.html" class="btn btn-outline btn-lg">
-                            <i class="fas fa-user-md"></i> Tìm bác sĩ
-                        </a>
-                    </div>
-                    <div class="hero-stats">
-                        <div class="stat-item">
-                            <i class="fas fa-users"></i>
-                            <span class="stat-number">1000+</span>
-                            <span class="stat-label">Bệnh nhân</span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-user-md"></i>
-                            <span class="stat-number">50+</span>
-                            <span class="stat-label">Bác sĩ</span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-hospital"></i>
-                            <span class="stat-number">10+</span>
-                            <span class="stat-label">Chuyên khoa</span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-star"></i>
-                            <span class="stat-number">4.9</span>
-                            <span class="stat-label">Đánh giá</span>
+        <main>
+            <section id="home" class="hero landing-hero">
+                <div class="hero-grid">
+                    <div class="hero-copy">
+                        <span class="hero-chip"><i class="fas fa-shield-heart"></i> Modern Healthcare Experience</span>
+                        <h1 class="hero-title">Chăm sóc sức khỏe thông minh, tinh tế và liền mạch</h1>
+                        <h2 class="hero-subtitle">Nền tảng đặt lịch, theo dõi điều trị và kết nối bác sĩ chuẩn hệ thống phòng khám hiện đại</h2>
+                        <p class="hero-lead">HealthySystem tối ưu toàn bộ hành trình khám bệnh: từ đặt lịch nhanh, chọn bác sĩ phù hợp, nhận nhắc hẹn tự động đến quản lý hồ sơ khám trong một trải nghiệm thống nhất.</p>
+                        <div class="hero-cta">
+                            <a href="book-appointment.html" class="btn btn-accent"><i class="fas fa-calendar-check me-2"></i>Đặt lịch ngay</a>
+                            <a href="doctors.html" class="btn btn-outline-accent"><i class="fas fa-user-doctor me-2"></i>Tìm bác sĩ</a>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section class="features py-5">
-            <div class="container">
-                <h2 class="text-center mb-5">
-                    <i class="fas fa-medical-bag"></i>
-                    Dịch vụ y tế chuyên nghiệp
-                </h2>
-                <div class="row">
-                    <div class="col-4">
-                        <div class="card text-center medical-service">
-                            <div class="card-body">
-                                <div class="service-icon">
-                                    <i class="fas fa-calendar-check"></i>
-                                </div>
-                                <h4>Đặt lịch khám</h4>
-                                <p>Hệ thống đặt lịch thông minh, linh hoạt theo thời gian của bạn. Xác nhận ngay lập tức.</p>
-                                <div class="service-features">
-                                    <span class="feature-tag"><i class="fas fa-check"></i> Xác nhận tức thì</span>
-                                    <span class="feature-tag"><i class="fas fa-check"></i> Nhắc nhở tự động</span>
-                                    <span class="feature-tag"><i class="fas fa-check"></i> Đổi lịch dễ dàng</span>
-                                </div>
-                                <a href="book-appointment.html" class="btn btn-primary btn-sm mt-2">
-                                    <i class="fas fa-calendar-plus"></i> Đặt lịch ngay
-                                </a>
+                    <aside class="hero-kpi-wrap" aria-label="Healthcare Metrics">
+                        <div class="hero-kpi-grid">
+                            <div class="hero-kpi">
+                                <span class="hero-kpi-value">10k+</span>
+                                <span class="hero-kpi-label">Lượt khám mỗi năm</span>
+                            </div>
+                            <div class="hero-kpi">
+                                <span class="hero-kpi-value">4.9/5</span>
+                                <span class="hero-kpi-label">Điểm hài lòng</span>
+                            </div>
+                            <div class="hero-kpi">
+                                <span class="hero-kpi-value">50+</span>
+                                <span class="hero-kpi-label">Bác sĩ chuyên khoa</span>
+                            </div>
+                            <div class="hero-kpi">
+                                <span class="hero-kpi-value">24/7</span>
+                                <span class="hero-kpi-label">Hỗ trợ đặt lịch</span>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="card text-center medical-service">
-                            <div class="card-body">
-                                <div class="service-icon">
-                                    <i class="fas fa-user-md"></i>
-                                </div>
-                                <h4>Đội ngũ y bác sĩ</h4>
-                                <p>Bác sĩ giàu kinh nghiệm, chuyên môn cao với nhiều năm thực hành lâm sàng.</p>
-                                <div class="service-features">
-                                    <span class="feature-tag"><i class="fas fa-graduation-cap"></i> Chuyên khoa</span>
-                                    <span class="feature-tag"><i class="fas fa-award"></i> Kinh nghiệm</span>
-                                    <span class="feature-tag"><i class="fas fa-heart"></i> Tận tâm</span>
-                                </div>
-                                <a href="doctors.html" class="btn btn-outline btn-sm mt-2">
-                                    <i class="fas fa-user-md"></i> Xem bác sĩ
-                                </a>
-                            </div>
+                    </aside>
+                </div>
+            </section>
+
+            <section id="services" class="home-section">
+                <div class="section-heading">
+                    <span class="section-eyebrow">Dịch vụ nổi bật</span>
+                    <h2 class="section-title">Trải nghiệm khám bệnh chuẩn phòng khám số</h2>
+                    <p class="section-text">Mỗi dịch vụ được thiết kế để giảm thời gian chờ, tăng minh bạch và đảm bảo bạn luôn chủ động trong hành trình chăm sóc sức khỏe.</p>
+                </div>
+
+                <div class="service-grid">
+                    <article class="modern-card service-card">
+                        <div class="service-media">
+                            <img src="assets/images/home/service-booking.svg" alt="Đặt lịch thông minh">
                         </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="card text-center medical-service">
-                            <div class="card-body">
-                                <div class="service-icon">
-                                    <i class="fas fa-laptop-medical"></i>
-                                </div>
-                                <h4>Quản lý số hóa</h4>
-                                <p>Hồ sơ bệnh án điện tử, theo dõi sức khỏe và lịch sử khám bệnh trực tuyến.</p>
-                                <div class="service-features">
-                                    <span class="feature-tag"><i class="fas fa-shield-alt"></i> Bảo mật</span>
-                                    <span class="feature-tag"><i class="fas fa-cloud"></i> Đám mây</span>
-                                    <span class="feature-tag"><i class="fas fa-globe"></i> Di động</span>
-                                </div>
-                                <a href="profile.html" class="btn btn-outline btn-sm mt-2">
-                                    <i class="fas fa-user"></i> Hồ sơ của tôi
-                                </a>
-                            </div>
+                        <div class="service-icon"><i class="fas fa-calendar-plus"></i></div>
+                        <h3 class="service-title">Đặt lịch thông minh</h3>
+                        <p class="service-description">Chọn bác sĩ, khung giờ và dịch vụ chỉ trong vài bước, đồng bộ trạng thái lịch hẹn theo thời gian thực.</p>
+                        <div class="tag-list">
+                            <span class="tag">Xác nhận tức thì</span>
+                            <span class="tag">Nhắc hẹn tự động</span>
+                            <span class="tag">Đổi lịch linh hoạt</span>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+                        <a href="book-appointment.html" class="btn btn-accent">Đặt lịch ngay</a>
+                    </article>
 
-        <!-- Specialties Section -->
-        <section id="specialties" class="specialties py-5 bg-light">
-            <div class="container">
-                <h2 class="text-center mb-5">
-                    <i class="fas fa-stethoscope"></i>
-                    Chuyên khoa điều trị
-                </h2>
-                <div id="specialties-list" class="row">
-                    <!-- Sẽ được load bởi JavaScript -->
-                </div>
-            </div>
-        </section>
+                    <article class="modern-card service-card">
+                        <div class="service-media">
+                            <img src="assets/images/home/service-doctor.svg" alt="Kết nối chuyên gia phù hợp">
+                        </div>
+                        <div class="service-icon"><i class="fas fa-user-doctor"></i></div>
+                        <h3 class="service-title">Kết nối chuyên gia phù hợp</h3>
+                        <p class="service-description">Khám phá đội ngũ bác sĩ theo chuyên khoa, kinh nghiệm điều trị và đánh giá thực tế từ bệnh nhân.</p>
+                        <div class="tag-list">
+                            <span class="tag">Hồ sơ bác sĩ rõ ràng</span>
+                            <span class="tag">Đánh giá minh bạch</span>
+                            <span class="tag">Tư vấn nhanh</span>
+                        </div>
+                        <a href="doctors.html" class="btn btn-outline-accent">Xem đội ngũ bác sĩ</a>
+                    </article>
 
-        <!-- Doctors Section -->
-        <section id="doctors" class="doctors py-5">
-            <div class="container">
-                <h2 class="text-center mb-5">
-                    <i class="fas fa-user-md"></i>
-                    Đội ngũ y bác sĩ
-                </h2>
-                <div id="doctors-list" class="row">
-                    <!-- Sẽ được load bởi JavaScript -->
+                    <article class="modern-card service-card">
+                        <div class="service-media">
+                            <img src="assets/images/home/service-record.svg" alt="Hồ sơ điều trị số hóa">
+                        </div>
+                        <div class="service-icon"><i class="fas fa-laptop-medical"></i></div>
+                        <h3 class="service-title">Hồ sơ điều trị số hóa</h3>
+                        <p class="service-description">Theo dõi lịch sử khám, kết quả điều trị và nhắc lịch tái khám trong một giao diện thống nhất, dễ truy cập.</p>
+                        <div class="tag-list">
+                            <span class="tag">Bảo mật cao</span>
+                            <span class="tag">Theo dõi liên tục</span>
+                            <span class="tag">Tối ưu trải nghiệm</span>
+                        </div>
+                        <a href="profile.html" class="btn btn-outline-accent">Xem hồ sơ của tôi</a>
+                    </article>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Medical Stats Section -->
-        <section class="medical-stats py-5 bg-light">
-            <div class="container">
-                <h2 class="text-center mb-5">
-                    <i class="fas fa-chart-line"></i>
-                    Thành tựu y tế
-                </h2>
+            <section id="specialties" class="home-section home-section-soft">
+                <div class="section-heading">
+                    <span class="section-eyebrow">Chuyên khoa</span>
+                    <h2 class="section-title">Danh mục chuyên khoa điều trị</h2>
+                    <p class="section-text">Đội ngũ chuyên môn đa lĩnh vực giúp bạn được chăm sóc đúng hướng, đúng phác đồ và đúng thời điểm.</p>
+                </div>
+                <div id="specialties-list" class="row home-data-grid"></div>
+            </section>
+
+            <section id="doctors" class="home-section">
+                <div class="section-heading">
+                    <span class="section-eyebrow">Bác sĩ nổi bật</span>
+                    <h2 class="section-title">Đội ngũ y bác sĩ giàu kinh nghiệm</h2>
+                    <p class="section-text">HealthySystem ưu tiên kết nối bạn với bác sĩ có chuyên môn phù hợp với tình trạng sức khỏe hiện tại.</p>
+                </div>
+                <div id="doctors-list" class="row home-data-grid"></div>
+            </section>
+
+            <section class="home-section home-section-soft">
+                <div class="section-heading">
+                    <span class="section-eyebrow">Năng lực hệ thống</span>
+                    <h2 class="section-title">Hiệu quả vận hành đã được kiểm chứng</h2>
+                    <p class="section-text">Nâng cao chất lượng dịch vụ bằng quy trình vận hành đồng bộ, nền tảng số và đội ngũ hỗ trợ liên tục.</p>
+                </div>
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-heartbeat"></i>
-                        </div>
-                        <h3>99.9%</h3>
-                        <p>Tỷ lệ hài lòng</p>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <h3>24/7</h3>
-                        <p>Hỗ trợ khẩn cấp</p>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-certificate"></i>
-                        </div>
-                        <h3>ISO 9001</h3>
-                        <p>Chứng nhận chất lượng</p>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-microscope"></i>
-                        </div>
-                        <h3>100%</h3>
-                        <p>Thiết bị hiện đại</p>
-                    </div>
+                    <article class="achievement-card">
+                        <div class="achievement-icon"><i class="fas fa-heart-pulse"></i></div>
+                        <strong class="achievement-value">99.9%</strong>
+                        <span class="achievement-label">Tỷ lệ hài lòng của bệnh nhân</span>
+                    </article>
+                    <article class="achievement-card">
+                        <div class="achievement-icon"><i class="fas fa-clock"></i></div>
+                        <strong class="achievement-value">24/7</strong>
+                        <span class="achievement-label">Hỗ trợ đặt lịch và chăm sóc</span>
+                    </article>
+                    <article class="achievement-card">
+                        <div class="achievement-icon"><i class="fas fa-certificate"></i></div>
+                        <strong class="achievement-value">ISO</strong>
+                        <span class="achievement-label">Quy trình chất lượng chuẩn hóa</span>
+                    </article>
+                    <article class="achievement-card">
+                        <div class="achievement-icon"><i class="fas fa-microscope"></i></div>
+                        <strong class="achievement-value">100%</strong>
+                        <span class="achievement-label">Thiết bị hỗ trợ chẩn đoán hiện đại</span>
+                    </article>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Appointments Section (Only for logged in users) -->
-        <section id="appointments" class="appointments py-5 bg-light d-none">
-            <div class="container">
-                <h2 class="text-center mb-5">
-                    <i class="fas fa-calendar-alt"></i>
-                    Lịch hẹn của bạn
-                </h2>
-                <div id="appointments-list">
-                    <!-- Sẽ được load bởi JavaScript -->
+            <section id="appointments" class="home-section d-none">
+                <div class="section-heading">
+                    <span class="section-eyebrow">Cá nhân hóa</span>
+                    <h2 class="section-title">Lịch hẹn của bạn</h2>
+                    <p class="section-text">Theo dõi nhanh các lịch hẹn sắp tới, trạng thái xác nhận và thay đổi thời gian ngay trên hệ thống.</p>
                 </div>
-            </div>
-        </section>
+                <div id="appointments-list" class="appointment-list-wrap"></div>
+            </section>
 
-        <!-- Pricing Section -->
-        <section id="pricing" class="pricing py-5">
-            <div class="container">
-                <h2 class="text-center mb-5">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                    Bảng giá phòng khám
-                </h2>
-                <div id="pricing-preview" class="row">
-                    <!-- Sẽ được load bởi JavaScript -->
+            <section id="pricing" class="home-section home-section-soft">
+                <div class="section-heading">
+                    <span class="section-eyebrow">Minh bạch chi phí</span>
+                    <h2 class="section-title">Bảng giá dịch vụ y tế</h2>
+                    <p class="section-text">Thông tin chi phí rõ ràng theo từng nhóm dịch vụ để bạn chủ động kế hoạch thăm khám.</p>
                 </div>
-                <div class="text-center mt-4">
-                    <a href="pricing.html" class="btn btn-primary">
-                        <i class="fas fa-list"></i> Xem bảng giá chi tiết
-                    </a>
+                <div id="pricing-preview" class="row home-data-grid"></div>
+                <div class="hero-cta mt-4">
+                    <a href="pricing.html" class="btn btn-accent"><i class="fas fa-file-invoice-dollar me-2"></i>Xem bảng giá chi tiết</a>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- News Section -->
-        <section id="news" class="news py-5 bg-light">
-            <div class="container">
-                <h2 class="text-center mb-5">
-                    <i class="fas fa-newspaper"></i>
-                    Tin tức y tế
-                </h2>
-                <div id="news-list" class="row">
-                    <!-- Sẽ được load bởi JavaScript -->
+            <section id="news" class="home-section">
+                <div class="section-heading">
+                    <span class="section-eyebrow">Kiến thức y khoa</span>
+                    <h2 class="section-title">Tin tức và hướng dẫn sức khỏe</h2>
+                    <p class="section-text">Cập nhật nội dung y khoa mới nhất, lời khuyên chăm sóc sức khỏe và các xu hướng điều trị hiện đại.</p>
                 </div>
-                <div class="text-center mt-4">
-                    <a href="news.html" class="btn btn-outline">
-                        <i class="fas fa-arrow-right"></i> Xem thêm tin tức
-                    </a>
+                <div id="news-list" class="row home-data-grid"></div>
+                <div class="hero-cta mt-4">
+                    <a href="news.html" class="btn btn-outline-accent"><i class="fas fa-arrow-right me-2"></i>Xem thêm tin tức</a>
                 </div>
-            </div>
-        </section>
+            </section>
         </main>
+
+        <footer class="workspace-footer">
+            <div class="workspace-footer-grid">
+                <div>
+                    <h4><i class="fas fa-hospital-user me-2"></i>HealthySystem</h4>
+                    <p>Nền tảng quản lý phòng khám với trải nghiệm hiện đại, tối ưu cho bệnh nhân và đội ngũ y tế.</p>
+                </div>
+                <div>
+                    <h5><i class="fas fa-location-dot me-2"></i>Thông tin liên hệ</h5>
+                    <ul class="footer-inline-list">
+                        <li>123 Đường Y Tế, Quận 1, TP.HCM</li>
+                        <li>Hotline: 1900-1234</li>
+                        <li>Email: info@healthysystem.com</li>
+                    </ul>
+                </div>
+                <div>
+                    <h5><i class="fas fa-clock me-2"></i>Giờ làm việc</h5>
+                    <ul class="footer-inline-list">
+                        <li>Thứ 2 - Thứ 6: 07:00 - 19:00</li>
+                        <li>Thứ 7 - Chủ nhật: 08:00 - 17:00</li>
+                        <li>Hỗ trợ đặt lịch online 24/7</li>
+                    </ul>
+                </div>
+            </div>
+
+            <hr class="footer-divider">
+
+            <div class="footer-meta">
+                <p>&copy; 2026 HealthySystem. Tất cả quyền được bảo lưu.</p>
+                <p>API Status: <span id="api-status">Đang kiểm tra...</span></p>
+            </div>
+        </footer>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer py-4 bg-primary text-white text-center">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-info">
-                    <h4><i class="fas fa-hospital"></i> HealthySystem</h4>
-                    <p><i class="fas fa-map-marker-alt"></i> 123 Đường Y Tế, Quận 1, TP.HCM</p>
-                    <p><i class="fas fa-phone"></i> Hotline: 1900-1234 | <i class="fas fa-envelope"></i> info@healthysystem.com</p>
-                </div>
-                <div class="footer-hours">
-                    <h5><i class="fas fa-clock"></i> Giờ làm việc</h5>
-                    <p>Thứ 2 - Thứ 6: 7:00 - 19:00</p>
-                    <p>Thứ 7 - Chủ nhật: 8:00 - 17:00</p>
-                </div>
-            </div>
-            <hr style="margin: 1rem 0; opacity: 0.3;">
-            <p>&copy; 2025 HealthySystem. Tất cả quyền được bảo lưu.</p>
-            <p>Phiên bản 1.0.0 | API Status: <span id="api-status">Đang kiểm tra...</span></p>
-        </div>
-    </footer>
-
-    <!-- Modals sẽ được thêm bởi JavaScript -->
     <div id="modals-container"></div>
 
-    <!-- Scripts -->
     <script src="assets/js/config.js"></script>
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/api.js"></script>

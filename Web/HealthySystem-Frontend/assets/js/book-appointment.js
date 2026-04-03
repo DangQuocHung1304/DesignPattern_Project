@@ -28,6 +28,9 @@ class BookAppointmentPage {
         
         // Check for pre-selected doctor from URL
         this.checkPreSelectedDoctor();
+
+        // Sync patient sidebar auth state
+        this.syncPublicSidebarAuth();
         
         console.log('✅ Book Appointment Page Ready!');
     }
@@ -51,6 +54,11 @@ class BookAppointmentPage {
         
         // Form validation
         document.getElementById('patient-info-form').addEventListener('input', () => this.validateStep3());
+
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (event) => this.handleLogout(event));
+        }
     }
 
     checkUserLogin() {
@@ -80,6 +88,12 @@ class BookAppointmentPage {
 
     async loadDoctors() {
         this.showLoading(true);
+
+        const doctorsContainer = document.getElementById('doctors-list');
+        if (doctorsContainer && typeof window.renderSkeletons === 'function') {
+            doctorsContainer.innerHTML = '<div id="appointment-doctors-skeleton"></div>';
+            window.renderSkeletons('appointment-doctors-skeleton', 3);
+        }
         
         try {
             const response = await apiService.getDoctors();
@@ -494,7 +508,12 @@ class BookAppointmentPage {
 
     async loadAvailableSlots(date) {
         const container = document.getElementById('time-slots-container');
-        container.innerHTML = '<p class="text-muted">Đang tải khung giờ...</p>';
+        if (typeof window.renderSkeletons === 'function') {
+            container.innerHTML = '<div id="appointment-slots-skeleton"></div>';
+            window.renderSkeletons('appointment-slots-skeleton', 2);
+        } else {
+            container.innerHTML = '<p class="text-muted">Đang tải khung giờ...</p>';
+        }
         
         console.log('Loading time slots for date:', date);
         
@@ -795,6 +814,64 @@ class BookAppointmentPage {
     showLoading(show) {
         const spinner = document.getElementById('loading-spinner');
         spinner.style.display = show ? 'block' : 'none';
+
+        if (show && typeof window.renderSkeletons === 'function') {
+            window.renderSkeletons('appointment-loading-skeleton', 3);
+        }
+    }
+
+    syncPublicSidebarAuth() {
+        const loginBtn = document.getElementById('login-btn');
+        const userMenu = document.getElementById('user-menu');
+        const userDisplayName = document.getElementById('user-display-name');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        const configUserKey = (typeof CONFIG !== 'undefined' && CONFIG.STORAGE_KEYS)
+            ? CONFIG.STORAGE_KEYS.USER
+            : null;
+
+        const storedUser = localStorage.getItem(configUserKey || 'user') || localStorage.getItem('user');
+        let user = null;
+
+        if (storedUser) {
+            try {
+                user = JSON.parse(storedUser);
+            } catch (error) {
+                user = null;
+            }
+        }
+
+        if (user) {
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (userMenu) userMenu.style.display = 'block';
+            if (logoutBtn) logoutBtn.style.display = 'block';
+            if (userDisplayName) {
+                userDisplayName.textContent = user.fullName || user.name || user.email || 'Tài khoản';
+            }
+        } else {
+            if (loginBtn) loginBtn.style.display = 'block';
+            if (userMenu) userMenu.style.display = 'none';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+        }
+    }
+
+    handleLogout(event) {
+        event.preventDefault();
+
+        if (window.authManager && typeof window.authManager.logout === 'function') {
+            window.authManager.logout();
+        } else {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            if (typeof CONFIG !== 'undefined' && CONFIG.STORAGE_KEYS) {
+                localStorage.removeItem(CONFIG.STORAGE_KEYS.TOKEN);
+                localStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
+            }
+        }
+
+        this.syncPublicSidebarAuth();
+        window.location.href = 'index.html';
     }
 
     showError(message) {
@@ -822,3 +899,5 @@ class BookAppointmentPage {
 document.addEventListener('DOMContentLoaded', function() {
     window.bookingPage = new BookAppointmentPage();
 });
+
+

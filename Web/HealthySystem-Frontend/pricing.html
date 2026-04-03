@@ -9,466 +9,124 @@
     <link rel="stylesheet" href="assets/css/design-system.css">
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
-    <style>
-        :root {
-            --primary-color: var(--color-emerald-600);
-            --secondary-color: var(--color-slate-800);
-            --text-color: var(--color-slate-900);
-        }
-
-        .pricing-hero {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 80px 0 60px;
-            text-align: center;
-        }
-
-        .pricing-hero h1 {
-            font-size: 42px;
-            margin-bottom: 15px;
-        }
-
-        .pricing-hero p {
-            font-size: 18px;
-            opacity: 0.9;
-        }
-
-        .pricing-filters {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            margin: -40px auto 40px;
-            max-width: 800px;
-            position: relative;
-            z-index: 10;
-        }
-
-        .filter-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .filter-btn {
-            padding: 10px 20px;
-            border: 2px solid #e1e5e9;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .filter-btn:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .filter-btn.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .category-section {
-            margin-bottom: 50px;
-        }
-
-        .category-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid var(--primary-color);
-        }
-
-        .category-icon {
-            font-size: 36px;
-            color: var(--primary-color);
-        }
-
-        .category-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text-color);
-        }
-
-        .pricing-table {
-            width: 100%;
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-        }
-
-        .pricing-table thead {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .pricing-table th {
-            padding: 18px 20px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 15px;
-        }
-
-        .pricing-table tbody tr {
-            border-bottom: 1px solid #f0f2f5;
-            transition: background 0.2s ease;
-        }
-
-        .pricing-table tbody tr:hover {
-            background: #f8f9fa;
-        }
-
-        .pricing-table td {
-            padding: 16px 20px;
-            color: var(--text-color);
-        }
-
-        .service-name {
-            font-weight: 600;
-            color: var(--text-color);
-        }
-
-        .service-description {
-            font-size: 14px;
-            color: #6c757d;
-            margin-top: 4px;
-        }
-
-        .price-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        .price-unit {
-            font-size: 13px;
-            color: #6c757d;
-            margin-left: 5px;
-        }
-
-        .service-duration {
-            display: inline-block;
-            padding: 4px 10px;
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-
-        .no-services {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6c757d;
-        }
-
-        .no-services i {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-
-        .pricing-notes {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 40px;
-        }
-
-        .pricing-notes h4 {
-            color: #856404;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .pricing-notes ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .pricing-notes li {
-            padding: 8px 0;
-            color: #856404;
-        }
-
-        .pricing-notes li:before {
-            content: "✓";
-            margin-right: 10px;
-            font-weight: bold;
-        }
-
-        .loading-spinner {
-            text-align: center;
-            padding: 60px 20px;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/pages/pricing.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
 </head>
-<body>
-    <div class="page-shell">
+<body class="pricing-page">
+    <div class="page-shell pricing-shell">
         <aside class="app-sidebar">
             <div class="brand-panel">
                 <div class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></div>
                 <div>
                     <div class="brand-name">HealthySystem</div>
-                    <div class="brand-caption">Service Pricing</div>
+                    <div class="brand-caption">Patient Workspace</div>
                 </div>
             </div>
 
-            <div class="nav-section-title">Khám phá</div>
+            <div class="nav-section-title">Điều hướng</div>
             <ul class="app-nav">
-                <li><a href="index.html"><i class="fas fa-home"></i> Trang chủ</a></li>
-                <li><a href="doctors.html"><i class="fas fa-user-md"></i> Bác sĩ</a></li>
+                <li><a href="index.html"><i class="fas fa-house"></i> Trang chủ</a></li>
+                <li><a href="index.html#specialties"><i class="fas fa-stethoscope"></i> Chuyên khoa</a></li>
+                <li><a href="doctors.html"><i class="fas fa-user-doctor"></i> Bác sĩ</a></li>
                 <li><a class="active" href="pricing.html"><i class="fas fa-file-invoice-dollar"></i> Bảng giá</a></li>
                 <li><a href="news.html"><i class="fas fa-newspaper"></i> Tin tức</a></li>
+                <li><a href="index.html#contact"><i class="fas fa-phone"></i> Liên hệ</a></li>
             </ul>
 
             <div class="nav-section-title">Tài khoản</div>
+            <ul class="app-nav">
+                <li><a href="login.html" id="login-btn"><i class="fas fa-right-to-bracket"></i> Đăng nhập</a></li>
+                <li><a href="profile.html" id="user-menu" style="display: none;"><i class="fas fa-user-circle"></i> <span id="user-display-name">Tài khoản</span></a></li>
+                <li><a href="#" id="logout-btn" style="display: none;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+            </ul>
+
+            <div class="nav-section-title">Liên kết</div>
             <ul class="app-nav mb-0">
-                <li><a href="login.html" id="login-btn"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a></li>
-                <li id="user-menu" style="display:none;"><a href="profile.html"><i class="fas fa-user-circle"></i> <span id="user-display-name">Tài khoản</span></a></li>
-                <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                <li><a href="appointment-registration.html"><i class="fas fa-calendar-plus"></i> Đăng ký lịch khám</a></li>
+                <li><a href="guides.html"><i class="fas fa-book-medical"></i> Hướng dẫn</a></li>
             </ul>
         </aside>
 
         <main class="app-main">
-            <header class="app-topbar">
+            <header class="app-topbar pricing-topbar">
                 <div>
-                    <h2 class="mb-1">Bảng giá dịch vụ</h2>
-                    <p class="text-muted">Minh bạch chi phí và chuẩn hóa thông tin dịch vụ khám chữa bệnh</p>
+                    <span class="topbar-eyebrow">Minh bạch chi phí</span>
+                    <h2 class="mb-1" id="pricing-page-title">Danh mục dịch vụ</h2>
+                    <p class="text-muted" id="pricing-page-subtitle">Danh sách giá khám và điều trị được cập nhật theo danh mục dịch vụ</p>
                 </div>
+                <a href="appointment-registration.html" class="btn btn-brand"><i class="fas fa-calendar-check me-2"></i>Đặt lịch ngay</a>
             </header>
 
-    <!-- Hero Section -->
-    <section class="pricing-hero">
-        <div class="container">
-            <h1><i class="fas fa-file-invoice-dollar"></i> Bảng giá dịch vụ</h1>
-            <p>Minh bạch, rõ ràng - Chất lượng dịch vụ y tế chuyên nghiệp</p>
-        </div>
-    </section>
-
-    <!-- Main Content -->
-    <section class="py-5">
-        <div class="container">
-            <!-- Filters -->
-            <div class="pricing-filters">
-                <div class="filter-buttons" id="category-filters">
-                    <button class="filter-btn active" data-category="all">
-                        <i class="fas fa-th-large"></i> Tất cả
-                    </button>
-                    <!-- Categories will be loaded dynamically -->
+            <section class="pricing-content">
+                <div id="pricing-loading-state" class="modern-card state-card">
+                    <div id="pricing-loading-skeleton"></div>
                 </div>
-            </div>
 
-            <!-- Services by Category -->
-            <div id="services-container">
-                <div class="loading-spinner">
-                    <div class="spinner"></div>
-                    <p>Đang tải bảng giá...</p>
+                <div id="pricing-error-state" class="modern-card state-card error-state" style="display: none;">
+                    <h3>Không thể tải dữ liệu bảng giá</h3>
+                    <p>Vui lòng kiểm tra kết nối API hoặc thử tải lại trang.</p>
+                    <button type="button" class="btn btn-brand" id="pricing-retry-btn">Thử lại</button>
                 </div>
-            </div>
 
-            <!-- Notes -->
-            <div class="pricing-notes">
-                <h4><i class="fas fa-info-circle"></i> Lưu ý quan trọng</h4>
-                <ul>
-                    <li>Giá đã bao gồm thuế VAT</li>
-                    <li>Giá có thể thay đổi tùy theo tình trạng bệnh và yêu cầu cụ thể</li>
-                    <li>Bảo hiểm y tế được chấp nhận - vui lòng xuất trình thẻ BHYT</li>
-                    <li>Đặt lịch trước để được ưu tiên và tránh chờ đợi</li>
-                    <li>Liên hệ hotline 1900-1234 để được tư vấn chi tiết</li>
-                </ul>
-            </div>
-        </div>
-    </section>
+                <article id="pricing-card" class="modern-card pricing-table-card" style="display: none;">
+                    <div class="card-header-modern">
+                        <div>
+                            <h3>Bảng giá khám chữa bệnh</h3>
+                            <p class="text-muted">Giá được hiển thị theo danh mục và chuẩn hóa theo đơn vị dịch vụ.</p>
+                        </div>
+                        <span class="info-chip success" id="pricing-last-updated">Cập nhật hôm nay</span>
+                    </div>
+
+                    <div class="filter-strip">
+                        <span class="filter-label">Danh mục dịch vụ</span>
+                        <div id="category-filters" class="filter-list"></div>
+                    </div>
+
+                    <div class="modern-table-wrap">
+                        <table class="modern-table" aria-describedby="pricing-page-subtitle">
+                            <thead>
+                                <tr>
+                                    <th style="width: 38%;">Dịch vụ</th>
+                                    <th style="width: 20%;">Danh mục</th>
+                                    <th style="width: 14%;">Thời lượng</th>
+                                    <th style="width: 12%;">Đơn vị</th>
+                                    <th style="width: 16%;">Giá</th>
+                                </tr>
+                            </thead>
+                            <tbody id="priceTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="pricing-empty-message" class="empty-state" style="display: none;">
+                        <h3>Chưa có dữ liệu hiển thị</h3>
+                        <p>Không tìm thấy dịch vụ thuộc danh mục đã chọn.</p>
+                    </div>
+                </article>
+
+                <aside class="modern-card pricing-note-card">
+                    <h3><i class="fas fa-circle-info"></i> Lưu ý quan trọng</h3>
+                    <ul>
+                        <li>Giá đã bao gồm VAT theo quy định hiện hành.</li>
+                        <li>Mức giá có thể thay đổi theo chỉ định chuyên môn và tình trạng bệnh.</li>
+                        <li>Vui lòng mang theo giấy tờ bảo hiểm để được hỗ trợ quyền lợi.</li>
+                        <li>Liên hệ hotline 1900 1234 nếu cần tư vấn trước khi đặt lịch.</li>
+                    </ul>
+                </aside>
+            </section>
+
+            <footer class="workspace-footer pricing-footer">
+                <div class="footer-meta">
+                    <p>&copy; 2026 HealthySystem. Tất cả quyền được bảo lưu.</p>
+                    <p>API Status: <span id="api-status">Đang kiểm tra...</span></p>
+                </div>
+            </footer>
         </main>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer py-4 bg-primary text-white text-center">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-info">
-                    <h4><i class="fas fa-hospital"></i> HealthySystem</h4>
-                    <p><i class="fas fa-map-marker-alt"></i> 123 Đường Y Tế, Quận 1, TP.HCM</p>
-                    <p><i class="fas fa-phone"></i> Hotline: 1900-1234</p>
-                </div>
-            </div>
-            <hr style="margin: 1rem 0; opacity: 0.3;">
-            <p>&copy; 2025 HealthySystem. Tất cả quyền được bảo lưu.</p>
-        </div>
-    </footer>
-
-    <!-- Scripts -->
     <script src="assets/js/config.js"></script>
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/api.js"></script>
     <script src="assets/js/auth.js"></script>
-    <script>
-        // Pricing page logic
-        let allServices = [];
-        let categories = [];
-
-        // Load pricing data
-        async function loadPricingData() {
-            try {
-                // Load categories
-                const categoriesResponse = await apiService.getServiceCategories();
-                if (categoriesResponse.success) {
-                    categories = categoriesResponse.data;
-                    renderCategoryFilters();
-                }
-
-                // Load services
-                const servicesResponse = await apiService.getServices();
-                if (servicesResponse.success) {
-                    allServices = servicesResponse.data;
-                    renderServices(allServices);
-                }
-            } catch (error) {
-                console.error('Error loading pricing:', error);
-                document.getElementById('services-container').innerHTML = `
-                    <div class="no-services">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <h3>Không thể tải bảng giá</h3>
-                        <p>Vui lòng thử lại sau</p>
-                    </div>
-                `;
-            }
-        }
-
-        // Render category filters
-        function renderCategoryFilters() {
-            const filtersContainer = document.getElementById('category-filters');
-            const allButton = filtersContainer.querySelector('[data-category="all"]');
-            
-            categories.forEach(cat => {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn';
-                btn.setAttribute('data-category', cat.Code);
-                btn.innerHTML = `${cat.Icon} ${cat.Name}`;
-                btn.addEventListener('click', () => filterByCategory(cat.Code));
-                filtersContainer.appendChild(btn);
-            });
-        }
-
-        // Filter services by category
-        function filterByCategory(category) {
-            // Update active button
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-
-            // Filter and render
-            if (category === 'all') {
-                renderServices(allServices);
-            } else {
-                const filtered = allServices.filter(s => s.Category === category);
-                renderServices(filtered);
-            }
-        }
-
-        // Render services
-        function renderServices(servicesByCategory) {
-            const container = document.getElementById('services-container');
-            
-            if (!servicesByCategory || servicesByCategory.length === 0) {
-                container.innerHTML = `
-                    <div class="no-services">
-                        <i class="fas fa-folder-open"></i>
-                        <h3>Không có dịch vụ nào</h3>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = servicesByCategory.map(category => `
-                <div class="category-section">
-                    <div class="category-header">
-                        <div class="category-icon">${getCategoryIcon(category.Category)}</div>
-                        <h2 class="category-title">${category.CategoryName}</h2>
-                    </div>
-                    <table class="pricing-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 40%">Dịch vụ</th>
-                                <th style="width: 20%">Thời gian</th>
-                                <th style="width: 20%">Đơn vị</th>
-                                <th style="width: 20%">Giá</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${category.Services.map(service => `
-                                <tr>
-                                    <td>
-                                        <div class="service-name">${service.Name}</div>
-                                        ${service.Description ? `<div class="service-description">${service.Description}</div>` : ''}
-                                    </td>
-                                    <td>
-                                        ${service.Duration ? `<span class="service-duration">${service.Duration} phút</span>` : '-'}
-                                    </td>
-                                    <td>${service.Unit || 'Lần'}</td>
-                                    <td>
-                                        <span class="price-value">${formatCurrency(service.DefaultPrice)}</span>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `).join('');
-        }
-
-        // Helper functions
-        function getCategoryIcon(category) {
-            const icons = {
-                'consultation': '👨‍⚕️',
-                'lab': '🔬',
-                'imaging': '📷',
-                'procedure': '⚕️',
-                'medication': '💊',
-                'other': '📋'
-            };
-            return icons[category] || '📋';
-        }
-
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND'
-            }).format(amount);
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            loadPricingData();
-            authManager.init();
-        });
-    </script>
+    <script src="assets/js/pricing.js"></script>
 </body>
 </html>

@@ -6,6 +6,22 @@ class HealthySystemApp {
         this.appointments = [];
         this.init();
     }
+
+    normalizeDoctorId(rawId) {
+        if (rawId === null || rawId === undefined) return null;
+
+        const value = String(rawId).trim();
+        if (!value) return null;
+        if (/^(null|undefined|nan)$/i.test(value)) return null;
+
+        return value;
+    }
+
+    getDoctorPublicId(doctor) {
+        return this.normalizeDoctorId(
+            doctor?.publicId ?? doctor?.PublicId ?? doctor?.id ?? doctor?.Id ?? doctor?.userId ?? doctor?.UserId
+        );
+    }
     
     // Initialize application
     async init() {
@@ -65,7 +81,7 @@ class HealthySystemApp {
                     <div class="card text-center">
                         <div class="card-body">
                             <p class="text-danger">Không thể tải danh sách chuyên khoa</p>
-                            <button class="btn btn-primary" onclick="app.loadSpecialties()">Thử lại</button>
+                            <button class="btn btn-outline" onclick="app.loadSpecialties()">Thử lại</button>
                         </div>
                     </div>
                 </div>
@@ -92,11 +108,11 @@ class HealthySystemApp {
         
         const specialtiesHtml = this.specialties.map(specialty => `
             <div class="col-4">
-                <div class="card">
+                <div class="card modern-card specialty-card">
                     <div class="card-body">
                         <h5 class="card-title">${specialty.name}</h5>
                         <p class="card-text">${specialty.description || 'Chuyên khoa ' + specialty.name}</p>
-                        <button class="btn btn-primary" onclick="app.viewSpecialtyDoctors(${specialty.id})">
+                        <button class="btn btn-outline" onclick="app.viewSpecialtyDoctors(${specialty.id})">
                             Xem thêm
                         </button>
                     </div>
@@ -128,7 +144,7 @@ class HealthySystemApp {
                     <div class="card text-center">
                         <div class="card-body">
                             <p class="text-danger">Không thể tải danh sách bác sĩ</p>
-                            <button class="btn btn-primary" onclick="app.loadDoctors()">Thử lại</button>
+                            <button class="btn btn-outline" onclick="app.loadDoctors()">Thử lại</button>
                         </div>
                     </div>
                 </div>
@@ -153,32 +169,53 @@ class HealthySystemApp {
             return;
         }
         
-        const doctorsHtml = this.doctors.slice(0, 6).map(doctor => `
-            <div class="col-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">${doctor.title || 'BS.'} ${doctor.fullName}</h5>
-                        <p class="card-text">
-                            <strong>Chuyên khoa:</strong> ${doctor.specialties.map(s => s.name).join(', ')}<br>
-                            <strong>Khoa:</strong> ${doctor.department || 'Không xác định'}<br>
-                            <strong>Kinh nghiệm:</strong> ${doctor.yearsOfExperience || 0} năm
-                        </p>
-                        <div class="mb-2">
-                            <span class="text-warning">
-                                ${'★'.repeat(Math.floor(doctor.averageRating || 0))}${'☆'.repeat(5 - Math.floor(doctor.averageRating || 0))}
-                            </span>
-                            <small class="text-muted">(${doctor.totalRatings || 0} đánh giá)</small>
+        const doctorsHtml = this.doctors.slice(0, 6).map(doctor => {
+            const specialtiesText = Array.isArray(doctor.specialties) && doctor.specialties.length
+                ? doctor.specialties.map(s => s.name).join(', ')
+                : 'Đang cập nhật';
+
+            const doctorPublicId = this.getDoctorPublicId(doctor);
+            const hasValidDoctorId = Boolean(doctorPublicId);
+
+            const doctorName = `${doctor.title || 'BS.'} ${doctor.fullName || ''}`.trim();
+            const fallbackName = encodeURIComponent((doctor.fullName || 'Doctor').trim() || 'Doctor');
+            const imageUrl = doctor.profileImageUrl
+                || doctor.profileImage
+                || doctor.avatarUrl
+                || `https://ui-avatars.com/api/?name=${fallbackName}&background=0F172A&color=FFFFFF&size=480`;
+
+            return `
+                <div class="col-4">
+                    <div class="card modern-card doctor-card">
+                        <div class="card-body">
+                            <div class="doctor-card-head">
+                                <img src="${imageUrl}" alt="${doctorName}" class="doctor-card-image" onerror="this.src='https://ui-avatars.com/api/?name=Doctor&background=0F172A&color=FFFFFF&size=480'">
+                                <h5 class="card-title">${doctorName}</h5>
+                            </div>
+                            <p class="card-text doctor-card-meta">
+                                <strong>Chuyên khoa:</strong> ${specialtiesText}<br>
+                                <strong>Khoa:</strong> ${doctor.department || 'Không xác định'}<br>
+                                <strong>Kinh nghiệm:</strong> ${doctor.yearsOfExperience || 0} năm
+                            </p>
+                            <div class="mb-2">
+                                <span class="text-warning">
+                                    ${'★'.repeat(Math.floor(doctor.averageRating || 0))}${'☆'.repeat(5 - Math.floor(doctor.averageRating || 0))}
+                                </span>
+                                <small class="text-muted">(${doctor.totalRatings || 0} đánh giá)</small>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-outline" ${hasValidDoctorId ? `onclick="app.viewDoctor('${doctorPublicId}')"` : 'disabled'}>
+                                Xem chi tiết
+                                </button>
+                                <button class="btn btn-success btn-sm" ${hasValidDoctorId ? `onclick="app.bookAppointment('${doctorPublicId}')"` : 'disabled'}>
+                                Đặt lịch
+                                </button>
+                            </div>
                         </div>
-                        <button class="btn btn-primary" onclick="app.viewDoctor('${doctor.publicId}')">
-                            Xem chi tiết
-                        </button>
-                        <button class="btn btn-success btn-sm" onclick="app.bookAppointment('${doctor.publicId}')">
-                            Đặt lịch
-                        </button>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
         
         container.innerHTML = doctorsHtml;
     }
@@ -201,7 +238,10 @@ class HealthySystemApp {
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        ${doctors.map(doctor => `
+                        ${doctors.map(doctor => {
+                            const doctorPublicId = this.getDoctorPublicId(doctor);
+                            const hasValidDoctorId = Boolean(doctorPublicId);
+                            return `
                             <div class="col-6 mb-3">
                                 <div class="card">
                                     <div class="card-body">
@@ -210,16 +250,16 @@ class HealthySystemApp {
                                             <strong>Khoa:</strong> ${doctor.department || 'Không xác định'}<br>
                                             <strong>Kinh nghiệm:</strong> ${doctor.yearsOfExperience || 0} năm
                                         </p>
-                                        <button class="btn btn-primary btn-sm" onclick="app.viewDoctor('${doctor.publicId}')">
+                                        <button class="btn btn-primary btn-sm" ${hasValidDoctorId ? `onclick="app.viewDoctor('${doctorPublicId}')"` : 'disabled'}>
                                             Chi tiết
                                         </button>
-                                        <button class="btn btn-success btn-sm" onclick="app.bookAppointment('${doctor.publicId}')">
+                                        <button class="btn btn-success btn-sm" ${hasValidDoctorId ? `onclick="app.bookAppointment('${doctorPublicId}')"` : 'disabled'}>
                                             Đặt lịch
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                        `).join('')}
+                        `; }).join('')}
                     </div>
                 </div>
             </div>
@@ -241,12 +281,19 @@ class HealthySystemApp {
     
     // View doctor details
     async viewDoctor(publicId) {
+        const doctorId = this.normalizeDoctorId(publicId);
+        if (!doctorId) {
+            Utils.showNotification('Không tìm thấy mã bác sĩ hợp lệ để mở hồ sơ.', 'warning');
+            return;
+        }
+
         // Chuyển đến trang chi tiết bác sĩ
-        window.location.href = `doctor-detail.html?id=${publicId}`;
+        window.location.href = `doctor-detail.html?id=${encodeURIComponent(doctorId)}`;
     }
     
     // Show doctor detail modal
     showDoctorDetailModal(doctor) {
+        const doctorPublicId = this.getDoctorPublicId(doctor);
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.innerHTML = `
@@ -295,7 +342,7 @@ class HealthySystemApp {
                         </div>
                     </div>
                     <div class="text-center mt-3">
-                        <button class="btn btn-success btn-lg" onclick="app.bookAppointment('${doctor.publicId}')">
+                        <button class="btn btn-success btn-lg" ${doctorPublicId ? `onclick="app.bookAppointment('${doctorPublicId}')"` : 'disabled'}>
                             Đặt lịch khám
                         </button>
                     </div>
@@ -319,9 +366,11 @@ class HealthySystemApp {
     
     // Book appointment
     bookAppointment(doctorPublicId) {
+        const doctorId = this.normalizeDoctorId(doctorPublicId);
+
         // Redirect to book appointment page with doctor pre-selected
-        if (doctorPublicId) {
-            window.location.href = `book-appointment.html?doctor=${doctorPublicId}`;
+        if (doctorId) {
+            window.location.href = `book-appointment.html?doctor=${encodeURIComponent(doctorId)}`;
         } else {
             window.location.href = 'book-appointment.html';
         }
@@ -642,89 +691,25 @@ async function loadPricingPreview() {
             
             // Take first 3 categories
             const previewCategories = servicesData.slice(0, 3);
-            
-            // Define gradient colors for each card
-            const gradients = [
-                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-            ];
-            
+
             pricingContainer.innerHTML = previewCategories.map((category, index) => `
                 <div class="col-4">
-                    <div class="pricing-card" style="
-                        height: 400px;
-                        border-radius: 20px;
-                        background: white;
-                        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-                        overflow: hidden;
-                        transition: all 0.3s ease;
-                        border: none;
-                    " onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 60px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 40px rgba(0,0,0,0.1)'">
-                        <!-- Gradient Header -->
-                        <div style="
-                            background: ${gradients[index]};
-                            padding: 30px 20px;
-                            text-align: center;
-                            color: white;
-                        ">
-                            <div style="font-size: 48px; margin-bottom: 10px;">
-                                ${getCategoryIcon(category.Category)}
+                    <article class="card modern-card pricing-preview-card pricing-tone-${(index % 3) + 1}">
+                        <div class="card-body">
+                            <div class="pricing-preview-head">
+                                <span class="pricing-preview-icon">${getCategoryIcon(category.Category)}</span>
+                                <h4 class="card-title">${category.CategoryName}</h4>
                             </div>
-                            <h4 style="
-                                color: white;
-                                font-weight: 700;
-                                font-size: 22px;
-                                margin: 0;
-                                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                            ">${category.CategoryName}</h4>
-                        </div>
-                        
-                        <!-- Services List -->
-                        <div style="padding: 25px 20px; height: calc(100% - 170px); overflow-y: auto;">
-                            <ul style="list-style: none; padding: 0; margin: 0;">
-                                ${category.Services.slice(0, 4).map((service, idx) => `
-                                    <li style="
-                                        padding: 15px 0;
-                                        border-bottom: ${idx < 3 ? '1px solid #f0f2f5' : 'none'};
-                                        animation: fadeInUp 0.5s ease ${idx * 0.1}s backwards;
-                                    ">
-                                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                                            <div style="display: flex; align-items: center; flex: 1;">
-                                                <span style="
-                                                    display: inline-flex;
-                                                    align-items: center;
-                                                    justify-content: center;
-                                                    width: 8px;
-                                                    height: 8px;
-                                                    background: ${gradients[index]};
-                                                    border-radius: 50%;
-                                                    margin-right: 12px;
-                                                "></span>
-                                                <span style="
-                                                    font-size: 14px;
-                                                    color: #2d3748;
-                                                    font-weight: 500;
-                                                ">${service.Name}</span>
-                                            </div>
-                                            <strong style="
-                                                background: ${gradients[index]};
-                                                -webkit-background-clip: text;
-                                                -webkit-text-fill-color: transparent;
-                                                background-clip: text;
-                                                font-weight: 700;
-                                                font-size: 15px;
-                                                white-space: nowrap;
-                                                margin-left: 10px;
-                                            ">
-                                                ${formatCurrency(service.DefaultPrice)}
-                                            </strong>
-                                        </div>
+                            <ul class="pricing-preview-list">
+                                ${category.Services.slice(0, 4).map(service => `
+                                    <li>
+                                        <span class="service-name">${service.Name}</span>
+                                        <strong class="service-price">${formatCurrency(service.DefaultPrice)}</strong>
                                     </li>
                                 `).join('')}
                             </ul>
                         </div>
-                    </div>
+                    </article>
                 </div>
             `).join('');
         }
@@ -744,28 +729,22 @@ async function loadNewsPreview() {
             // Handle both array and object with items property
             const newsList = Array.isArray(response.data) ? response.data : (response.data.items || []);
             
-            newsContainer.innerHTML = `
-                <div class="row">
-                    ${newsList.map(news => `
-                        <div class="col-3">
-                            <div class="card" style="height: 500px; display: flex; flex-direction: column; cursor: pointer;" onclick="window.location.href='news-detail.html?id=${news.Id}'">
-                                <img src="${news.Image}" alt="${news.Title}" style="width: 100%; height: 200px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/400x200?text=News'">
-                                <div class="card-body" style="flex: 1; display: flex; flex-direction: column;">
-                                    <span style="display: inline-block; padding: 4px 10px; background: #e8f5e9; color: #2e7d32; border-radius: 6px; font-size: 12px; margin-bottom: 10px;">
-                                        ${news.CategoryName}
-                                    </span>
-                                    <h4 style="font-size: 18px; margin-bottom: 10px; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${news.Title}</h4>
-                                    <p style="color: #6c757d; font-size: 14px; line-height: 1.6; flex: 1; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">${news.Summary}</p>
-                                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: #6c757d; margin-top: 10px;">
-                                        <span><i class="fas fa-user-md"></i> ${news.Author}</span>
-                                        <span><i class="fas fa-eye"></i> ${news.Views || 0}</span>
-                                    </div>
-                                </div>
+            newsContainer.innerHTML = newsList.map(news => `
+                <div class="col-3">
+                    <article class="card modern-card news-preview-card" onclick="window.location.href='news-detail.html?id=${news.Id}'">
+                        <img src="${news.Image}" alt="${news.Title}" class="news-preview-image" onerror="this.src='https://via.placeholder.com/800x450?text=News'">
+                        <div class="card-body news-preview-body">
+                            <span class="news-preview-category">${news.CategoryName}</span>
+                            <h4 class="news-preview-title">${news.Title}</h4>
+                            <p class="news-preview-summary">${news.Summary}</p>
+                            <div class="news-preview-meta">
+                                <span><i class="fas fa-user-doctor"></i> ${news.Author}</span>
+                                <span><i class="fas fa-eye"></i> ${news.Views || 0}</span>
                             </div>
                         </div>
-                    `).join('')}
+                    </article>
                 </div>
-            `;
+            `).join('');
         }
     } catch (error) {
         console.error('Error loading news preview:', error);

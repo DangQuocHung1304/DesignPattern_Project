@@ -1,0 +1,287 @@
+@import url('../design-system.css');
+
+.doctor-detail-page {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 4% 0%, color-mix(in srgb, var(--color-emerald-500) 10%, transparent), transparent 35%),
+        radial-gradient(circle at 95% 1%, color-mix(in srgb, var(--color-sky-500) 10%, transparent), transparent 32%),
+        var(--color-bg);
+}
+
+.doctor-shell {
+    min-height: 100vh;
+}
+
+.doctor-topbar {
+    border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+}
+
+.topbar-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-pill);
+    padding: 0.32rem 0.72rem;
+    margin-bottom: var(--space-2);
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--color-emerald-700);
+    background: color-mix(in srgb, var(--color-emerald-100) 72%, var(--color-surface));
+}
+
+.doctor-content {
+    display: grid;
+    gap: var(--space-5);
+    padding-bottom: var(--space-6);
+}
+
+.state-card {
+    padding: clamp(var(--space-5), 3vw, var(--space-8));
+}
+
+.error-state {
+    text-align: center;
+    display: grid;
+    gap: var(--space-3);
+    justify-items: center;
+}
+
+.doctor-profile-card {
+    display: grid;
+    gap: var(--space-5);
+    padding: clamp(var(--space-5), 3vw, var(--space-8));
+}
+
+.doctor-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+    gap: var(--space-5);
+    align-items: center;
+}
+
+.doctor-media {
+    position: relative;
+}
+
+.doctor-image {
+    width: 100%;
+    border-radius: 16px;
+    min-height: 240px;
+    max-height: 380px;
+    object-fit: cover;
+    border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
+    background: color-mix(in srgb, var(--color-slate-100) 76%, var(--color-surface));
+}
+
+.doctor-avatar {
+    position: absolute;
+    left: 1rem;
+    bottom: 1rem;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--color-surface);
+    font-size: 1.9rem;
+    border: 2px solid rgba(255, 255, 255, 0.75);
+    background: linear-gradient(135deg, var(--color-slate-950), color-mix(in srgb, var(--color-slate-800) 76%, var(--color-emerald-500)));
+}
+
+.doctor-basic-info {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.doctor-name {
+    font-family: var(--font-heading);
+    font-size: clamp(1.5rem, 1.2rem + 1vw, 2.2rem);
+    color: var(--color-text-strong);
+    line-height: 1.25;
+}
+
+.doctor-title {
+    color: var(--color-text);
+    font-size: 1rem;
+}
+
+.doctor-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+}
+
+.stars {
+    color: var(--color-amber-500);
+    font-size: 1.15rem;
+}
+
+.rating-text {
+    color: var(--color-text-muted);
+}
+
+.quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.quick-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.doctor-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+}
+
+.doctor-info-card {
+    border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--color-surface) 96%, var(--color-surface-soft));
+    padding: var(--space-4);
+    display: grid;
+    gap: var(--space-3);
+}
+
+.doctor-info-card h3 {
+    display: inline-flex;
+    gap: 0.45rem;
+    align-items: center;
+    color: var(--color-text-strong);
+}
+
+.info-list {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.info-item {
+    border: 1px solid color-mix(in srgb, var(--color-border) 76%, transparent);
+    border-radius: var(--radius-xs);
+    background: color-mix(in srgb, var(--color-surface-soft) 86%, var(--color-surface));
+    padding: 0.68rem 0.78rem;
+    display: grid;
+    gap: 0.15rem;
+}
+
+.info-label {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.info-value {
+    color: var(--color-text-strong);
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.specialties-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.specialty-tag {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-pill);
+    border: 1px solid color-mix(in srgb, var(--color-emerald-600) 30%, transparent);
+    background: color-mix(in srgb, var(--color-emerald-100) 72%, var(--color-surface));
+    color: var(--color-emerald-700);
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 0.2rem 0.56rem;
+}
+
+.schedule-table th,
+.schedule-table td {
+    padding-inline: 0.9rem;
+}
+
+.reviews-section {
+    display: grid;
+    gap: var(--space-2);
+}
+
+.review-item {
+    border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
+    border-radius: var(--radius-xs);
+    background: color-mix(in srgb, var(--color-surface-soft) 85%, var(--color-surface));
+    padding: 0.72rem 0.78rem;
+    display: grid;
+    gap: 0.35rem;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.review-author {
+    font-weight: 700;
+    color: var(--color-text-strong);
+}
+
+.review-date {
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+}
+
+.review-text {
+    color: var(--color-text);
+    line-height: 1.65;
+}
+
+.empty-message {
+    color: var(--color-text-muted);
+    border: 1px dashed color-mix(in srgb, var(--color-border) 78%, transparent);
+    border-radius: var(--radius-xs);
+    padding: 0.68rem 0.78rem;
+    text-align: center;
+}
+
+.workspace-footer.doctor-footer {
+    margin-top: var(--space-2);
+    border-radius: var(--radius-md);
+    border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
+    background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+    padding: var(--space-5);
+}
+
+@media (max-width: 1100px) {
+    .doctor-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .doctor-media {
+        max-width: 420px;
+    }
+
+    .doctor-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .quick-actions {
+        flex-direction: column;
+    }
+
+    .quick-actions .btn {
+        justify-content: center;
+    }
+
+    .workspace-footer.doctor-footer .footer-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

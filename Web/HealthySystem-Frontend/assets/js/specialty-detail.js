@@ -28,6 +28,23 @@ class SpecialtyDetailPage {
         // Any additional event binding can be added here
     }
 
+    normalizeSpecialtyName(rawName) {
+        const source = (rawName || '').toString().trim();
+        if (!source) {
+            return 'Tổng quát';
+        }
+
+        const cleaned = source.replace(/^chuyên\s*khoa[\s:-]*/i, '').trim();
+        return cleaned || 'Tổng quát';
+    }
+
+    getDisplaySpecialtyName() {
+        if (!this.specialty) {
+            return 'Tổng quát';
+        }
+        return this.normalizeSpecialtyName(this.specialty.name);
+    }
+
     async loadSpecialtyDetail() {
         try {
             this.showLoading();
@@ -107,11 +124,13 @@ class SpecialtyDetailPage {
 
     filterDoctorsBySpecialty(allDoctors) {
         if (!this.specialty) return [];
+
+        const specialtyName = this.getDisplaySpecialtyName().toLowerCase();
         
         return allDoctors.filter(doctor => {
             if (doctor.specialties && doctor.specialties.length > 0) {
                 return doctor.specialties.some(spec => 
-                    spec.name.toLowerCase().includes(this.specialty.name.toLowerCase()) ||
+                    spec.name.toLowerCase().includes(specialtyName) ||
                     spec.id === this.specialty.id
                 );
             }
@@ -122,21 +141,26 @@ class SpecialtyDetailPage {
     renderSpecialtyInfo() {
         if (!this.specialty) return;
 
+        const specialtyName = this.getDisplaySpecialtyName();
+        const specialtyLabel = `Chuyên khoa ${specialtyName}`;
+
         // Update page title
-        document.title = `${this.specialty.name} - HealthySystem`;
+        document.title = `${specialtyLabel} - HealthySystem`;
 
         // Update header information
         this.updateElement('specialty-icon', this.getSpecialtyIcon(this.specialty.name));
-        this.updateElement('specialty-title', this.specialty.name);
+        this.updateElement('specialty-title', specialtyLabel);
+        this.updateElement('specialty-page-title', specialtyLabel);
+        this.updateElement('specialty-page-subtitle', `Thông tin chuyên khoa ${specialtyName} và đội ngũ bác sĩ theo từng lĩnh vực điều trị`);
         this.updateElement('specialty-subtitle', 
-            `Chuyên khoa ${this.specialty.name} tại HealthySystem với đội ngũ bác sĩ giàu kinh nghiệm`);
+            `${specialtyLabel} tại HealthySystem với đội ngũ bác sĩ giàu kinh nghiệm`);
 
         // Update article title
-        this.updateElement('article-title', `Chuyên khoa ${this.specialty.name} tại HealthySystem`);
+        this.updateElement('article-title', `${specialtyLabel} tại HealthySystem`);
         
         // Update doctors subtitle
         this.updateElement('doctors-subtitle', 
-            `Đội ngũ bác sĩ chuyên khoa ${this.specialty.name} tận tâm và giàu kinh nghiệm`);
+            `Đội ngũ bác sĩ chuyên khoa ${specialtyName} tận tâm và giàu kinh nghiệm`);
 
         // Update current date
         const currentDate = new Date().toLocaleDateString('vi-VN', {
@@ -168,6 +192,8 @@ class SpecialtyDetailPage {
     }
 
     generateArticleContent(specialty) {
+        const specialtyName = this.normalizeSpecialtyName(specialty.name);
+
         const articles = {
             'Nội tổng quát': {
                 introduction: `Chuyên khoa Nội tổng quát tại HealthySystem là một trong những chuyên khoa nòng cốt, chuyên điều trị các bệnh lý nội khoa phổ biến và phức tạp. Với đội ngũ bác sĩ giàu kinh nghiệm và trang thiết bị hiện đại, chúng tôi cam kết mang đến dịch vụ chăm sóc sức khỏe tốt nhất cho bệnh nhân.`,
@@ -240,10 +266,10 @@ class SpecialtyDetailPage {
         };
 
         const defaultArticle = {
-            introduction: `Chuyên khoa ${specialty.name} tại HealthySystem là một trong những chuyên khoa quan trọng, cung cấp dịch vụ chăm sóc sức khỏe chất lượng cao với đội ngũ bác sĩ giàu kinh nghiệm và trang thiết bị hiện đại.`,
+            introduction: `Chuyên khoa ${specialtyName} tại HealthySystem là một trong những chuyên khoa quan trọng, cung cấp dịch vụ chăm sóc sức khỏe chất lượng cao với đội ngũ bác sĩ giàu kinh nghiệm và trang thiết bị hiện đại.`,
             
             services: [
-                `Khám và điều trị các bệnh lý thuộc chuyên khoa ${specialty.name}`,
+                `Khám và điều trị các bệnh lý thuộc chuyên khoa ${specialtyName}`,
                 'Tư vấn và hướng dẫn chăm sóc sức khỏe',
                 'Theo dõi và điều trị dài hạn',
                 'Khám sức khỏe định kỳ',
@@ -261,13 +287,13 @@ class SpecialtyDetailPage {
             approach: `Tại HealthySystem, chúng tôi luôn đặt bệnh nhân làm trung tâm và áp dụng phương pháp điều trị cá nhân hóa, kết hợp giữa chuyên môn cao và sự chăm sóc tận tình để mang đến kết quả điều trị tốt nhất.`
         };
 
-        const article = articles[specialty.name] || defaultArticle;
+        const article = articles[specialtyName] || defaultArticle;
 
         return `
             <p>${article.introduction}</p>
             
             <h3>🩺 Dịch vụ chuyên môn</h3>
-            <p>Chuyên khoa ${specialty.name} tại HealthySystem cung cấp đầy đủ các dịch vụ chuyên môn:</p>
+            <p>Chuyên khoa ${specialtyName} tại HealthySystem cung cấp đầy đủ các dịch vụ chuyên môn:</p>
             <ul>
                 ${article.services.map(service => `<li>${service}</li>`).join('')}
             </ul>
@@ -287,7 +313,7 @@ class SpecialtyDetailPage {
             <p>${article.approach}</p>
             
             <h3>📞 Đặt lịch khám</h3>
-            <p>Để đặt lịch khám tại chuyên khoa ${specialty.name}, quý khách có thể:</p>
+            <p>Để đặt lịch khám tại chuyên khoa ${specialtyName}, quý khách có thể:</p>
             <ul>
                 <li>Gọi điện trực tiếp: <strong>1900 2115</strong></li>
                 <li>Đặt lịch online qua website</li>
@@ -298,6 +324,8 @@ class SpecialtyDetailPage {
     }
 
     generateStatsContent(specialty) {
+        const specialtyName = this.normalizeSpecialtyName(specialty.name);
+
         const stats = {
             'Nội tổng quát': [
                 { number: '500+', label: 'Bệnh nhân khám/tháng' },
@@ -326,7 +354,7 @@ class SpecialtyDetailPage {
             { number: '24/7', label: 'Hỗ trợ y tế' }
         ];
 
-        const specialtyStats = stats[specialty.name] || defaultStats;
+        const specialtyStats = stats[specialtyName] || defaultStats;
 
         return specialtyStats.map(stat => `
             <div class="stat-item">
@@ -340,24 +368,28 @@ class SpecialtyDetailPage {
         const container = document.getElementById('doctors-grid');
         if (!container) return;
 
+        const specialtyName = this.getDisplaySpecialtyName();
+
         if (this.doctors.length === 0) {
             this.showNoDoctors();
             return;
         }
 
         container.innerHTML = this.doctors.map(doctor => {
-            const doctorId = doctor.publicId || doctor.id;
+            const doctorId = this.resolveDoctorId(doctor);
+            const hasValidDoctorId = Boolean(doctorId);
+            const encodedDoctorId = hasValidDoctorId ? encodeURIComponent(doctorId) : '';
             const rating = doctor.averageRating || doctor.rating || 0;
             const reviewCount = doctor.totalRatings || doctor.reviewCount || 0;
             
             return `
-                <div class="doctor-card" onclick="specialtyDetailPage.goToDoctorDetail('${doctorId}')">
+                <div class="doctor-card" ${hasValidDoctorId ? `onclick="specialtyDetailPage.goToDoctorDetail('${doctorId}')"` : ''}>
                     <div class="doctor-image">
                         ${doctor.gender === 'F' ? '👩‍⚕️' : '👨‍⚕️'}
                     </div>
                     <div class="doctor-info">
                         <div class="doctor-name">${doctor.fullName || doctor.name}</div>
-                        <div class="doctor-title">${doctor.title || 'Bác sĩ'} - ${doctor.department || this.specialty.name}</div>
+                        <div class="doctor-title">${doctor.title || 'Bác sĩ'} - ${doctor.department || specialtyName}</div>
                         
                         <div class="doctor-details">
                             <div class="doctor-detail">
@@ -367,7 +399,7 @@ class SpecialtyDetailPage {
                                 <span>💼</span> ${doctor.yearsOfExperience || doctor.experience || 0} năm kinh nghiệm
                             </div>
                             <div class="doctor-detail">
-                                <span>🏥</span> ${doctor.department || this.specialty.name}
+                                <span>🏥</span> ${doctor.department || specialtyName}
                             </div>
                         </div>
 
@@ -377,10 +409,10 @@ class SpecialtyDetailPage {
                         </div>
 
                         <div class="doctor-actions">
-                            <a href="doctor-detail.html?id=${doctorId}" class="btn-view-profile">
+                            <a href="${hasValidDoctorId ? `doctor-detail.html?id=${encodedDoctorId}` : '#'}" class="btn-view-profile" ${hasValidDoctorId ? '' : 'onclick="event.preventDefault(); return false;"'}>
                                 Xem hồ sơ
                             </a>
-                            <button class="btn-book" onclick="event.stopPropagation(); specialtyDetailPage.bookAppointment('${doctorId}')">
+                            <button class="btn-book" ${hasValidDoctorId ? `onclick="event.stopPropagation(); specialtyDetailPage.bookAppointment('${doctorId}')"` : 'disabled'}>
                                 📅
                             </button>
                         </div>
@@ -407,19 +439,37 @@ class SpecialtyDetailPage {
         return stars;
     }
 
+    normalizeDoctorId(rawId) {
+        if (rawId === null || rawId === undefined) return null;
+
+        const value = String(rawId).trim();
+        if (!value) return null;
+        if (/^(null|undefined|nan)$/i.test(value)) return null;
+
+        return value;
+    }
+
+    resolveDoctorId(doctor) {
+        return this.normalizeDoctorId(
+            doctor?.publicId ?? doctor?.PublicId ?? doctor?.id ?? doctor?.Id ?? doctor?.userId ?? doctor?.UserId
+        );
+    }
+
     goToDoctorDetail(doctorId) {
-        if (!doctorId) {
-            console.error('Doctor ID is required');
+        const validDoctorId = this.normalizeDoctorId(doctorId);
+        if (!validDoctorId) {
+            console.error('Doctor ID is invalid');
             return;
         }
         
-        window.location.href = `doctor-detail.html?id=${encodeURIComponent(doctorId)}`;
+        window.location.href = `doctor-detail.html?id=${encodeURIComponent(validDoctorId)}`;
     }
 
     bookAppointment(doctorId) {
         // Redirect to book appointment page with doctor pre-selected
-        if (doctorId) {
-            window.location.href = `book-appointment.html?doctor=${doctorId}`;
+        const validDoctorId = this.normalizeDoctorId(doctorId);
+        if (validDoctorId) {
+            window.location.href = `book-appointment.html?doctor=${encodeURIComponent(validDoctorId)}`;
         } else {
             window.location.href = 'book-appointment.html';
         }
@@ -451,7 +501,7 @@ class SpecialtyDetailPage {
         
         return mockSpecialties[this.specialtyId] || { 
             id: this.specialtyId, 
-            name: 'Chuyên khoa', 
+            name: 'Tổng quát', 
             description: 'Chuyên khoa y tế' 
         };
     }
@@ -569,29 +619,43 @@ class SpecialtyDetailPage {
     }
 
     updateAuthUI() {
-        const authLink = document.getElementById('auth-link');
-        if (!authLink) return;
+        const loginBtn = document.getElementById('login-btn');
+        const userMenu = document.getElementById('user-menu');
+        const userDisplayName = document.getElementById('user-display-name');
+        const logoutBtn = document.getElementById('logout-btn');
 
-        if (AuthManager.isLoggedIn()) {
-            const user = AuthManager.getCurrentUser();
-            authLink.textContent = user ? `Xin chào, ${user.firstName}` : 'Tài khoản';
-            authLink.href = '#';
-            authLink.onclick = (e) => {
-                e.preventDefault();
-                this.showUserMenu();
-            };
+        const configUserKey = (typeof CONFIG !== 'undefined' && CONFIG.STORAGE_KEYS)
+            ? CONFIG.STORAGE_KEYS.USER
+            : null;
+
+        const storedUser = localStorage.getItem(configUserKey || 'user') || localStorage.getItem('user');
+        let user = null;
+
+        if (storedUser) {
+            try {
+                user = JSON.parse(storedUser);
+            } catch (error) {
+                user = null;
+            }
+        }
+
+        if (user) {
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (userMenu) userMenu.style.display = 'block';
+            if (logoutBtn) logoutBtn.style.display = 'block';
+
+            if (userDisplayName) {
+                userDisplayName.textContent = user.fullName || user.name || user.email || 'Tài khoản';
+            }
         } else {
-            authLink.textContent = 'Đăng nhập';
-            authLink.href = 'login.html';
-            authLink.onclick = null;
+            if (loginBtn) loginBtn.style.display = 'block';
+            if (userMenu) userMenu.style.display = 'none';
+            if (logoutBtn) logoutBtn.style.display = 'none';
         }
     }
 
     showUserMenu() {
-        if (confirm('Bạn có muốn đăng xuất không?')) {
-            AuthManager.logout();
-            window.location.reload();
-        }
+        // User menu is handled via sidebar links on this page.
     }
 }
 

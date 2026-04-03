@@ -1,273 +1,365 @@
-// Doctor Detail page JavaScript
 class DoctorDetailPage {
     constructor() {
         this.doctor = null;
         this.doctorId = null;
+
         this.init();
     }
 
     init() {
-        this.getDoctorIdFromUrl();
+        this.doctorId = this.getDoctorIdFromUrl();
         this.bindEvents();
+        this.syncPublicSidebarAuth();
+
+        if (!this.doctorId) {
+            this.showError('Không tìm thấy mã bác sĩ trong URL.');
+            return;
+        }
+
         this.loadDoctorDetail();
-        this.updateAuthUI();
     }
 
     getDoctorIdFromUrl() {
-        const urlParams = new URLSearchParams(window.location.search);
-        this.doctorId = urlParams.get('id');
-        
-        if (!this.doctorId) {
-            this.showError('Không tìm thấy thông tin bác sĩ.');
-            return;
-        }
+        const params = new URLSearchParams(window.location.search);
+        return this.normalizeDoctorId(
+            params.get('id') || params.get('doctor') || params.get('doctorId') || params.get('publicId')
+        );
+    }
+
+    normalizeDoctorId(rawId) {
+        if (rawId === null || rawId === undefined) return null;
+
+        const value = String(rawId).trim();
+        if (!value) return null;
+        if (/^(null|undefined|nan)$/i.test(value)) return null;
+
+        return value;
     }
 
     bindEvents() {
-        // Book appointment button
-        const bookBtn = document.getElementById('btn-book-appointment');
-        if (bookBtn) {
-            bookBtn.addEventListener('click', () => this.bookAppointment());
+        const retryButton = document.getElementById('doctor-retry-btn');
+        if (retryButton) {
+            retryButton.addEventListener('click', () => this.loadDoctorDetail());
         }
 
-        // Call button
+        const bookButton = document.getElementById('btn-book-appointment');
+        if (bookButton) {
+            bookButton.addEventListener('click', () => this.bookAppointment());
+        }
+
         const callBtn = document.getElementById('btn-call');
         if (callBtn) {
-            callBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.makeCall();
-            });
+            callBtn.addEventListener('click', (event) => this.makeCall(event));
         }
 
-        // Email button
         const emailBtn = document.getElementById('btn-email');
         if (emailBtn) {
-            emailBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.sendEmail();
-            });
+            emailBtn.addEventListener('click', (event) => this.sendEmail(event));
+        }
+
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (event) => this.handleLogout(event));
         }
     }
 
     async loadDoctorDetail() {
+        this.doctorId = this.normalizeDoctorId(this.doctorId) || this.getDoctorIdFromUrl();
+        if (!this.doctorId) {
+            this.showError('Mã bác sĩ không hợp lệ. Vui lòng quay lại danh sách bác sĩ và thử lại.');
+            return;
+        }
+
+        this.showLoading();
+
         try {
-            this.showLoading();
-            
-            // Fetch doctor details from API
             const response = await apiService.getDoctor(this.doctorId);
-            console.log('Doctor API Response:', response);
-            
-            if (response.success && response.data) {
-                this.doctor = response.data;
-                this.renderDoctorDetail();
-            } else {
-                throw new Error(response.error || 'Failed to load doctor details');
+            const normalized = this.normalizeDoctor(response?.data || response);
+
+            if (!normalized.fullName) {
+                throw new Error('Dữ liệu bác sĩ không hợp lệ.');
             }
-            
+
+            this.doctor = normalized;
+            this.renderDoctorDetail();
+            this.showProfile();
         } catch (error) {
-            console.error('Error loading doctor details:', error);
-            
-            // Try to use fallback data from localStorage or mock data
-            this.doctor = this.getFallbackDoctorData();
-            if (this.doctor) {
-                console.log('Using fallback doctor data');
+            console.error('Doctor detail load error:', error);
+
+            const fallbackDoctor = await this.getFallbackDoctorDataAsync();
+            if (fallbackDoctor) {
+                this.doctor = fallbackDoctor;
                 this.renderDoctorDetail();
-            } else {
-                this.showError('Không thể tải thông tin bác sĩ. Vui lòng thử lại.');
+                this.showProfile();
+                return;
             }
+
+            this.showError('Không thể tải thông tin bác sĩ. Vui lòng thử lại sau.');
         } finally {
             this.hideLoading();
         }
     }
 
+    normalizeDoctor(raw) {
+        const source = raw && raw.data ? raw.data : raw;
+        const doctor = source || {};
+
+        const specialtiesRaw = Array.isArray(doctor.Specialties)
+            ? doctor.Specialties
+            : (Array.isArray(doctor.specialties) ? doctor.specialties : []);
+
+        const ratingsRaw = Array.isArray(doctor.Ratings)
+            ? doctor.Ratings
+            : (Array.isArray(doctor.ratings) ? doctor.ratings : []);
+
+        const fullName = (doctor.fullName || doctor.FullName || doctor.name || `${doctor.firstName || ''} ${doctor.lastName || ''}`)
+            .toString()
+            .trim();
+
+        const years = Number(
+            doctor.yearsOfExperience ?? doctor.YearsOfExperience ?? doctor.experience ?? 0
+        );
+
+        const averageRating = Number(
+            doctor.averageRating ?? doctor.AverageRating ?? doctor.rating ?? 0
+        );
+
+        const totalRatings = Number(
+            doctor.totalRatings ?? doctor.TotalRatings ?? doctor.reviewCount ?? ratingsRaw.length ?? 0
+        );
+
+        const normalizedSpecialties = specialtiesRaw
+            .map((item) => {
+                if (typeof item === 'string') {
+                    return { name: item.trim() };
+                }
+
+                return {
+                    id: item?.id ?? item?.Id ?? null,
+                    name: (item?.name || item?.Name || '').toString().trim()
+                };
+            })
+            .filter((item) => item.name);
+
+        const normalizedRatings = ratingsRaw.map((rating) => ({
+            patientName: (rating?.patientName || rating?.PatientName || rating?.author || 'Bệnh nhân').toString().trim(),
+            ratingValue: Number(rating?.ratingValue ?? rating?.RatingValue ?? rating?.rating ?? 0) || 0,
+            reviewText: (rating?.reviewText || rating?.ReviewText || rating?.comment || '').toString().trim(),
+            createdDate: rating?.createdDate || rating?.CreatedDate || rating?.date || null
+        }));
+
+        return {
+            id: doctor.id ?? doctor.Id ?? null,
+            publicId: doctor.publicId ?? doctor.PublicId ?? doctor.id ?? doctor.Id ?? null,
+            fullName,
+            title: (doctor.title || doctor.Title || 'Bác sĩ').toString().trim(),
+            department: (doctor.department || doctor.Department || doctor.specialty || doctor.Specialty || 'Tổng quát').toString().trim(),
+            email: (doctor.email || doctor.Email || '').toString().trim(),
+            phone: (doctor.phone || doctor.Phone || '').toString().trim(),
+            gender: (doctor.gender || doctor.Gender || '').toString().trim().toUpperCase(),
+            yearsOfExperience: Number.isFinite(years) ? years : 0,
+            qualifications: (doctor.qualifications || doctor.Qualifications || doctor.degree || 'Bác sĩ đa khoa').toString().trim(),
+            averageRating: Number.isFinite(averageRating) ? averageRating : 0,
+            totalRatings: Number.isFinite(totalRatings) ? totalRatings : 0,
+            profileImage: doctor.profileImageUrl || doctor.profileImage || doctor.avatarUrl || doctor.Image || doctor.image || '',
+            specialties: normalizedSpecialties,
+            ratings: normalizedRatings,
+            schedule: this.normalizeSchedule(doctor.schedules || doctor.Schedules || doctor.workingHours || null)
+        };
+    }
+
+    normalizeSchedule(rawSchedule) {
+        if (Array.isArray(rawSchedule) && rawSchedule.length > 0) {
+            return rawSchedule.map((item) => {
+                const day = item?.day || item?.Day || item?.dayOfWeek || item?.DayOfWeek || 'Lịch làm việc';
+                const start = item?.startTime || item?.StartTime || item?.from || '';
+                const end = item?.endTime || item?.EndTime || item?.to || '';
+                const time = start || end ? `${start || '--:--'} - ${end || '--:--'}` : (item?.time || item?.Time || 'Đang cập nhật');
+                return { day: day.toString(), time: time.toString() };
+            });
+        }
+
+        if (typeof rawSchedule === 'string' && rawSchedule.trim()) {
+            return [{ day: 'Lịch làm việc', time: rawSchedule.trim() }];
+        }
+
+        return [
+            { day: 'Thứ 2 - Thứ 6', time: '08:00 - 17:00' },
+            { day: 'Thứ 7', time: '08:00 - 12:00' },
+            { day: 'Chủ nhật', time: 'Nghỉ' }
+        ];
+    }
+
     renderDoctorDetail() {
         if (!this.doctor) return;
 
-        // Update page title
-        document.title = `${this.doctor.fullName} - HealthySystem`;
+        const doctorName = this.doctor.fullName || 'Bác sĩ';
+        const doctorTitle = `${this.doctor.title || 'Bác sĩ'} - ${this.doctor.department || 'Tổng quát'}`;
 
-        // Doctor avatar
-        const avatar = document.getElementById('doctor-avatar');
-        if (avatar) {
-            avatar.textContent = this.doctor.gender === 'F' ? '👩‍⚕️' : '👨‍⚕️';
-        }
+        this.updateText('doctor-name', doctorName);
+        this.updateText('doctor-title', doctorTitle);
+        this.updateText('doctor-page-title', doctorName);
+        this.updateText('doctor-page-subtitle', `Thông tin chi tiết, lịch làm việc và đánh giá của ${doctorName}.`);
 
-        // Basic information
-        this.updateElement('doctor-name', this.doctor.fullName || 'N/A');
-        this.updateElement('doctor-title', `${this.doctor.title || 'Bác sĩ'} - ${this.doctor.department || 'Tổng quát'}`);
+        this.updateText('doctor-stars', this.renderStars(this.doctor.averageRating));
+        this.updateText('doctor-rating-text', `${this.doctor.averageRating.toFixed(1)}/5 (${this.doctor.totalRatings} đánh giá)`);
 
-        // Rating
-        const stars = this.renderStars(this.doctor.averageRating || 0);
-        this.updateElement('doctor-stars', stars);
-        this.updateElement('doctor-rating-text', 
-            `${this.doctor.averageRating || 0}/5 (${this.doctor.totalRatings || 0} đánh giá)`);
+        this.updateText('info-fullname', doctorName);
+        this.updateText('info-email', this.doctor.email || 'Đang cập nhật');
+        this.updateText('info-phone', this.doctor.phone || 'Đang cập nhật');
+        this.updateText('info-gender', this.getGenderText(this.doctor.gender));
+        this.updateText('info-department', this.doctor.department || 'Đang cập nhật');
+        this.updateText('info-experience', `${this.doctor.yearsOfExperience || 0} năm`);
+        this.updateText('info-qualifications', this.doctor.qualifications || 'Đang cập nhật');
 
-        // Contact buttons
-        const callBtn = document.getElementById('btn-call');
-        const emailBtn = document.getElementById('btn-email');
-        
-        if (callBtn && this.doctor.phone) {
-            callBtn.href = `tel:${this.doctor.phone}`;
-        }
-        
-        if (emailBtn && this.doctor.email) {
-            emailBtn.href = `mailto:${this.doctor.email}`;
-        }
-
-        // Personal information
-        this.updateElement('info-fullname', this.doctor.fullName || 'N/A');
-        this.updateElement('info-email', this.doctor.email || 'N/A');
-        this.updateElement('info-phone', this.doctor.phone || 'N/A');
-        this.updateElement('info-gender', this.getGenderText(this.doctor.gender));
-
-        // Professional information
-        this.updateElement('info-department', this.doctor.department || 'N/A');
-        this.updateElement('info-experience', `${this.doctor.yearsOfExperience || 0} năm`);
-        this.updateElement('info-qualifications', this.doctor.qualifications || 'Bác sĩ đa khoa');
-
-        // Specialties
+        this.renderDoctorImage();
         this.renderSpecialties();
-
-        // Reviews
+        this.renderSchedule();
         this.renderReviews();
+        this.bindContactLinks();
 
-        // Show the profile
-        this.showProfile();
+        document.title = `${doctorName} - HealthySystem`;
+    }
+
+    renderDoctorImage() {
+        const imageElement = document.getElementById('doctor-image');
+        const avatarElement = document.getElementById('doctor-avatar');
+        if (!imageElement || !avatarElement) return;
+
+        const fallbackName = encodeURIComponent(this.doctor.fullName || 'Doctor');
+        const fallback = `https://ui-avatars.com/api/?name=${fallbackName}&background=0F172A&color=FFFFFF&size=600`;
+
+        const profileImage = this.doctor.profileImage || fallback;
+        imageElement.src = profileImage;
+        imageElement.alt = `Ảnh ${this.doctor.fullName || 'bác sĩ'}`;
+        imageElement.onerror = function() {
+            this.src = fallback;
+        };
+
+        avatarElement.textContent = this.doctor.gender === 'F' ? '👩‍⚕️' : '👨‍⚕️';
     }
 
     renderSpecialties() {
         const container = document.getElementById('info-specialties');
-        if (!container || !this.doctor.specialties) return;
+        if (!container) return;
 
-        if (this.doctor.specialties.length === 0) {
+        if (!Array.isArray(this.doctor.specialties) || this.doctor.specialties.length === 0) {
             container.innerHTML = '<span class="specialty-tag">Tổng quát</span>';
             return;
         }
 
-        const specialtiesHtml = this.doctor.specialties.map(specialty => 
-            `<span class="specialty-tag">${specialty.name}</span>`
-        ).join('');
+        container.innerHTML = this.doctor.specialties
+            .map((specialty) => `<span class="specialty-tag">${this.escapeHtml(specialty.name)}</span>`)
+            .join('');
+    }
 
-        container.innerHTML = specialtiesHtml;
+    renderSchedule() {
+        const tbody = document.getElementById('schedule-table-body');
+        if (!tbody) return;
+
+        const schedule = Array.isArray(this.doctor.schedule) && this.doctor.schedule.length
+            ? this.doctor.schedule
+            : this.normalizeSchedule(null);
+
+        tbody.innerHTML = schedule.map((item) => `
+            <tr>
+                <td>${this.escapeHtml(item.day)}</td>
+                <td>${this.escapeHtml(item.time)}</td>
+            </tr>
+        `).join('');
     }
 
     renderReviews() {
         const container = document.getElementById('reviews-section');
         if (!container) return;
 
-        if (!this.doctor.ratings || this.doctor.ratings.length === 0) {
-            container.innerHTML = `
-                <div class="info-item">
-                    <div class="info-content">
-                        <div class="info-value">Chưa có đánh giá nào.</div>
-                    </div>
-                </div>
-            `;
+        if (!Array.isArray(this.doctor.ratings) || this.doctor.ratings.length === 0) {
+            container.innerHTML = '<div class="empty-message">Chưa có đánh giá nào.</div>';
             return;
         }
 
-        const reviewsHtml = this.doctor.ratings.map(review => `
-            <div class="review-item">
+        container.innerHTML = this.doctor.ratings.map((review) => `
+            <article class="review-item">
                 <div class="review-header">
-                    <span class="review-author">${review.patientName || 'Bệnh nhân'}</span>
-                    <span class="review-date">${this.formatDate(review.createdDate)}</span>
+                    <span class="review-author">${this.escapeHtml(review.patientName || 'Bệnh nhân')}</span>
+                    <span class="review-date">${this.escapeHtml(this.formatDate(review.createdDate))}</span>
                 </div>
-                <div class="review-rating">${this.renderStars(review.ratingValue)}</div>
-                <div class="review-text">${review.reviewText || 'Không có nhận xét.'}</div>
-            </div>
+                <div class="review-rating">${this.escapeHtml(this.renderStars(review.ratingValue || 0))}</div>
+                <p class="review-text">${this.escapeHtml(review.reviewText || 'Không có nhận xét.')}</p>
+            </article>
         `).join('');
+    }
 
-        container.innerHTML = reviewsHtml;
+    bindContactLinks() {
+        const callBtn = document.getElementById('btn-call');
+        const emailBtn = document.getElementById('btn-email');
+
+        if (callBtn) {
+            if (this.doctor.phone) {
+                callBtn.href = `tel:${this.doctor.phone}`;
+            } else {
+                callBtn.href = '#';
+            }
+        }
+
+        if (emailBtn) {
+            if (this.doctor.email) {
+                emailBtn.href = `mailto:${this.doctor.email}`;
+            } else {
+                emailBtn.href = '#';
+            }
+        }
     }
 
     renderStars(rating) {
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 !== 0;
-        let stars = '';
-
-        for (let i = 0; i < fullStars; i++) {
-            stars += '⭐';
-        }
-        
-        if (hasHalfStar) {
-            stars += '⭐'; // Using full star for simplicity
-        }
-
-        // Fill remaining with empty stars (up to 5)
-        const remainingStars = 5 - Math.ceil(rating);
-        for (let i = 0; i < remainingStars; i++) {
-            stars += '☆';
-        }
-
-        return stars;
+        const score = Math.max(0, Math.min(5, Number(rating) || 0));
+        const full = Math.floor(score);
+        const empty = 5 - full;
+        return `${'★'.repeat(full)}${'☆'.repeat(empty)}`;
     }
 
     getGenderText(gender) {
-        switch(gender) {
-            case 'M': return 'Nam';
-            case 'F': return 'Nữ';
-            default: return 'Không xác định';
+        switch ((gender || '').toUpperCase()) {
+            case 'M':
+            case 'MALE':
+                return 'Nam';
+            case 'F':
+            case 'FEMALE':
+                return 'Nữ';
+            default:
+                return 'Không xác định';
         }
     }
 
-    formatDate(dateString) {
-        if (!dateString) return 'N/A';
-        
-        try {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('vi-VN', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        } catch (error) {
-            return 'N/A';
-        }
-    }
-
-    updateElement(elementId, content) {
+    updateText(elementId, value) {
         const element = document.getElementById(elementId);
         if (element) {
-            element.textContent = content;
+            element.textContent = value;
         }
     }
 
     bookAppointment() {
-        // Redirect to book appointment page with doctor pre-selected
-        const doctorId = this.doctor?.publicId || this.doctorId;
-        if (doctorId) {
-            window.location.href = `book-appointment.html?doctor=${doctorId}`;
-        } else {
-            window.location.href = 'book-appointment.html';
+        const doctorPublicId = this.doctor?.publicId || this.doctorId;
+        if (doctorPublicId) {
+            window.location.href = `book-appointment.html?doctor=${encodeURIComponent(doctorPublicId)}`;
+            return;
+        }
+
+        window.location.href = 'book-appointment.html';
+    }
+
+    makeCall(event) {
+        if (!this.doctor?.phone) {
+            event.preventDefault();
+            alert('Bác sĩ này chưa cập nhật số điện thoại.');
         }
     }
 
-    makeCall() {
-        if (this.doctor && this.doctor.phone) {
-            // The href is already set in renderDoctorDetail
-            // This is just for additional confirmation if needed
-            if (confirm(`Gọi điện cho ${this.doctor.fullName}?\nSố điện thoại: ${this.doctor.phone}`)) {
-                // Let the browser handle the tel: link
-                return true;
-            }
-        } else {
-            alert('Không có thông tin số điện thoại.');
+    sendEmail(event) {
+        if (!this.doctor?.email) {
+            event.preventDefault();
+            alert('Bác sĩ này chưa cập nhật email.');
         }
-        return false;
-    }
-
-    sendEmail() {
-        if (this.doctor && this.doctor.email) {
-            // The href is already set in renderDoctorDetail
-            // This is just for additional confirmation if needed
-            if (confirm(`Gửi email cho ${this.doctor.fullName}?\nEmail: ${this.doctor.email}`)) {
-                // Let the browser handle the mailto: link
-                return true;
-            }
-        } else {
-            alert('Không có thông tin email.');
-        }
-        return false;
     }
 
     showLoading() {
@@ -278,6 +370,15 @@ class DoctorDetailPage {
         if (loading) loading.style.display = 'block';
         if (profile) profile.style.display = 'none';
         if (error) error.style.display = 'none';
+
+        if (typeof window.renderSkeletons === 'function') {
+            window.renderSkeletons('doctor-loading-skeleton', 4);
+        } else {
+            const fallback = document.getElementById('doctor-loading-skeleton');
+            if (fallback) {
+                fallback.innerHTML = '<p class="text-muted">Đang tải thông tin bác sĩ...</p>';
+            }
+        }
     }
 
     hideLoading() {
@@ -287,7 +388,7 @@ class DoctorDetailPage {
 
     showProfile() {
         const profile = document.getElementById('doctor-profile');
-        if (profile) profile.style.display = 'block';
+        if (profile) profile.style.display = 'grid';
     }
 
     showError(message) {
@@ -298,89 +399,81 @@ class DoctorDetailPage {
         if (loading) loading.style.display = 'none';
         if (profile) profile.style.display = 'none';
         if (error) {
-            error.style.display = 'block';
-            const errorP = error.querySelector('p');
-            if (errorP) {
-                errorP.textContent = message;
-            }
-        }
-    }
-
-    updateAuthUI() {
-        const authLink = document.getElementById('auth-link');
-        if (!authLink) return;
-
-        if (AuthManager.isLoggedIn()) {
-            const user = AuthManager.getCurrentUser();
-            authLink.textContent = user ? `Xin chào, ${user.firstName}` : 'Tài khoản';
-            authLink.href = '#';
-            authLink.onclick = (e) => {
-                e.preventDefault();
-                this.showUserMenu();
-            };
-        } else {
-            authLink.textContent = 'Đăng nhập';
-            authLink.href = 'login.html';
-            authLink.onclick = null;
-        }
-    }
-
-    showUserMenu() {
-        if (confirm('Bạn có muốn đăng xuất không?')) {
-            AuthManager.logout();
-            window.location.reload();
-        }
-    }
-
-    getFallbackDoctorData() {
-        // Try to get doctor data from the doctors list page (if available)
-        const doctorsData = sessionStorage.getItem('doctorsData');
-        if (doctorsData) {
-            try {
-                const doctors = JSON.parse(doctorsData);
-                const doctor = doctors.find(d => 
-                    d.publicId === this.doctorId || 
-                    d.id === this.doctorId || 
-                    d.id.toString() === this.doctorId
-                );
-                if (doctor) {
-                    return this.transformDoctorData(doctor);
-                }
-            } catch (error) {
-                console.error('Error parsing doctors data from sessionStorage:', error);
+            error.style.display = 'grid';
+            const content = error.querySelector('p');
+            if (content) {
+                content.textContent = message;
             }
         }
 
-        // Return mock data based on doctor ID
+        this.updateText('doctor-page-title', 'Không thể tải hồ sơ bác sĩ');
+        this.updateText('doctor-page-subtitle', 'Vui lòng thử lại hoặc quay về trang danh sách bác sĩ.');
+    }
+
+    async getFallbackDoctorDataAsync() {
+        const fromSession = this.findInSessionStorage();
+        if (fromSession) {
+            return fromSession;
+        }
+
+        try {
+            const listResponse = await apiService.getDoctors();
+            const doctors = Array.isArray(listResponse?.data) ? listResponse.data : [];
+            const matched = this.findDoctorById(doctors, this.doctorId);
+            if (matched) {
+                return this.transformDoctorData(matched);
+            }
+        } catch (error) {
+            console.warn('Fallback API getDoctors failed:', error);
+        }
+
         return this.getMockDoctorData();
     }
 
+    findInSessionStorage() {
+        const raw = sessionStorage.getItem('doctorsData');
+        if (!raw) return null;
+
+        try {
+            const doctors = JSON.parse(raw);
+            if (!Array.isArray(doctors)) return null;
+
+            const matched = this.findDoctorById(doctors, this.doctorId);
+            return matched ? this.transformDoctorData(matched) : null;
+        } catch (error) {
+            console.warn('SessionStorage doctorsData parse failed:', error);
+            return null;
+        }
+    }
+
+    findDoctorById(doctors, targetId) {
+        if (!Array.isArray(doctors)) return null;
+
+        return doctors.find((doctor) => {
+            return this.areIdsEqual(doctor?.publicId, targetId) || this.areIdsEqual(doctor?.id, targetId);
+        }) || null;
+    }
+
+    areIdsEqual(a, b) {
+        if (a === undefined || a === null || b === undefined || b === null) return false;
+        return String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+    }
+
     transformDoctorData(doctor) {
-        return {
-            id: doctor.id,
-            publicId: doctor.publicId,
+        return this.normalizeDoctor({
+            ...doctor,
             fullName: doctor.fullName || doctor.name,
-            title: doctor.title || 'Bác sĩ',
             department: doctor.department || doctor.specialty,
-            email: doctor.email,
-            phone: doctor.phone,
-            gender: doctor.gender,
             yearsOfExperience: doctor.yearsOfExperience || doctor.experience,
-            qualifications: doctor.qualifications || 'Bác sĩ đa khoa',
             averageRating: doctor.averageRating || doctor.rating,
             totalRatings: doctor.totalRatings || doctor.reviewCount,
-            specialties: doctor.specialties || [
-                { name: doctor.specialty || 'Tổng quát' }
-            ],
-            ratings: doctor.ratings || []
-        };
+            specialties: doctor.specialties || [{ name: doctor.specialty || 'Tổng quát' }]
+        });
     }
 
     getMockDoctorData() {
-        // Mock data for demonstration
         const mockDoctors = {
-            '8DD4F358-849B-F011-A1CB-F46D3F6043FB': {
-                id: 11,
+            '8dd4f358-849b-f011-a1cb-f46d3f6043fb': {
                 publicId: '8DD4F358-849B-F011-A1CB-F46D3F6043FB',
                 fullName: 'BS. Nguyễn Văn An',
                 title: 'Bác sĩ',
@@ -388,25 +481,21 @@ class DoctorDetailPage {
                 email: 'dr.an@clinic.local',
                 phone: '0902000001',
                 gender: 'M',
-                yearsOfExperience: 3,
+                yearsOfExperience: 8,
                 qualifications: 'Bác sĩ đa khoa - Đại học Y Hà Nội',
-                averageRating: 5,
-                totalRatings: 1,
-                specialties: [
-                    { name: 'Nội tổng quát' },
-                    { name: 'Tim mạch' }
-                ],
+                averageRating: 4.9,
+                totalRatings: 37,
+                specialties: [{ name: 'Nội tổng quát' }, { name: 'Tim mạch' }],
                 ratings: [
                     {
                         patientName: 'Bệnh nhân A',
                         ratingValue: 5,
-                        reviewText: 'Bác sĩ rất tận tâm và chuyên nghiệp.',
-                        createdDate: '2025-09-25T00:00:00'
+                        reviewText: 'Bác sĩ thăm khám kỹ và tư vấn rất dễ hiểu.',
+                        createdDate: '2026-03-15T00:00:00'
                     }
                 ]
             },
-            '8ED4F358-849B-F011-A1CB-F46D3F6043FB': {
-                id: 12,
+            '8ed4f358-849b-f011-a1cb-f46d3f6043fb': {
                 publicId: '8ED4F358-849B-F011-A1CB-F46D3F6043FB',
                 fullName: 'BS. Trần Thị Bình',
                 title: 'Bác sĩ',
@@ -414,29 +503,104 @@ class DoctorDetailPage {
                 email: 'dr.binh@clinic.local',
                 phone: '0902000002',
                 gender: 'F',
-                yearsOfExperience: 4,
-                qualifications: 'Bác sĩ chuyên khoa Nhi - Đại học Y TP.HCM',
-                averageRating: 4,
-                totalRatings: 1,
-                specialties: [
-                    { name: 'Nhi khoa' }
-                ],
+                yearsOfExperience: 6,
+                qualifications: 'Bác sĩ chuyên khoa Nhi - Đại học Y Dược TP.HCM',
+                averageRating: 4.8,
+                totalRatings: 28,
+                specialties: [{ name: 'Nhi khoa' }],
                 ratings: [
                     {
                         patientName: 'Bệnh nhân B',
-                        ratingValue: 4,
-                        reviewText: 'Bác sĩ khám rất kỹ cho trẻ em.',
-                        createdDate: '2025-09-20T00:00:00'
+                        ratingValue: 5,
+                        reviewText: 'Rất tận tâm với trẻ nhỏ, hướng dẫn chăm sóc rõ ràng.',
+                        createdDate: '2026-03-10T00:00:00'
                     }
                 ]
             }
         };
 
-        return mockDoctors[this.doctorId] || null;
+        const key = String(this.doctorId || '').trim().toLowerCase();
+        const matched = mockDoctors[key];
+        return matched ? this.normalizeDoctor(matched) : null;
+    }
+
+    formatDate(value) {
+        if (!value) return 'đang cập nhật';
+
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return 'đang cập nhật';
+
+        return date.toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+
+    escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    syncPublicSidebarAuth() {
+        const loginBtn = document.getElementById('login-btn');
+        const userMenu = document.getElementById('user-menu');
+        const userDisplayName = document.getElementById('user-display-name');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        const configUserKey = (typeof CONFIG !== 'undefined' && CONFIG.STORAGE_KEYS)
+            ? CONFIG.STORAGE_KEYS.USER
+            : null;
+
+        const storedUser = localStorage.getItem(configUserKey || 'user') || localStorage.getItem('user');
+        let user = null;
+
+        if (storedUser) {
+            try {
+                user = JSON.parse(storedUser);
+            } catch (error) {
+                user = null;
+            }
+        }
+
+        if (user) {
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (userMenu) userMenu.style.display = 'block';
+            if (logoutBtn) logoutBtn.style.display = 'block';
+            if (userDisplayName) {
+                userDisplayName.textContent = user.fullName || user.name || user.email || 'Tài khoản';
+            }
+        } else {
+            if (loginBtn) loginBtn.style.display = 'block';
+            if (userMenu) userMenu.style.display = 'none';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+        }
+    }
+
+    handleLogout(event) {
+        event.preventDefault();
+
+        if (window.authManager && typeof window.authManager.logout === 'function') {
+            window.authManager.logout();
+        } else {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            if (typeof CONFIG !== 'undefined' && CONFIG.STORAGE_KEYS) {
+                localStorage.removeItem(CONFIG.STORAGE_KEYS.TOKEN);
+                localStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
+            }
+        }
+
+        this.syncPublicSidebarAuth();
+        window.location.href = 'index.html';
     }
 }
 
-// Initialize when page is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.doctorDetailPage = new DoctorDetailPage();
 });

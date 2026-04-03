@@ -1,0 +1,189 @@
+@import url('../design-system.css');
+
+.doctors-page {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 4% 0%, color-mix(in srgb, var(--color-emerald-500) 10%, transparent), transparent 35%),
+        radial-gradient(circle at 97% 0%, color-mix(in srgb, var(--color-sky-500) 10%, transparent), transparent 33%),
+        var(--color-bg);
+}
+
+.doctors-shell {
+    min-height: 100vh;
+}
+
+.doctors-shell .app-main {
+    padding: 24px;
+}
+
+.doctors-topbar {
+    border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+}
+
+.topbar-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-pill);
+    padding: 0.32rem 0.72rem;
+    margin-bottom: var(--space-2);
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--color-emerald-700);
+    background: color-mix(in srgb, var(--color-emerald-100) 72%, var(--color-surface));
+}
+
+.doctors-content {
+    display: grid;
+    gap: var(--space-5);
+    padding-bottom: var(--space-6);
+}
+
+.filter-card {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+}
+
+.filter-field {
+    display: grid;
+    gap: 0.42rem;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+}
+
+.filter-field span {
+    font-weight: 600;
+}
+
+.state-card {
+    padding: clamp(var(--space-5), 3vw, var(--space-8));
+}
+
+.error-state {
+    text-align: center;
+    display: grid;
+    gap: var(--space-3);
+    justify-items: center;
+}
+
+.doctors-list-card {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.doctors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-4);
+}
+
+.doctor-card {
+    border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    overflow: hidden;
+    display: grid;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.doctor-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-sm);
+    border-color: color-mix(in srgb, var(--color-emerald-500) 35%, transparent);
+}
+
+.doctor-cover {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    background: color-mix(in srgb, var(--color-slate-100) 78%, var(--color-surface));
+}
+
+.doctor-body {
+    padding: var(--space-4);
+    display: grid;
+    gap: var(--space-2);
+}
+
+.doctor-name {
+    font-family: var(--font-heading);
+    font-size: 1.06rem;
+    color: var(--color-text-strong);
+}
+
+.doctor-subtitle {
+    color: var(--color-text);
+    font-weight: 600;
+    font-size: 0.92rem;
+}
+
+.doctor-meta {
+    display: grid;
+    gap: 0.28rem;
+    color: var(--color-text-muted);
+    font-size: 0.86rem;
+}
+
+.doctor-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    color: var(--color-text-muted);
+    font-size: 0.86rem;
+}
+
+.doctor-stars {
+    color: var(--color-amber-500);
+    letter-spacing: 0.04em;
+}
+
+.doctor-actions {
+    margin-top: var(--space-2);
+    display: flex;
+    gap: var(--space-2);
+}
+
+.doctor-actions .btn {
+    flex: 1;
+}
+
+.empty-state {
+    border: 1px dashed color-mix(in srgb, var(--color-border) 80%, transparent);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    padding: var(--space-6);
+    color: var(--color-text-muted);
+}
+
+.workspace-footer.doctors-footer {
+    margin-top: var(--space-2);
+    border-radius: var(--radius-md);
+    border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
+    background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+    padding: var(--space-5);
+}
+
+@media (max-width: 980px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .doctors-shell .app-main {
+        padding: 16px;
+    }
+
+    .workspace-footer.doctors-footer .footer-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

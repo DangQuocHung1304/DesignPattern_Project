@@ -192,7 +192,8 @@ namespace HealthySystem.API.Controllers
         /// US-01: Cập nhật ảnh đại diện
         /// </summary>
         [HttpPost("profile-image")]
-        public async Task<ActionResult> UploadProfileImage([FromForm] IFormFile image)
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult> UploadProfileImage(IFormFile image)
         {
             try
             {

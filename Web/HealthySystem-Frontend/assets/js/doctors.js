@@ -1,488 +1,378 @@
-// Doctors page JavaScript
 class DoctorsPage {
     constructor() {
         this.doctors = [];
         this.filteredDoctors = [];
-        this.isLoading = false;
+
+        this.searchInput = document.getElementById('doctor-search-input');
+        this.specialtyFilter = document.getElementById('specialty-filter-select');
+        this.experienceFilter = document.getElementById('experience-filter-select');
+
+        this.loadingState = document.getElementById('doctors-loading-state');
+        this.errorState = document.getElementById('doctors-error-state');
+        this.listCard = document.getElementById('doctors-list-card');
+        this.grid = document.getElementById('doctors-grid');
+        this.emptyState = document.getElementById('doctors-empty-state');
+        this.resultsCount = document.getElementById('doctors-results-count');
+
         this.init();
     }
 
     init() {
         this.bindEvents();
+        this.syncPublicSidebarAuth();
         this.loadDoctors();
-        this.updateAuthUI();
     }
 
     bindEvents() {
-        // Search input
-        const searchInput = document.getElementById('search-name');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                clearTimeout(this.searchTimeout);
-                this.searchTimeout = setTimeout(() => {
-                    this.filterDoctors();
-                }, 300);
+        if (this.searchInput) {
+            this.searchInput.addEventListener('input', () => {
+                clearTimeout(this.searchDebounce);
+                this.searchDebounce = setTimeout(() => this.applyFilters(), 200);
             });
         }
 
-        // Filter selects
-        const specialtyFilter = document.getElementById('filter-specialty');
-        const experienceFilter = document.getElementById('filter-experience');
-        
-        if (specialtyFilter) {
-            specialtyFilter.addEventListener('change', () => this.filterDoctors());
-        }
-        
-        if (experienceFilter) {
-            experienceFilter.addEventListener('change', () => this.filterDoctors());
+        if (this.specialtyFilter) {
+            this.specialtyFilter.addEventListener('change', () => this.applyFilters());
         }
 
-        // Enter key support for search
-        if (searchInput) {
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    this.filterDoctors();
-                }
-            });
+        if (this.experienceFilter) {
+            this.experienceFilter.addEventListener('change', () => this.applyFilters());
+        }
+
+        const retryBtn = document.getElementById('doctors-retry-btn');
+        if (retryBtn) {
+            retryBtn.addEventListener('click', () => this.loadDoctors());
+        }
+
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (event) => this.handleLogout(event));
         }
     }
 
     async loadDoctors() {
+        this.showLoading();
+
         try {
-            this.showLoading();
-            
-            // Fetch real data from API
             const response = await apiService.getDoctors();
-            console.log('API Response:', response);
-            
-            if (response.success && response.data) {
-                this.doctors = this.transformApiData(response.data);
-                this.filteredDoctors = [...this.doctors];
-                
-                // Save to sessionStorage for doctor detail page
-                sessionStorage.setItem('doctorsData', JSON.stringify(response.data));
-                
-                this.renderDoctors();
-            } else {
-                throw new Error(response.error || 'Failed to load doctors');
+            const source = this.extractDoctorArray(response);
+            this.doctors = this.normalizeDoctors(source);
+
+            if (!this.doctors.length) {
+                throw new Error('Không có dữ liệu bác sĩ từ API.');
             }
-            
+
+            this.populateSpecialtyFilter();
+            this.applyFilters();
+            this.showContent();
         } catch (error) {
-            console.error('Error loading doctors:', error);
-            this.showError('Không thể tải danh sách bác sĩ. Vui lòng thử lại.');
-            
-            // Fallback to mock data if API fails
-            this.doctors = this.getMockDoctors();
-            this.filteredDoctors = [...this.doctors];
-            this.renderDoctors();
-        } finally {
-            this.hideLoading();
+            console.error('Doctors load error:', error);
+            this.showError();
         }
     }
 
-    transformApiData(apiDoctors) {
-        return apiDoctors.map(doctor => ({
-            id: doctor.id,
-            publicId: doctor.publicId,
-            name: doctor.fullName || `${doctor.firstName || ''} ${doctor.lastName || ''}`.trim(),
-            specialty: doctor.specialties && doctor.specialties.length > 0 
-                ? doctor.specialties[0].name 
-                : 'Tổng quát',
-            experience: doctor.yearsOfExperience || 0,
-            rating: doctor.averageRating || 0,
-            reviewCount: doctor.totalRatings || 0,
-            education: 'Đại học Y Hà Nội', // Default value as API doesn't provide this
-            hospital: doctor.department || 'HealthySystem Clinic',
-            phone: doctor.phone || 'N/A',
-            email: doctor.email || 'N/A',
-            avatar: doctor.gender === 'F' ? '👩‍⚕️' : '👨‍⚕️',
-            description: doctor.description || `Bác sĩ chuyên khoa ${doctor.specialties && doctor.specialties.length > 0 ? doctor.specialties[0].name : 'Tổng quát'}`,
-            workingHours: 'T2-T6: 8:00-17:00, T7: 8:00-12:00', // Default value
-            title: doctor.title || 'Bác sĩ',
-            specialties: doctor.specialties || []
-        }));
+    extractDoctorArray(response) {
+        if (!response) return [];
+
+        if (Array.isArray(response)) return response;
+        if (Array.isArray(response.data)) return response.data;
+
+        const payload = response.data || response;
+        if (Array.isArray(payload?.items)) return payload.items;
+        if (Array.isArray(payload?.doctors)) return payload.doctors;
+
+        return [];
     }
 
-    getMockDoctors() {
-        return [
-            {
-                id: 1,
-                name: 'BS. Nguyễn Văn An',
-                specialty: 'Nội khoa',
-                experience: 12,
-                rating: 4.8,
-                reviewCount: 156,
-                education: 'Đại học Y Hà Nội',
-                hospital: 'Bệnh viện Bạch Mai',
-                phone: '0901234567',
-                email: 'bs.nguyen.van.an@healthysystem.com',
-                avatar: '👨‍⚕️',
-                description: 'Chuyên điều trị các bệnh lý nội khoa, tim mạch và tiểu đường.',
-                workingHours: 'T2-T6: 8:00-17:00, T7: 8:00-12:00'
-            },
-            {
-                id: 2,
-                name: 'BS. Trần Thị Bình',
-                specialty: 'Sản phụ khoa',
-                experience: 8,
-                rating: 4.9,
-                reviewCount: 203,
-                education: 'Đại học Y TP.HCM',
-                hospital: 'Bệnh viện Từ Dũ',
-                phone: '0912345678',
-                email: 'bs.tran.thi.binh@healthysystem.com',
-                avatar: '👩‍⚕️',
-                description: 'Chuyên khám thai, sinh thường và các vấn đề sức khỏe phụ nữ.',
-                workingHours: 'T2-T7: 7:30-16:30'
-            },
-            {
-                id: 3,
-                name: 'BS. Lê Minh Cường',
-                specialty: 'Ngoại khoa',
-                experience: 15,
-                rating: 4.7,
-                reviewCount: 128,
-                education: 'Đại học Y Huế',
-                hospital: 'Bệnh viện Chợ Rẫy',
-                phone: '0923456789',
-                email: 'bs.le.minh.cuong@healthysystem.com',
-                avatar: '👨‍⚕️',
-                description: 'Chuyên phẫu thuật nội soi, phẫu thuật ổ bụng và ruột thừa.',
-                workingHours: 'T2-T6: 7:00-16:00, T7: 7:00-11:00'
-            },
-            {
-                id: 4,
-                name: 'BS. Phạm Thị Dung',
-                specialty: 'Nhi khoa',
-                experience: 6,
-                rating: 4.8,
-                reviewCount: 189,
-                education: 'Đại học Y Hà Nội',
-                hospital: 'Bệnh viện Nhi Trung ương',
-                phone: '0934567890',
-                email: 'bs.pham.thi.dung@healthysystem.com',
-                avatar: '👩‍⚕️',
-                description: 'Chuyên điều trị các bệnh lý trẻ em, tiêm chủng và dinh dưỡng.',
-                workingHours: 'T2-T6: 8:00-17:00, CN: 8:00-12:00'
-            },
-            {
-                id: 5,
-                name: 'BS. Hoàng Văn Em',
-                specialty: 'Tai mũi họng',
-                experience: 10,
-                rating: 4.6,
-                reviewCount: 94,
-                education: 'Đại học Y Thái Bình',
-                hospital: 'Bệnh viện Việt Đức',
-                phone: '0945678901',
-                email: 'bs.hoang.van.em@healthysystem.com',
-                avatar: '👨‍⚕️',
-                description: 'Chuyên điều trị các bệnh về tai, mũi, họng và phẫu thuật nội soi.',
-                workingHours: 'T2-T7: 8:00-17:00'
-            },
-            {
-                id: 6,
-                name: 'BS. Vũ Thị Giang',
-                specialty: 'Mắt',
-                experience: 7,
-                rating: 4.9,
-                reviewCount: 167,
-                education: 'Đại học Y TP.HCM',
-                hospital: 'Bệnh viện Mắt TP.HCM',
-                phone: '0956789012',
-                email: 'bs.vu.thi.giang@healthysystem.com',
-                avatar: '👩‍⚕️',
-                description: 'Chuyên điều trị các bệnh về mắt, phẫu thuật cận thị và đục thủy tinh thể.',
-                workingHours: 'T2-T6: 8:00-17:00, T7: 8:00-12:00'
-            },
-            {
-                id: 7,
-                name: 'BS. Đỗ Minh Hải',
-                specialty: 'Tim mạch',
-                experience: 18,
-                rating: 4.8,
-                reviewCount: 142,
-                education: 'Đại học Y Hà Nội',
-                hospital: 'Viện Tim mạch Việt Nam',
-                phone: '0967890123',
-                email: 'bs.do.minh.hai@healthysystem.com',
-                avatar: '👨‍⚕️',
-                description: 'Chuyên điều trị các bệnh lý tim mạch, cao huyết áp và rối loạn lipid máu.',
-                workingHours: 'T2-T6: 7:30-16:30'
-            },
-            {
-                id: 8,
-                name: 'BS. Ngô Thị Lan',
-                specialty: 'Da liễu',
-                experience: 5,
-                rating: 4.7,
-                reviewCount: 113,
-                education: 'Đại học Y Dược TP.HCM',
-                hospital: 'Bệnh viện Da liễu TP.HCM',
-                phone: '0978901234',
-                email: 'bs.ngo.thi.lan@healthysystem.com',
-                avatar: '👩‍⚕️',
-                description: 'Chuyên điều trị các bệnh lý da, mụn trứng cá và thẩm mỹ da.',
-                workingHours: 'T2-T7: 8:30-17:30'
-            }
-        ];
+    normalizeDoctors(rows) {
+        if (!Array.isArray(rows)) return [];
+
+        return rows.map((doctor) => {
+            const specialties = Array.isArray(doctor?.Specialties)
+                ? doctor.Specialties
+                : (Array.isArray(doctor?.specialties) ? doctor.specialties : []);
+
+            const specialtyNames = specialties
+                .map((item) => (item?.name || item?.Name || '').toString().trim())
+                .filter(Boolean);
+
+            const fullName = (doctor?.fullName || doctor?.FullName || doctor?.name || `${doctor?.firstName || ''} ${doctor?.lastName || ''}`)
+                .toString()
+                .trim();
+
+            const experience = Number(doctor?.yearsOfExperience ?? doctor?.YearsOfExperience ?? doctor?.experience ?? 0) || 0;
+            const rating = Number(doctor?.averageRating ?? doctor?.AverageRating ?? doctor?.rating ?? 0) || 0;
+            const reviews = Number(doctor?.totalRatings ?? doctor?.TotalRatings ?? doctor?.reviewCount ?? 0) || 0;
+
+            const fallbackName = encodeURIComponent(fullName || 'Doctor');
+            const profileImage = doctor?.profileImageUrl || doctor?.profileImage || doctor?.avatarUrl || doctor?.Image || doctor?.image || `https://ui-avatars.com/api/?name=${fallbackName}&background=0F172A&color=FFFFFF&size=600`;
+
+            const publicId = doctor?.publicId ?? doctor?.PublicId ?? doctor?.id ?? doctor?.Id ?? null;
+
+            return {
+                id: publicId,
+                fullName: fullName || 'Bác sĩ',
+                title: (doctor?.title || doctor?.Title || 'Bác sĩ').toString().trim(),
+                department: (doctor?.department || doctor?.Department || 'Đang cập nhật').toString().trim(),
+                specialtyNames,
+                primarySpecialty: specialtyNames[0] || 'Tổng quát',
+                experience,
+                rating,
+                reviews,
+                phone: (doctor?.phone || doctor?.Phone || 'Đang cập nhật').toString().trim(),
+                email: (doctor?.email || doctor?.Email || 'Đang cập nhật').toString().trim(),
+                profileImage,
+                workingHours: (doctor?.workingHours || doctor?.WorkingHours || 'T2 - T6: 08:00 - 17:00').toString().trim()
+            };
+        }).filter((doctor) => doctor.id);
     }
 
-    filterDoctors() {
-        const searchName = document.getElementById('search-name')?.value.toLowerCase().trim() || '';
-        const filterSpecialty = document.getElementById('filter-specialty')?.value || '';
-        const filterExperience = document.getElementById('filter-experience')?.value || '';
+    populateSpecialtyFilter() {
+        if (!this.specialtyFilter) return;
 
-        this.filteredDoctors = this.doctors.filter(doctor => {
-            // Name filter
-            const nameMatch = !searchName || 
-                doctor.name.toLowerCase().includes(searchName) ||
-                doctor.specialty.toLowerCase().includes(searchName);
-
-            // Specialty filter
-            const specialtyMatch = !filterSpecialty || doctor.specialty === filterSpecialty;
-
-            // Experience filter
-            let experienceMatch = true;
-            if (filterExperience) {
-                const experience = doctor.experience;
-                switch (filterExperience) {
-                    case '1-5':
-                        experienceMatch = experience >= 1 && experience <= 5;
-                        break;
-                    case '5-10':
-                        experienceMatch = experience > 5 && experience <= 10;
-                        break;
-                    case '10+':
-                        experienceMatch = experience > 10;
-                        break;
-                }
+        const specialties = new Set();
+        this.doctors.forEach((doctor) => {
+            if (Array.isArray(doctor.specialtyNames) && doctor.specialtyNames.length) {
+                doctor.specialtyNames.forEach((name) => specialties.add(name));
+            } else {
+                specialties.add(doctor.primarySpecialty);
             }
+        });
 
-            return nameMatch && specialtyMatch && experienceMatch;
+        const sorted = Array.from(specialties).filter(Boolean).sort((a, b) => a.localeCompare(b, 'vi'));
+
+        this.specialtyFilter.innerHTML = '<option value="">Tất cả chuyên khoa</option>';
+        sorted.forEach((name) => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            this.specialtyFilter.appendChild(option);
+        });
+    }
+
+    applyFilters() {
+        const search = (this.searchInput?.value || '').toLowerCase().trim();
+        const specialty = this.specialtyFilter?.value || '';
+        const experience = this.experienceFilter?.value || '';
+
+        this.filteredDoctors = this.doctors.filter((doctor) => {
+            const specialtyText = doctor.specialtyNames.join(' ').toLowerCase();
+            const baseText = `${doctor.fullName} ${doctor.department} ${doctor.primarySpecialty}`.toLowerCase();
+
+            const matchesSearch = !search || baseText.includes(search) || specialtyText.includes(search);
+
+            const matchesSpecialty = !specialty || doctor.specialtyNames.includes(specialty) || doctor.primarySpecialty === specialty;
+
+            const matchesExperience = this.matchExperience(experience, doctor.experience);
+
+            return matchesSearch && matchesSpecialty && matchesExperience;
         });
 
         this.renderDoctors();
     }
 
+    matchExperience(filter, years) {
+        if (!filter) return true;
+
+        switch (filter) {
+            case '0-5':
+                return years >= 0 && years <= 5;
+            case '6-10':
+                return years >= 6 && years <= 10;
+            case '11+':
+                return years >= 11;
+            default:
+                return true;
+        }
+    }
+
     renderDoctors() {
-        const container = document.getElementById('doctors-grid');
-        const noResults = document.getElementById('no-results');
+        if (!this.grid || !this.emptyState || !this.resultsCount) return;
 
-        if (!container) return;
+        this.resultsCount.textContent = `${this.filteredDoctors.length} bác sĩ`;
 
-        if (this.filteredDoctors.length === 0) {
-            container.style.display = 'none';
-            if (noResults) noResults.style.display = 'block';
+        if (!this.filteredDoctors.length) {
+            this.grid.innerHTML = '';
+            this.emptyState.style.display = 'block';
             return;
         }
 
-        if (noResults) noResults.style.display = 'none';
-        container.style.display = 'grid';
+        this.emptyState.style.display = 'none';
+        this.grid.innerHTML = this.filteredDoctors.map((doctor) => {
+            const stars = this.renderStars(doctor.rating);
 
-        container.innerHTML = this.filteredDoctors.map(doctor => {
-            const doctorId = doctor.publicId || doctor.id;
-            console.log('Rendering doctor card:', doctor.name, 'ID:', doctorId);
             return `
-            <div class="doctor-card" onclick="window.doctorsPage && window.doctorsPage.goToDoctorDetail('${doctorId}')" style="cursor: pointer;">
-                <div class="doctor-image">
-                    ${doctor.avatar}
-                </div>
-                <div class="doctor-info">
-                    <div class="doctor-name">${doctor.name}</div>
-                    <div class="doctor-specialty">${doctor.specialty}</div>
-                    
-                    <div class="doctor-details">
-                        <div class="doctor-detail">
-                            <span>🎓</span> ${doctor.education}
-                        </div>
-                        <div class="doctor-detail">
-                            <span>🏥</span> ${doctor.hospital}
-                        </div>
-                        <div class="doctor-detail">
-                            <span>📞</span> ${doctor.phone}
-                        </div>
-                        <div class="doctor-detail">
-                            <span>⏰</span> ${doctor.workingHours}
-                        </div>
-                        <div class="doctor-detail">
-                            <span>💼</span> ${doctor.experience} năm kinh nghiệm
-                        </div>
-                    </div>
+                <article class="doctor-card">
+                    <img src="${this.escapeAttribute(doctor.profileImage)}" alt="${this.escapeAttribute(doctor.fullName)}" class="doctor-cover" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=Doctor&background=0F172A&color=FFFFFF&size=600'">
+                    <div class="doctor-body">
+                        <h4 class="doctor-name">${this.escapeHtml(doctor.title)} ${this.escapeHtml(doctor.fullName)}</h4>
+                        <p class="doctor-subtitle">${this.escapeHtml(doctor.primarySpecialty)} - ${this.escapeHtml(doctor.department)}</p>
 
-                    <div class="doctor-rating">
-                        <div class="stars">${this.renderStars(doctor.rating)}</div>
-                        <span class="rating-text">${doctor.rating}/5 (${doctor.reviewCount} đánh giá)</span>
-                    </div>
+                        <div class="doctor-meta">
+                            <span><i class="fas fa-briefcase-medical"></i> ${doctor.experience} năm kinh nghiệm</span>
+                            <span><i class="fas fa-clock"></i> ${this.escapeHtml(doctor.workingHours)}</span>
+                            <span><i class="fas fa-phone"></i> ${this.escapeHtml(doctor.phone)}</span>
+                        </div>
 
-                    <div class="doctor-actions">
-                        <button class="btn-book" onclick="event.stopPropagation(); window.doctorsPage && window.doctorsPage.bookAppointment('${doctorId}')">
-                            📅 Đặt lịch khám
-                        </button>
-                        <button class="btn-info" onclick="event.stopPropagation(); window.doctorsPage && window.doctorsPage.goToDoctorDetail('${doctorId}')" title="Xem thông tin chi tiết">
-                            ℹ️
-                        </button>
+                        <div class="doctor-rating">
+                            <span class="doctor-stars">${this.escapeHtml(stars)}</span>
+                            <span>${doctor.rating.toFixed(1)}/5 (${doctor.reviews} đánh giá)</span>
+                        </div>
+
+                        <div class="doctor-actions">
+                            <button type="button" class="btn btn-brand" data-action="book" data-doctor-id="${this.escapeAttribute(doctor.id)}">Đăng ký lịch khám</button>
+                            <button type="button" class="btn btn-soft" data-action="detail" data-doctor-id="${this.escapeAttribute(doctor.id)}">Chi tiết</button>
+                        </div>
                     </div>
-                </div>
-            </div>
-        `;
+                </article>
+            `;
         }).join('');
 
-        // Add backup event listeners for doctor cards
-        this.addDoctorCardEventListeners();
+        this.bindDoctorActions();
     }
 
-    addDoctorCardEventListeners() {
-        const doctorCards = document.querySelectorAll('.doctor-card');
-        doctorCards.forEach((card, index) => {
-            if (this.filteredDoctors[index]) {
-                const doctor = this.filteredDoctors[index];
-                const doctorId = doctor.publicId || doctor.id;
-                
-                // Remove existing click listeners to avoid duplicates
-                card.replaceWith(card.cloneNode(true));
-                const newCard = document.querySelectorAll('.doctor-card')[index];
-                
-                // Add click event listener
-                newCard.addEventListener('click', (e) => {
-                    // Don't trigger if clicking on buttons
-                    if (e.target.closest('.doctor-actions')) {
-                        return;
-                    }
-                    console.log('Doctor card clicked:', doctor.name, 'ID:', doctorId);
-                    this.goToDoctorDetail(doctorId);
-                });
-                
-                // Make sure buttons still work
-                const bookBtn = newCard.querySelector('.btn-book');
-                const infoBtn = newCard.querySelector('.btn-info');
-                
-                if (bookBtn) {
-                    bookBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        this.bookAppointment(doctorId);
-                    });
-                }
-                
-                if (infoBtn) {
-                    infoBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        this.goToDoctorDetail(doctorId);
-                    });
-                }
-            }
+    bindDoctorActions() {
+        if (!this.grid) return;
+
+        this.grid.querySelectorAll('button[data-action="book"]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const doctorId = button.getAttribute('data-doctor-id');
+                this.goToAppointment(doctorId);
+            });
+        });
+
+        this.grid.querySelectorAll('button[data-action="detail"]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const doctorId = button.getAttribute('data-doctor-id');
+                this.goToDoctorDetail(doctorId);
+            });
         });
     }
 
-    renderStars(rating) {
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 !== 0;
-        let stars = '';
+    normalizeDoctorId(rawId) {
+        if (rawId === null || rawId === undefined) return null;
 
-        for (let i = 0; i < fullStars; i++) {
-            stars += '⭐';
-        }
-        
-        if (hasHalfStar) {
-            stars += '⭐'; // Using full star for simplicity
-        }
+        const value = String(rawId).trim();
+        if (!value) return null;
+        if (/^(null|undefined|nan)$/i.test(value)) return null;
 
-        return stars;
+        return value;
     }
 
-    bookAppointment(doctorId) {
-        // Redirect to book appointment page with doctor pre-selected
-        if (doctorId) {
-            window.location.href = `book-appointment.html?doctor=${doctorId}`;
-        } else {
-            window.location.href = 'book-appointment.html';
-        }
-    }
-
-    showDoctorInfo(doctorId) {
-        // Redirect to detail page instead of showing alert
-        this.goToDoctorDetail(doctorId);
+    goToAppointment(doctorId) {
+        const validDoctorId = this.normalizeDoctorId(doctorId);
+        if (!validDoctorId) return;
+        window.location.href = `appointment-registration.html?doctor=${encodeURIComponent(validDoctorId)}`;
     }
 
     goToDoctorDetail(doctorId) {
-        console.log('goToDoctorDetail called with ID:', doctorId);
-        
-        if (!doctorId) {
-            console.error('Doctor ID is required');
-            alert('Lỗi: Không tìm thấy thông tin bác sĩ');
-            return;
-        }
-        
-        console.log('Navigating to doctor detail page...');
-        
-        // Navigate to doctor detail page with the doctor ID
-        const url = `doctor-detail.html?id=${encodeURIComponent(doctorId)}`;
-        console.log('URL:', url);
-        window.location.href = url;
+        const validDoctorId = this.normalizeDoctorId(doctorId);
+        if (!validDoctorId) return;
+        window.location.href = `doctor-detail.html?id=${encodeURIComponent(validDoctorId)}`;
+    }
+
+    renderStars(rating) {
+        const score = Math.max(0, Math.min(5, Number(rating) || 0));
+        const full = Math.floor(score);
+        const empty = 5 - full;
+        return `${'★'.repeat(full)}${'☆'.repeat(empty)}`;
     }
 
     showLoading() {
-        this.isLoading = true;
-        const loading = document.getElementById('loading');
-        const grid = document.getElementById('doctors-grid');
-        const noResults = document.getElementById('no-results');
+        if (this.loadingState) this.loadingState.style.display = 'block';
+        if (this.errorState) this.errorState.style.display = 'none';
+        if (this.listCard) this.listCard.style.display = 'none';
 
-        if (loading) loading.style.display = 'block';
-        if (grid) grid.style.display = 'none';
-        if (noResults) noResults.style.display = 'none';
-    }
-
-    hideLoading() {
-        this.isLoading = false;
-        const loading = document.getElementById('loading');
-        if (loading) loading.style.display = 'none';
-    }
-
-    showError(message) {
-        alert(`Lỗi: ${message}`);
-    }
-
-    updateAuthUI() {
-        const authLink = document.getElementById('auth-link');
-        if (!authLink) return;
-
-        if (AuthManager.isLoggedIn()) {
-            const user = AuthManager.getCurrentUser();
-            authLink.textContent = user ? `Xin chào, ${user.firstName}` : 'Tài khoản';
-            authLink.href = '#';
-            authLink.onclick = (e) => {
-                e.preventDefault();
-                this.showUserMenu();
-            };
+        if (typeof window.renderSkeletons === 'function') {
+            window.renderSkeletons('doctors-loading-skeleton', 4);
         } else {
-            authLink.textContent = 'Đăng nhập';
-            authLink.href = 'login.html';
-            authLink.onclick = null;
+            const fallback = document.getElementById('doctors-loading-skeleton');
+            if (fallback) {
+                fallback.innerHTML = '<p class="text-muted">Đang tải danh sách bác sĩ...</p>';
+            }
         }
     }
 
-    showUserMenu() {
-        if (confirm('Bạn có muốn đăng xuất không?')) {
-            AuthManager.logout();
-            window.location.reload();
+    showContent() {
+        if (this.loadingState) this.loadingState.style.display = 'none';
+        if (this.errorState) this.errorState.style.display = 'none';
+        if (this.listCard) this.listCard.style.display = 'grid';
+    }
+
+    showError() {
+        if (this.loadingState) this.loadingState.style.display = 'none';
+        if (this.listCard) this.listCard.style.display = 'none';
+        if (this.errorState) this.errorState.style.display = 'grid';
+    }
+
+    escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    escapeAttribute(value) {
+        return this.escapeHtml(value).replace(/`/g, '&#96;');
+    }
+
+    syncPublicSidebarAuth() {
+        const loginBtn = document.getElementById('login-btn');
+        const userMenu = document.getElementById('user-menu');
+        const userDisplayName = document.getElementById('user-display-name');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        const configUserKey = (typeof CONFIG !== 'undefined' && CONFIG.STORAGE_KEYS)
+            ? CONFIG.STORAGE_KEYS.USER
+            : null;
+
+        const storedUser = localStorage.getItem(configUserKey || 'user') || localStorage.getItem('user');
+        let user = null;
+
+        if (storedUser) {
+            try {
+                user = JSON.parse(storedUser);
+            } catch (error) {
+                user = null;
+            }
+        }
+
+        if (user) {
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (userMenu) userMenu.style.display = 'block';
+            if (logoutBtn) logoutBtn.style.display = 'block';
+            if (userDisplayName) {
+                userDisplayName.textContent = user.fullName || user.name || user.email || 'Tài khoản';
+            }
+        } else {
+            if (loginBtn) loginBtn.style.display = 'block';
+            if (userMenu) userMenu.style.display = 'none';
+            if (logoutBtn) logoutBtn.style.display = 'none';
         }
     }
 
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    handleLogout(event) {
+        event.preventDefault();
+
+        if (window.authManager && typeof window.authManager.logout === 'function') {
+            window.authManager.logout();
+        } else {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            if (typeof CONFIG !== 'undefined' && CONFIG.STORAGE_KEYS) {
+                localStorage.removeItem(CONFIG.STORAGE_KEYS.TOKEN);
+                localStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
+            }
+        }
+
+        this.syncPublicSidebarAuth();
+        window.location.href = 'index.html';
     }
 }
 
-// Global search function
-function searchDoctors() {
-    if (window.doctorsPage) {
-        window.doctorsPage.filterDoctors();
-    }
-}
-
-// Initialize when page is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Initializing DoctorsPage...');
     window.doctorsPage = new DoctorsPage();
-    console.log('DoctorsPage initialized:', window.doctorsPage);
 });

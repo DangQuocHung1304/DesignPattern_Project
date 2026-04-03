@@ -164,7 +164,16 @@ class ApiService {
     }
     
     async getDoctor(publicId) {
-        return this.get(`${CONFIG.ENDPOINTS.DOCTORS}/${publicId}`, false);
+        const doctorId = (publicId ?? '').toString().trim();
+        if (!doctorId || /^(null|undefined|nan)$/i.test(doctorId)) {
+            return {
+                success: false,
+                error: 'Mã bác sĩ không hợp lệ',
+                status: 400
+            };
+        }
+
+        return this.get(`${CONFIG.ENDPOINTS.DOCTORS}/${doctorId}`, false);
     }
     
     async getDoctorSchedule(publicId, startDate, endDate) {

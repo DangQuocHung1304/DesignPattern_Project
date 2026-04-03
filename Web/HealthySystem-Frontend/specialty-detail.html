@@ -4,529 +4,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chuyên khoa - HealthySystem</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/design-system.css">
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/pages/specialty-detail.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
-    <style>
-        .specialty-detail-page {
-            min-height: 100vh;
-            background-color: #f8f9fa;
-        }
-        
-        .page-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 60px 0 40px;
-            margin-bottom: 40px;
-        }
-        
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            color: white;
-            text-decoration: none;
-            margin-bottom: 20px;
-            font-size: 16px;
-            transition: opacity 0.3s;
-        }
-        
-        .back-btn:hover {
-            opacity: 0.8;
-            color: white;
-        }
-        
-        .specialty-hero {
-            text-align: center;
-        }
-        
-        .specialty-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            display: block;
-        }
-        
-        .specialty-title {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        
-        .specialty-subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-        
-        .article-section {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            margin-bottom: 40px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            line-height: 1.8;
-        }
-        
-        .article-header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e9ecef;
-        }
-        
-        .article-title {
-            font-size: 2rem;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-        
-        .article-meta {
-            color: #666;
-            font-style: italic;
-        }
-        
-        .article-content {
-            font-size: 16px;
-            color: #333;
-            text-align: justify;
-        }
-        
-        .article-content h3 {
-            color: var(--primary-color);
-            margin: 30px 0 15px;
-            font-size: 1.3rem;
-            border-left: 4px solid var(--primary-color);
-            padding-left: 15px;
-        }
-        
-        .article-content h4 {
-            color: var(--secondary-color);
-            margin: 25px 0 12px;
-            font-size: 1.1rem;
-        }
-        
-        .article-content p {
-            margin-bottom: 18px;
-        }
-        
-        .article-content ul, .article-content ol {
-            margin: 15px 0;
-            padding-left: 25px;
-        }
-        
-        .article-content li {
-            margin-bottom: 8px;
-        }
-        
-        .highlight-box {
-            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
-            border-left: 4px solid var(--primary-color);
-            padding: 20px;
-            margin: 25px 0;
-            border-radius: 8px;
-        }
-        
-        .highlight-box h4 {
-            color: var(--primary-color);
-            margin-top: 0;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .stat-item {
-            text-align: center;
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            display: block;
-        }
-        
-        .stat-label {
-            color: #666;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-        
-        .doctors-section {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
-        .doctors-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .doctors-title {
-            font-size: 1.8rem;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-        
-        .doctors-subtitle {
-            color: #666;
-            font-size: 16px;
-        }
-        
-        .doctors-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 24px;
-            margin-top: 30px;
-        }
-        
-        .doctor-card {
-            background: #f8f9fa;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-        }
-        
-        .doctor-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .doctor-image {
-            width: 100%;
-            height: 120px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: white;
-        }
-        
-        .doctor-info {
-            padding: 20px;
-        }
-        
-        .doctor-name {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 8px;
-        }
-        
-        .doctor-title {
-            color: var(--secondary-color);
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-        
-        .doctor-details {
-            margin-bottom: 15px;
-        }
-        
-        .doctor-detail {
-            display: flex;
-            align-items: center;
-            margin-bottom: 6px;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .doctor-detail span {
-            margin-right: 8px;
-            width: 16px;
-        }
-        
-        .doctor-rating {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .stars {
-            color: #ffc107;
-            margin-right: 8px;
-        }
-        
-        .rating-text {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .doctor-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn-view-profile {
-            flex: 1;
-            padding: 10px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            text-decoration: none;
-            text-align: center;
-        }
-        
-        .btn-view-profile:hover {
-            background: var(--primary-dark);
-            color: white;
-        }
-        
-        .btn-book {
-            padding: 10px 16px;
-            background: transparent;
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-book:hover {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-        }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .error-message {
-            text-align: center;
-            padding: 40px 20px;
-            color: #dc3545;
-        }
-        
-        .no-doctors {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-        }
-        
-        @media (max-width: 768px) {
-            .specialty-title {
-                font-size: 2rem;
-            }
-            
-            .article-section,
-            .doctors-section {
-                padding: 25px;
-                margin-bottom: 25px;
-            }
-            
-            .doctors-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-    </style>
-    <link rel="stylesheet" href="assets/css/design-system.css">
 </head>
-<body>
-    <div class="page-shell">
+<body class="specialty-detail-page">
+    <div class="page-shell specialty-shell">
         <aside class="app-sidebar">
             <div class="brand-panel">
                 <div class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></div>
                 <div>
                     <div class="brand-name">HealthySystem</div>
-                    <div class="brand-caption">Unified Workspace</div>
+                    <div class="brand-caption">Patient Workspace</div>
                 </div>
             </div>
+
             <div class="nav-section-title">Điều hướng</div>
             <ul class="app-nav">
-                <li><a class="active" href="index.html"><i class="fas fa-house"></i> Trang chủ</a></li>
-                <li><a class="" href="doctor-dashboard.html"><i class="fas fa-user-doctor"></i> Dashboard bác sĩ</a></li>
-                <li><a class="" href="lab-technician-dashboard.html"><i class="fas fa-flask-vial"></i> Dashboard xét nghiệm</a></li>
-                <li><a class="" href="reception-appointments.html"><i class="fas fa-calendar-check"></i> Lịch hẹn</a></li>
-                <li><a class="" href="doctor-schedule.html"><i class="fas fa-calendar-days"></i> Lịch làm việc</a></li>
+                <li><a href="index.html"><i class="fas fa-house"></i> Trang chủ</a></li>
+                <li><a class="active" href="index.html#specialties"><i class="fas fa-stethoscope"></i> Chuyên khoa</a></li>
+                <li><a href="doctors.html"><i class="fas fa-user-doctor"></i> Bác sĩ</a></li>
+                <li><a href="book-appointment.html"><i class="fas fa-calendar-plus"></i> Đặt lịch khám</a></li>
+                <li><a href="patient-appointments.html"><i class="fas fa-calendar-check"></i> Lịch hẹn của tôi</a></li>
             </ul>
+
+            <div class="nav-section-title">Tài khoản</div>
+            <ul class="app-nav">
+                <li><a href="login.html" id="login-btn"><i class="fas fa-right-to-bracket"></i> Đăng nhập</a></li>
+                <li><a href="profile.html" id="user-menu" style="display:none;"><i class="fas fa-user-circle"></i> <span id="user-display-name">Tài khoản</span></a></li>
+                <li><a href="#" id="logout-btn" style="display:none;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+            </ul>
+
             <div class="nav-section-title">Liên kết</div>
             <ul class="app-nav mb-0">
                 <li><a href="pricing.html"><i class="fas fa-file-invoice-dollar"></i> Bảng giá</a></li>
                 <li><a href="news.html"><i class="fas fa-newspaper"></i> Tin tức</a></li>
-                <li><a href="login.html"><i class="fas fa-right-to-bracket"></i> Đăng nhập</a></li>
+                <li><a href="guides.html"><i class="fas fa-book-medical"></i> Hướng dẫn</a></li>
             </ul>
         </aside>
+
         <main class="app-main">
-            <header class="app-topbar">
+            <header class="app-topbar specialty-topbar">
                 <div>
-                    <h2 class="mb-1">Chuyên khoa - HealthySystem</h2>
-                    <p class="text-muted">Giao diện đồng bộ theo Modern Healthcare</p>
+                    <span class="topbar-eyebrow">Thông tin chuyên khoa</span>
+                    <h2 class="mb-1" id="specialty-page-title">Chuyên khoa</h2>
+                    <p class="text-muted" id="specialty-page-subtitle">Thông tin chuyên khoa và đội ngũ bác sĩ theo từng lĩnh vực điều trị</p>
                 </div>
+                <a href="index.html#specialties" class="btn btn-soft"><i class="fas fa-arrow-left me-2"></i>Quay lại danh sách</a>
             </header>
-    <div class="specialty-detail-page">
-        <!-- Header -->
-        <header class="header">
-            <div class="container">
-                <a href="index.html" class="logo">
-                    HealthySystem
-                </a>
-                <nav>
-                    <ul class="nav">
-                        <li><a href="index.html"><i class="fas fa-home"></i> Trang chủ</a></li>
-                        <li><a href="index.html#specialties" class="active"><i class="fas fa-stethoscope"></i> Chuyên khoa</a></li>
-                        <li><a href="doctors.html"><i class="fas fa-user-md"></i> Bác sĩ</a></li>
-                        <li><a href="book-appointment.html" class="btn-appointment">
-                            <i class="fas fa-calendar-plus"></i> Đặt lịch khám
-                        </a></li>
-                        <li id="auth-container">
-                            <!-- Hiển thị nút đăng nhập khi chưa đăng nhập -->
-                            <a href="login.html" id="login-btn" class="auth-btn">
-                                <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                            </a>
-                            <!-- Hiển thị tên người dùng khi đã đăng nhập -->
-                            <div id="user-menu" class="user-menu" style="display: none;">
-                                <span id="user-display-name" class="user-name">
-                                    <i class="fas fa-user-circle"></i> Tài khoản
-                                </span>
-                                <div class="user-dropdown">
-                                    <a href="profile.html"><i class="fas fa-user"></i> Hồ sơ</a>
-                                    <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </header>
 
-        <!-- Page Header -->
-        <div class="page-header">
-            <div class="container">
-                <a href="index.html#specialties" class="back-btn">
-                    ← Quay lại danh sách chuyên khoa
-                </a>
-                <div class="specialty-hero">
-                    <span class="specialty-icon" id="specialty-icon">🏥</span>
-                    <h1 class="specialty-title" id="specialty-title">Chuyên khoa Nội tổng quát</h1>
-                    <p class="specialty-subtitle" id="specialty-subtitle">
-                        Chuyên khoa hàng đầu tại HealthySystem với đội ngũ bác sĩ giàu kinh nghiệm
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="container">
-            <!-- Loading State -->
-            <div id="loading" class="loading">
-                <div class="spinner"></div>
-                <p>Đang tải thông tin chuyên khoa...</p>
-            </div>
-
-            <!-- Error State -->
-            <div id="error-message" class="error-message" style="display: none;">
-                <h3>Không thể tải thông tin chuyên khoa</h3>
-                <p>Vui lòng thử lại sau hoặc quay lại trang chủ.</p>
-                <button class="btn btn-primary" onclick="window.location.reload()">Thử lại</button>
-            </div>
-
-            <!-- Article Section -->
-            <div id="article-section" class="article-section" style="display: none;">
-                <div class="article-header">
-                    <h2 class="article-title" id="article-title">Chuyên khoa Nội tổng quát tại HealthySystem</h2>
-                    <div class="article-meta">
-                        <span>Cập nhật: <span id="article-date">1 tháng 10, 2025</span></span> • 
-                        <span>Thời gian đọc: 5 phút</span>
-                    </div>
-                </div>
-
-                <div class="article-content" id="article-content">
-                    <!-- Content will be loaded here -->
-                </div>
-
-                <!-- Statistics -->
-                <div class="stats-grid" id="stats-grid">
-                    <!-- Stats will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Doctors Section -->
-            <div id="doctors-section" class="doctors-section" style="display: none;">
-                <div class="doctors-header">
-                    <h2 class="doctors-title">Đội ngũ bác sĩ chuyên khoa</h2>
-                    <p class="doctors-subtitle" id="doctors-subtitle">
-                        Các bác sĩ giàu kinh nghiệm và tận tâm với bệnh nhân
-                    </p>
-                </div>
-
-                <!-- Loading State for Doctors -->
-                <div id="doctors-loading" class="loading" style="display: none;">
+            <section class="specialty-content">
+                <div id="loading" class="loading-state modern-card">
                     <div class="spinner"></div>
-                    <p>Đang tải danh sách bác sĩ...</p>
+                    <p>Đang tải thông tin chuyên khoa...</p>
                 </div>
 
-                <!-- No Doctors -->
-                <div id="no-doctors" class="no-doctors" style="display: none;">
-                    <h3>Chưa có bác sĩ nào</h3>
-                    <p>Hiện tại chuyên khoa này chưa có bác sĩ. Vui lòng quay lại sau.</p>
+                <div id="error-message" class="error-state modern-card" style="display: none;">
+                    <h3>Không thể tải thông tin chuyên khoa</h3>
+                    <p>Vui lòng thử lại sau hoặc quay lại trang chủ.</p>
+                    <button class="btn btn-brand" onclick="window.location.reload()">Thử lại</button>
                 </div>
 
-                <!-- Doctors Grid -->
-                <div id="doctors-grid" class="doctors-grid">
-                    <!-- Doctors will be loaded here -->
-                </div>
-            </div>
-        </div>
+                <article id="article-section" class="modern-card specialty-intro-card" style="display: none;">
+                    <div class="specialty-hero">
+                        <span class="specialty-icon" id="specialty-icon">🏥</span>
+                        <h1 class="specialty-title" id="specialty-title">Chuyên khoa Tổng quát</h1>
+                        <p class="specialty-subtitle" id="specialty-subtitle">
+                            Chuyên khoa hàng đầu tại HealthySystem với đội ngũ bác sĩ giàu kinh nghiệm
+                        </p>
+                    </div>
 
-        <!-- Footer -->
-        <footer class="footer py-4 bg-primary text-white text-center">
-            <div class="container">
-                <p>&copy; 2025 HealthySystem. Tất cả quyền được bảo lưu.</p>
-                <p>Phiên bản 1.0.0 | API Status: <span id="api-status">Đang kiểm tra...</span></p>
-            </div>
-        </footer>
+                    <div class="article-header">
+                        <h2 class="article-title" id="article-title">Chuyên khoa Tổng quát tại HealthySystem</h2>
+                        <div class="article-meta">
+                            <span>Cập nhật: <span id="article-date">1 tháng 10, 2025</span></span>
+                            <span>Thời gian đọc: 5 phút</span>
+                        </div>
+                    </div>
+
+                    <div class="article-content" id="article-content"></div>
+                    <div class="stats-grid" id="stats-grid"></div>
+                </article>
+
+                <section id="doctors-section" class="modern-card doctors-section" style="display: none;">
+                    <div class="doctors-header">
+                        <h2 class="doctors-title">Đội ngũ bác sĩ chuyên khoa</h2>
+                        <p class="doctors-subtitle" id="doctors-subtitle">
+                            Các bác sĩ giàu kinh nghiệm và tận tâm với bệnh nhân
+                        </p>
+                    </div>
+
+                    <div id="doctors-loading" class="loading-state" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Đang tải danh sách bác sĩ...</p>
+                    </div>
+
+                    <div id="no-doctors" class="no-doctors" style="display: none;">
+                        <h3>Chưa có bác sĩ nào</h3>
+                        <p>Hiện tại chuyên khoa này chưa có bác sĩ. Vui lòng quay lại sau.</p>
+                    </div>
+
+                    <div id="doctors-grid" class="doctors-grid"></div>
+                </section>
+            </section>
+
+            <footer class="workspace-footer specialty-footer">
+                <div class="footer-meta">
+                    <p>&copy; 2026 HealthySystem. Tất cả quyền được bảo lưu.</p>
+                    <p>API Status: <span id="api-status">Đang kiểm tra...</span></p>
+                </div>
+            </footer>
+        </main>
     </div>
 
-    <!-- Scripts -->
-    <script src="assets/js/config.js"></script>
-    <script src="assets/js/utils.js"></script>
-    <script src="assets/js/api.js"></script>
-    <script src="assets/js/auth.js"></script>
-    <script src="assets/js/specialty-detail.js"></script>
-    <!-- JavaScript -->
     <script src="assets/js/config.js"></script>
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/api.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/main.js"></script>
-        </main>
-    </div>
+    <script src="assets/js/specialty-detail.js"></script>
 </body>
 </html>
 

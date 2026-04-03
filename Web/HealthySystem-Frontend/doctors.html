@@ -3,406 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Danh sách Bác sĩ - HealthySystem</title>
+    <title>Danh sách bác sĩ - HealthySystem</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/design-system.css">
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/pages/doctors.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
-    <style>
-        .doctors-page {
-            min-height: 100vh;
-            background-color: #f8f9fa;
-        }
-        
-        .page-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 60px 0 40px;
-            margin-bottom: 40px;
-        }
-        
-        .page-header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        
-        .page-header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        
-        .search-filters {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .filter-row {
-            display: flex;
-            gap: 20px;
-            align-items: end;
-            flex-wrap: wrap;
-        }
-        
-        .filter-group {
-            flex: 1;
-            min-width: 200px;
-        }
-        
-        .filter-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .filter-group input,
-        .filter-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        .filter-group input:focus,
-        .filter-group select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-        
-        .doctors-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 24px;
-            margin-bottom: 40px;
-        }
-        
-        .doctor-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .doctor-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .doctor-image {
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4rem;
-            color: white;
-        }
-        
-        .doctor-info {
-            padding: 24px;
-        }
-        
-        .doctor-name {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 8px;
-        }
-        
-        .doctor-specialty {
-            color: var(--secondary-color);
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-        
-        .doctor-details {
-            margin-bottom: 16px;
-        }
-        
-        .doctor-detail {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .doctor-detail i {
-            margin-right: 8px;
-            width: 16px;
-        }
-        
-        .doctor-rating {
-            display: flex;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        
-        .stars {
-            color: #ffc107;
-            margin-right: 8px;
-        }
-        
-        .rating-text {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .doctor-actions {
-            display: flex;
-            gap: 12px;
-        }
-        
-        .btn-book {
-            flex: 1;
-            padding: 12px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        .btn-book:hover {
-            background: var(--primary-dark);
-        }
-        
-        .btn-info {
-            padding: 12px 16px;
-            background: transparent;
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-info:hover {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        .no-results {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
-        
-        .no-results h3 {
-            margin-bottom: 16px;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-        }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            color: white;
-            text-decoration: none;
-            margin-bottom: 20px;
-            font-size: 16px;
-            transition: opacity 0.3s;
-        }
-        
-        .back-btn:hover {
-            opacity: 0.8;
-        }
-        
-        .back-btn i {
-            margin-right: 8px;
-        }
-    </style>
-    <link rel="stylesheet" href="assets/css/design-system.css">
 </head>
-<body>
-    <div class="page-shell">
+<body class="doctors-page">
+    <div class="page-shell doctors-shell">
         <aside class="app-sidebar">
             <div class="brand-panel">
                 <div class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></div>
                 <div>
                     <div class="brand-name">HealthySystem</div>
-                    <div class="brand-caption">Unified Workspace</div>
+                    <div class="brand-caption">Patient Workspace</div>
                 </div>
             </div>
+
             <div class="nav-section-title">Điều hướng</div>
             <ul class="app-nav">
-                <li><a class="active" href="index.html"><i class="fas fa-house"></i> Trang chủ</a></li>
-                <li><a class="" href="doctor-dashboard.html"><i class="fas fa-user-doctor"></i> Dashboard bác sĩ</a></li>
-                <li><a class="" href="lab-technician-dashboard.html"><i class="fas fa-flask-vial"></i> Dashboard xét nghiệm</a></li>
-                <li><a class="" href="reception-appointments.html"><i class="fas fa-calendar-check"></i> Lịch hẹn</a></li>
-                <li><a class="" href="doctor-schedule.html"><i class="fas fa-calendar-days"></i> Lịch làm việc</a></li>
-            </ul>
-            <div class="nav-section-title">Liên kết</div>
-            <ul class="app-nav mb-0">
+                <li><a href="index.html"><i class="fas fa-house"></i> Trang chủ</a></li>
+                <li><a href="index.html#specialties"><i class="fas fa-stethoscope"></i> Chuyên khoa</a></li>
+                <li><a class="active" href="doctors.html"><i class="fas fa-user-doctor"></i> Bác sĩ</a></li>
                 <li><a href="pricing.html"><i class="fas fa-file-invoice-dollar"></i> Bảng giá</a></li>
                 <li><a href="news.html"><i class="fas fa-newspaper"></i> Tin tức</a></li>
-                <li><a href="login.html"><i class="fas fa-right-to-bracket"></i> Đăng nhập</a></li>
+                <li><a href="index.html#contact"><i class="fas fa-phone"></i> Liên hệ</a></li>
+            </ul>
+
+            <div class="nav-section-title">Tài khoản</div>
+            <ul class="app-nav mb-0">
+                <li><a href="login.html" id="login-btn"><i class="fas fa-right-to-bracket"></i> Đăng nhập</a></li>
+                <li><a href="profile.html" id="user-menu" style="display: none;"><i class="fas fa-user-circle"></i> <span id="user-display-name">Tài khoản</span></a></li>
+                <li><a href="#" id="logout-btn" style="display: none;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
             </ul>
         </aside>
+
         <main class="app-main">
-            <header class="app-topbar">
+            <header class="app-topbar doctors-topbar">
                 <div>
-                    <h2 class="mb-1">Danh sách Bác sĩ - HealthySystem</h2>
-                    <p class="text-muted">Giao diện đồng bộ theo Modern Healthcare</p>
+                    <span class="topbar-eyebrow">Danh sách bác sĩ</span>
+                    <h2 class="mb-1" id="doctors-page-title">Đội ngũ bác sĩ chuyên khoa</h2>
+                    <p class="text-muted" id="doctors-page-subtitle">Tìm bác sĩ phù hợp theo chuyên khoa, kinh nghiệm và đánh giá từ bệnh nhân</p>
                 </div>
+                <a class="btn btn-brand" href="appointment-registration.html"><i class="fas fa-calendar-plus me-2"></i>Đăng ký lịch khám</a>
             </header>
-    <div class="doctors-page">
-        <!-- Header -->
-        <header class="header">
-            <div class="container">
-                <a href="index.html" class="logo">
-                    HealthySystem
-                </a>
-                <nav>
-                    <ul class="nav">
-                        <li><a href="index.html"><i class="fas fa-home"></i> Trang chủ</a></li>
-                        <li><a href="index.html#specialties"><i class="fas fa-stethoscope"></i> Chuyên khoa</a></li>
-                        <li><a href="doctors.html" class="active"><i class="fas fa-user-md"></i> Bác sĩ</a></li>
-                        <li><a href="book-appointment.html" class="btn-appointment">
-                            <i class="fas fa-calendar-plus"></i> Đặt lịch khám
-                        </a></li>
-                        <li id="auth-container">
-                            <!-- Hiển thị nút đăng nhập khi chưa đăng nhập -->
-                            <a href="login.html" id="login-btn" class="auth-btn">
-                                <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                            </a>
-                            <!-- Hiển thị tên người dùng khi đã đăng nhập -->
-                            <div id="user-menu" class="user-menu" style="display: none;">
-                                <span id="user-display-name" class="user-name">
-                                    <i class="fas fa-user-circle"></i> Tài khoản
-                                </span>
-                                <div class="user-dropdown">
-                                    <a href="profile.html"><i class="fas fa-user"></i> Hồ sơ</a>
-                                    <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </header>
 
-        <!-- Page Header -->
-        <div class="page-header">
-            <div class="container">
-                <a href="index.html" class="back-btn">
-                    ← Quay lại trang chủ
-                </a>
-                <h1>Danh sách Bác sĩ</h1>
-                <p>Tìm kiếm và đặt lịch với bác sĩ chuyên khoa phù hợp với bạn</p>
-            </div>
-        </div>
+            <section class="doctors-content">
+                <article class="modern-card filter-card">
+                    <div class="filter-grid">
+                        <label class="filter-field" for="doctor-search-input">
+                            <span>Tìm theo tên bác sĩ</span>
+                            <input id="doctor-search-input" class="form-control" type="text" placeholder="Nhập tên bác sĩ hoặc chuyên khoa">
+                        </label>
 
-        <!-- Main Content -->
-        <div class="container">
-            <!-- Search & Filters -->
-            <div class="search-filters">
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label for="search-name">Tìm theo tên bác sĩ</label>
-                        <input type="text" id="search-name" placeholder="Nhập tên bác sĩ...">
+                        <label class="filter-field" for="specialty-filter-select">
+                            <span>Chuyên khoa</span>
+                            <select id="specialty-filter-select" class="form-select">
+                                <option value="">Tất cả chuyên khoa</option>
+                            </select>
+                        </label>
+
+                        <label class="filter-field" for="experience-filter-select">
+                            <span>Kinh nghiệm</span>
+                            <select id="experience-filter-select" class="form-select">
+                                <option value="">Tất cả</option>
+                                <option value="0-5">0 - 5 năm</option>
+                                <option value="6-10">6 - 10 năm</option>
+                                <option value="11+">Trên 10 năm</option>
+                            </select>
+                        </label>
                     </div>
-                    <div class="filter-group">
-                        <label for="filter-specialty">Chuyên khoa</label>
-                        <select id="filter-specialty">
-                            <option value="">Tất cả chuyên khoa</option>
-                            <option value="Nội khoa">Nội khoa</option>
-                            <option value="Ngoại khoa">Ngoại khoa</option>
-                            <option value="Sản phụ khoa">Sản phụ khoa</option>
-                            <option value="Nhi khoa">Nhi khoa</option>
-                            <option value="Tai mũi họng">Tai mũi họng</option>
-                            <option value="Mắt">Mắt</option>
-                            <option value="Da liễu">Da liễu</option>
-                            <option value="Tim mạch">Tim mạch</option>
-                            <option value="Thần kinh">Thần kinh</option>
-                            <option value="Chỉnh hình">Chỉnh hình</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="filter-experience">Kinh nghiệm</label>
-                        <select id="filter-experience">
-                            <option value="">Tất cả</option>
-                            <option value="1-5">1-5 năm</option>
-                            <option value="5-10">5-10 năm</option>
-                            <option value="10+">Trên 10 năm</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <button type="button" class="btn btn-primary" onclick="searchDoctors()">
-                            🔍 Tìm kiếm
-                        </button>
-                    </div>
+                </article>
+
+                <div id="doctors-loading-state" class="modern-card state-card">
+                    <div id="doctors-loading-skeleton"></div>
                 </div>
-            </div>
 
-            <!-- Loading State -->
-            <div id="loading" class="loading">
-                <div class="spinner"></div>
-                <p>Đang tải danh sách bác sĩ...</p>
-            </div>
+                <div id="doctors-error-state" class="modern-card state-card error-state" style="display: none;">
+                    <h3>Không thể tải danh sách bác sĩ</h3>
+                    <p>Vui lòng kiểm tra kết nối API và thử lại.</p>
+                    <button type="button" class="btn btn-brand" id="doctors-retry-btn">Thử lại</button>
+                </div>
 
-            <!-- Doctors Grid -->
-            <div id="doctors-grid" class="doctors-grid" style="display: none;">
-                <!-- Sẽ được load bởi JavaScript -->
-            </div>
+                <article id="doctors-list-card" class="modern-card doctors-list-card" style="display: none;">
+                    <div class="card-header-modern">
+                        <h3>Kết quả tìm kiếm</h3>
+                        <span class="info-chip primary" id="doctors-results-count">0 bác sĩ</span>
+                    </div>
 
-            <!-- No Results -->
-            <div id="no-results" class="no-results" style="display: none;">
-                <h3>Không tìm thấy bác sĩ phù hợp</h3>
-                <p>Vui lòng thử lại với từ khóa hoặc bộ lọc khác</p>
-            </div>
-        </div>
+                    <div id="doctors-grid" class="doctors-grid"></div>
 
-        <!-- Footer -->
-        <footer class="footer py-4 bg-primary text-white text-center">
-            <div class="container">
-                <p>&copy; 2025 HealthySystem. Tất cả quyền được bảo lưu.</p>
-                <p>Phiên bản 1.0.0 | API Status: <span id="api-status">Đang kiểm tra...</span></p>
-            </div>
-        </footer>
+                    <div id="doctors-empty-state" class="empty-state" style="display: none;">
+                        <h3>Không tìm thấy bác sĩ phù hợp</h3>
+                        <p>Hãy thay đổi bộ lọc hoặc từ khóa để xem thêm kết quả.</p>
+                    </div>
+                </article>
+            </section>
+
+            <footer class="workspace-footer doctors-footer">
+                <div class="footer-meta">
+                    <p>&copy; 2026 HealthySystem. Tất cả quyền được bảo lưu.</p>
+                    <p>API Status: <span id="api-status">Đang kiểm tra...</span></p>
+                </div>
+            </footer>
+        </main>
     </div>
 
-    <!-- Scripts -->
     <script src="assets/js/config.js"></script>
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/api.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/doctors.js"></script>
-    <!-- JavaScript -->
-    <script src="assets/js/config.js"></script>
-    <script src="assets/js/utils.js"></script>
-    <script src="assets/js/api.js"></script>
-    <script src="assets/js/auth.js"></script>
-    <script src="assets/js/main.js"></script>
-        </main>
-    </div>
 </body>
 </html>
-

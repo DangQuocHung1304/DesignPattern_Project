@@ -1,0 +1,308 @@
+@import url('../design-system.css');
+
+.appointment-page {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 4% 0%, color-mix(in srgb, var(--color-emerald-500) 10%, transparent), transparent 34%),
+        radial-gradient(circle at 96% 0%, color-mix(in srgb, var(--color-sky-500) 9%, transparent), transparent 30%),
+        var(--color-bg);
+}
+
+.appointment-shell {
+    min-height: 100vh;
+}
+
+.appointment-shell .app-main {
+    padding: 24px;
+}
+
+.appointment-topbar {
+    border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+}
+
+.topbar-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-pill);
+    padding: 0.32rem 0.72rem;
+    margin-bottom: var(--space-2);
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--color-emerald-700);
+    background: color-mix(in srgb, var(--color-emerald-100) 72%, var(--color-surface));
+}
+
+.appointment-content {
+    display: grid;
+    gap: var(--space-4);
+    padding-bottom: var(--space-6);
+}
+
+.state-alert {
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 0.92rem;
+    border: 1px solid transparent;
+}
+
+.state-alert-error {
+    color: color-mix(in srgb, var(--color-rose-500) 80%, var(--color-slate-900));
+    background: color-mix(in srgb, var(--color-rose-500) 12%, var(--color-surface));
+    border-color: color-mix(in srgb, var(--color-rose-500) 28%, transparent);
+}
+
+.state-alert-success {
+    color: color-mix(in srgb, var(--color-emerald-700) 82%, var(--color-slate-900));
+    background: color-mix(in srgb, var(--color-emerald-100) 72%, var(--color-surface));
+    border-color: color-mix(in srgb, var(--color-emerald-600) 28%, transparent);
+}
+
+.state-card {
+    padding: clamp(var(--space-5), 3vw, var(--space-8));
+}
+
+.booking-wizard-card {
+    display: grid;
+    gap: var(--space-5);
+}
+
+.step-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.step {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-text-muted);
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+.step-number {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-surface-soft) 80%, var(--color-surface));
+    border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+    display: grid;
+    place-items: center;
+    color: var(--color-slate-800);
+    font-weight: 700;
+}
+
+.step.active .step-number,
+.step.completed .step-number {
+    background: var(--color-emerald-500);
+    color: var(--color-surface);
+    border-color: color-mix(in srgb, var(--color-emerald-700) 58%, transparent);
+}
+
+.step.active,
+.step.completed {
+    color: var(--color-text-strong);
+}
+
+.step-connector {
+    width: 32px;
+    height: 2px;
+    background: color-mix(in srgb, var(--color-border) 80%, transparent);
+}
+
+.step-content {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.step-content h3,
+.step-content h4 {
+    color: var(--color-text-strong);
+}
+
+.wizard-grid-two {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+}
+
+.form-stack {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.form-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.doctor-list {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.doctor-card {
+    border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+    border-radius: var(--radius-sm);
+    padding: var(--space-3);
+    background: var(--color-surface);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.doctor-card:hover {
+    border-color: color-mix(in srgb, var(--color-emerald-500) 35%, transparent);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.doctor-card.selected {
+    border-color: color-mix(in srgb, var(--color-emerald-700) 58%, transparent);
+    background: color-mix(in srgb, var(--color-emerald-50) 74%, var(--color-surface));
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.25rem;
+    margin-top: var(--space-2);
+}
+
+.calendar-day {
+    min-height: 56px;
+    border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+    border-radius: 9px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    cursor: pointer;
+    background: var(--color-surface);
+}
+
+.calendar-day:hover:not(.disabled):not(.other-month) {
+    border-color: color-mix(in srgb, var(--color-emerald-500) 42%, transparent);
+    background: color-mix(in srgb, var(--color-emerald-50) 70%, var(--color-surface));
+}
+
+.calendar-day.selected {
+    background: var(--color-emerald-500);
+    color: var(--color-surface);
+    border-color: color-mix(in srgb, var(--color-emerald-700) 60%, transparent);
+}
+
+.calendar-day.disabled,
+.calendar-day.other-month {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.time-slots-pane {
+    border: 1px dashed color-mix(in srgb, var(--color-border) 80%, transparent);
+    border-radius: var(--radius-sm);
+    padding: var(--space-3);
+    min-height: 140px;
+}
+
+.time-slots-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.time-slot {
+    padding: 0.4rem 0.74rem;
+    border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--color-surface-soft) 82%, var(--color-surface));
+    cursor: pointer;
+    font-size: 0.84rem;
+}
+
+.time-slot.selected {
+    background: var(--color-emerald-500);
+    color: var(--color-surface);
+    border-color: color-mix(in srgb, var(--color-emerald-700) 60%, transparent);
+}
+
+.time-slot.unavailable {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.appointment-summary {
+    border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--color-surface-soft) 82%, var(--color-surface));
+    padding: var(--space-4);
+}
+
+.wizard-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.wizard-actions.between {
+    justify-content: space-between;
+}
+
+.wizard-actions.align-end {
+    justify-content: flex-end;
+}
+
+.wizard-actions.center {
+    justify-content: center;
+}
+
+.success-view {
+    text-align: center;
+    display: grid;
+    gap: var(--space-3);
+}
+
+.success-icon {
+    font-size: 3rem;
+    color: var(--color-emerald-600);
+}
+
+.workspace-footer.appointment-footer {
+    margin-top: var(--space-2);
+    border-radius: var(--radius-md);
+    border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
+    background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+    padding: var(--space-5);
+}
+
+@media (max-width: 900px) {
+    .wizard-grid-two {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .appointment-shell .app-main {
+        padding: 16px;
+    }
+
+    .step-indicator {
+        justify-content: flex-start;
+    }
+
+    .step-connector {
+        display: none;
+    }
+
+    .wizard-actions {
+        flex-direction: column;
+    }
+
+    .workspace-footer.appointment-footer .footer-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

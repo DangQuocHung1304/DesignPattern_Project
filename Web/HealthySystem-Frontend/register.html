@@ -4,298 +4,131 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng ký - HealthySystem</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/design-system.css">
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
-    <style>
-        .register-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            padding: 20px;
-        }
-        
-        .register-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 40px;
-            width: 100%;
-            max-width: 500px;
-        }
-        
-        .register-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .register-header h1 {
-            color: var(--primary-color);
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-        
-        .register-header p {
-            color: #666;
-            font-size: 16px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-row {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .form-row .form-group {
-            flex: 1;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-            box-sizing: border-box;
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-        
-        .form-select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            background-color: white;
-            cursor: pointer;
-            box-sizing: border-box;
-        }
-        
-        .form-select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-        
-        .register-btn {
-            width: 100%;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
-        }
-        
-        .register-btn:hover {
-            background: var(--primary-dark);
-        }
-        
-        .register-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .login-link {
-            text-align: center;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-        
-        .login-link a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .login-link a:hover {
-            text-decoration: underline;
-        }
-        
-        .error-message {
-            background: #ff6b6b;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .success-message {
-            background: #51cf66;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .back-home {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 25px;
-            transition: background-color 0.3s ease;
-        }
-        
-        .back-home:hover {
-            background: rgba(255,255,255,0.3);
-            color: white;
-            text-decoration: none;
-        }
-    </style>
-    <link rel="stylesheet" href="assets/css/design-system.css">
+    <link rel="stylesheet" href="assets/css/pages/auth.css">
 </head>
-<body>
-    <div class="page-shell">
-        <aside class="app-sidebar">
-            <div class="brand-panel">
-                <div class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></div>
-                <div>
-                    <div class="brand-name">HealthySystem</div>
-                    <div class="brand-caption">Unified Workspace</div>
-                </div>
+<body class="auth-page">
+    <div class="page-shell auth-shell">
+        <header class="app-topbar auth-topbar">
+            <a href="index.html" class="workspace-brand">
+                <span class="brand-mark"><i class="fas fa-heart-pulse"></i></span>
+                <span>
+                    <span class="brand-name">HealthySystem</span>
+                    <span class="brand-caption">Secure Registration Flow</span>
+                </span>
+            </a>
+
+            <nav class="auth-nav" aria-label="Auth Navigation">
+                <a href="index.html">Trang chủ</a>
+                <a href="doctors.html">Bác sĩ</a>
+                <a href="pricing.html">Bảng giá</a>
+                <a href="news.html">Tin tức</a>
+            </nav>
+
+            <div class="auth-topbar-actions">
+                <a class="btn btn-soft" href="login.html">Đăng nhập</a>
+                <a class="btn btn-accent active" href="register.html">Tạo tài khoản</a>
             </div>
-            <div class="nav-section-title">Điều hướng</div>
-            <ul class="app-nav">
-                <li><a class="active" href="index.html"><i class="fas fa-house"></i> Trang chủ</a></li>
-                <li><a class="" href="doctor-dashboard.html"><i class="fas fa-user-doctor"></i> Dashboard bác sĩ</a></li>
-                <li><a class="" href="lab-technician-dashboard.html"><i class="fas fa-flask-vial"></i> Dashboard xét nghiệm</a></li>
-                <li><a class="" href="reception-appointments.html"><i class="fas fa-calendar-check"></i> Lịch hẹn</a></li>
-                <li><a class="" href="doctor-schedule.html"><i class="fas fa-calendar-days"></i> Lịch làm việc</a></li>
-            </ul>
-            <div class="nav-section-title">Liên kết</div>
-            <ul class="app-nav mb-0">
-                <li><a href="pricing.html"><i class="fas fa-file-invoice-dollar"></i> Bảng giá</a></li>
-                <li><a href="news.html"><i class="fas fa-newspaper"></i> Tin tức</a></li>
-                <li><a href="login.html"><i class="fas fa-right-to-bracket"></i> Đăng nhập</a></li>
-            </ul>
-        </aside>
-        <main class="app-main">
-            <header class="app-topbar">
-                <div>
-                    <h2 class="mb-1">Đăng ký - HealthySystem</h2>
-                    <p class="text-muted">Giao diện đồng bộ theo Modern Healthcare</p>
-                </div>
-            </header>
-    <a href="index.html" class="back-home">← Về trang chủ</a>
-    
-    <div class="register-container">
-        <div class="register-card">
-            <div class="register-header">
-                <h1>🏥 Đăng ký tài khoản</h1>
-                <p>Tạo tài khoản để sử dụng dịch vụ HealthySystem</p>
+        </header>
+
+        <main class="auth-stage">
+            <div class="auth-glass">
+                <article class="auth-card">
+                    <div class="auth-head">
+                        <div class="auth-medical-mark" aria-hidden="true"><i class="fas fa-notes-medical"></i></div>
+                        <h1 class="auth-title">Tạo tài khoản mới</h1>
+                        <p class="auth-subtitle">Đăng ký để quản lý lịch hẹn, theo dõi điều trị và nhận thông tin chăm sóc sức khỏe cá nhân hóa.</p>
+                    </div>
+
+                    <div id="error-message" class="auth-message auth-message-error"></div>
+                    <div id="success-message" class="auth-message auth-message-success"></div>
+
+                    <form id="register-form" class="auth-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName" class="form-label">Họ *</label>
+                                <input type="text" id="firstName" name="firstName" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName" class="form-label">Tên *</label>
+                                <input type="text" id="lastName" name="lastName" class="form-input" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" id="email" name="email" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone" class="form-label">Số điện thoại *</label>
+                            <input type="tel" id="phone" name="phone" class="form-input" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="gender" class="form-label">Giới tính *</label>
+                                <select id="gender" name="gender" class="form-select" required>
+                                    <option value="">Chọn giới tính</option>
+                                    <option value="M">Nam</option>
+                                    <option value="F">Nữ</option>
+                                    <option value="O">Khác</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="dateOfBirth" class="form-label">Ngày sinh *</label>
+                                <input type="date" id="dateOfBirth" name="dateOfBirth" class="form-input" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address" class="form-label">Địa chỉ</label>
+                            <input type="text" id="address" name="address" class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password" class="form-label">Mật khẩu *</label>
+                            <input type="password" id="password" name="password" class="form-input" required minlength="6">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword" class="form-label">Xác nhận mật khẩu *</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" required>
+                        </div>
+
+                        <button type="submit" class="btn-auth-primary" id="register-btn">Đăng ký tài khoản</button>
+                    </form>
+
+                    <div class="auth-footer-links">
+                        <p class="auth-note">Đã có tài khoản? <a href="login.html">Đăng nhập ngay</a></p>
+                        <p class="auth-note"><a href="index.html">Quay lại trang chủ</a></p>
+                    </div>
+                </article>
             </div>
-            
-            <div id="error-message" class="error-message"></div>
-            <div id="success-message" class="success-message"></div>
-            
-            <form id="register-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="firstName" class="form-label">Họ *</label>
-                        <input type="text" id="firstName" name="firstName" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="lastName" class="form-label">Tên *</label>
-                        <input type="text" id="lastName" name="lastName" class="form-input" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="email" class="form-label">Email *</label>
-                    <input type="email" id="email" name="email" class="form-input" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="phone" class="form-label">Số điện thoại *</label>
-                    <input type="tel" id="phone" name="phone" class="form-input" required>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="gender" class="form-label">Giới tính *</label>
-                        <select id="gender" name="gender" class="form-select" required>
-                            <option value="">Chọn giới tính</option>
-                            <option value="M">Nam</option>
-                            <option value="F">Nữ</option>
-                            <option value="O">Khác</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="dateOfBirth" class="form-label">Ngày sinh *</label>
-                        <input type="date" id="dateOfBirth" name="dateOfBirth" class="form-input" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="address" class="form-label">Địa chỉ</label>
-                    <input type="text" id="address" name="address" class="form-input">
-                </div>
-                
-                <div class="form-group">
-                    <label for="password" class="form-label">Mật khẩu *</label>
-                    <input type="password" id="password" name="password" class="form-input" required minlength="6">
-                </div>
-                
-                <div class="form-group">
-                    <label for="confirmPassword" class="form-label">Xác nhận mật khẩu *</label>
-                    <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" required>
-                </div>
-                
-                <button type="submit" class="register-btn" id="register-btn">
-                    Đăng ký tài khoản
-                </button>
-            </form>
-            
-            <div class="login-link">
-                <p>Đã có tài khoản? <a href="login.html">Đăng nhập ngay</a></p>
-            </div>
-        </div>
+        </main>
+
+        <footer class="workspace-footer auth-footer">
+            <p>&copy; 2026 HealthySystem. Secure Modern Healthcare Workspace.</p>
+        </footer>
     </div>
 
     <script src="assets/js/config.js"></script>
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/api.js"></script>
     <script>
-        // Register functionality
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const errorDiv = document.getElementById('error-message');
             const successDiv = document.getElementById('success-message');
             const submitBtn = document.getElementById('register-btn');
-            
-            // Hide previous messages
+
             errorDiv.style.display = 'none';
             successDiv.style.display = 'none';
-            
-            // Get form data
+
             const formData = new FormData(e.target);
             const data = {
                 firstName: formData.get('firstName').trim(),
@@ -308,42 +141,37 @@
                 password: formData.get('password'),
                 confirmPassword: formData.get('confirmPassword')
             };
-            
-            // Validation
-            if (!data.firstName || !data.lastName || !data.email || !data.phone || 
-                !data.gender || !data.dateOfBirth || !data.password || !data.confirmPassword) {
-                showError('Vui lòng điền đầy đủ thông tin bắt buộc (*)');
+
+            if (!data.firstName || !data.lastName || !data.email || !data.phone || !data.gender || !data.dateOfBirth || !data.password || !data.confirmPassword) {
+                showError('Vui lòng điền đầy đủ thông tin bắt buộc (*).');
                 return;
             }
-            
+
             if (data.password !== data.confirmPassword) {
-                showError('Mật khẩu xác nhận không khớp');
+                showError('Mật khẩu xác nhận không khớp.');
                 return;
             }
-            
+
             if (data.password.length < 6) {
-                showError('Mật khẩu phải có ít nhất 6 ký tự');
+                showError('Mật khẩu phải có ít nhất 6 ký tự.');
                 return;
             }
-            
-            // Email validation
+
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(data.email)) {
-                showError('Email không hợp lệ');
+                showError('Email không hợp lệ.');
                 return;
             }
-            
-            // Phone validation
+
             const phoneRegex = /^[0-9]{10,11}$/;
             if (!phoneRegex.test(data.phone.replace(/\D/g, ''))) {
-                showError('Số điện thoại không hợp lệ (10-11 số)');
+                showError('Số điện thoại không hợp lệ (10-11 số).');
                 return;
             }
-            
-            // Submit data
+
             submitBtn.disabled = true;
             submitBtn.textContent = 'Đang đăng ký...';
-            
+
             try {
                 const response = await fetch(`${CONFIG.API_BASE_URL}/auth/register`, {
                     method: 'POST',
@@ -361,33 +189,32 @@
                         password: data.password
                     })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (response.ok) {
                     showSuccess('Đăng ký thành công! Đang chuyển đến trang đăng nhập...');
                     setTimeout(() => {
                         window.location.href = 'login.html';
-                    }, 2000);
+                    }, 1500);
                 } else {
                     showError(result.message || 'Đăng ký thất bại. Vui lòng thử lại.');
                 }
             } catch (error) {
-                console.error('Register error:', error);
-                showError('Có lỗi xảy ra. Vui lòng thử lại sau.');
+                showError('Có lỗi kết nối. Vui lòng thử lại sau.');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Đăng ký tài khoản';
             }
         });
-        
+
         function showError(message) {
             const errorDiv = document.getElementById('error-message');
             errorDiv.textContent = message;
             errorDiv.style.display = 'block';
             document.getElementById('success-message').style.display = 'none';
         }
-        
+
         function showSuccess(message) {
             const successDiv = document.getElementById('success-message');
             successDiv.textContent = message;
@@ -395,8 +222,6 @@
             document.getElementById('error-message').style.display = 'none';
         }
     </script>
-        </main>
-    </div>
 </body>
 </html>
 

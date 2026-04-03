@@ -9,477 +9,92 @@
     <link rel="stylesheet" href="assets/css/design-system.css">
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
-    <style>
-        :root {
-            --text-color: var(--color-slate-900);
-        }
-
-        .news-hero {
-            background: linear-gradient(135deg, #00796b, #004d40);
-            color: white;
-            padding: 80px 0 60px;
-            text-align: center;
-        }
-
-        .news-hero h1 {
-            font-size: 42px;
-            margin-bottom: 15px;
-        }
-
-        .news-filters {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            margin: -40px auto 40px;
-            max-width: 900px;
-            position: relative;
-            z-index: 10;
-        }
-
-        .filter-tabs {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .filter-tab {
-            padding: 10px 20px;
-            border: 2px solid #e1e5e9;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .filter-tab:hover {
-            border-color: #00796b;
-            color: #00796b;
-        }
-
-        .filter-tab.active {
-            background: #00796b;
-            color: white;
-            border-color: #00796b;
-        }
-
-        .news-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .news-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-        }
-
-        .news-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-        }
-
-        .news-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background: linear-gradient(135deg, #e0f2f1, #b2dfdb);
-        }
-
-        .news-content {
-            padding: 20px;
-        }
-
-        .news-category {
-            display: inline-block;
-            padding: 6px 12px;
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .news-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-color);
-            margin-bottom: 12px;
-            line-height: 1.4;
-        }
-
-        .news-summary {
-            color: #6c757d;
-            font-size: 15px;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-
-        .news-meta {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 14px;
-            color: #6c757d;
-            padding-top: 15px;
-            border-top: 1px solid #f0f2f5;
-        }
-
-        .news-author {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .news-stats {
-            display: flex;
-            gap: 15px;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 40px;
-        }
-
-        .pagination button {
-            padding: 10px 16px;
-            border: 2px solid #e1e5e9;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .pagination button:hover:not(:disabled) {
-            border-color: #00796b;
-            color: #00796b;
-        }
-
-        .pagination button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .pagination button.active {
-            background: #00796b;
-            color: white;
-            border-color: #00796b;
-        }
-
-        .no-news {
-            text-align: center;
-            padding: 80px 20px;
-            color: #6c757d;
-        }
-
-        .no-news i {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-
-        .loading-spinner {
-            text-align: center;
-            padding: 80px 20px;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #00796b;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/pages/news.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
 </head>
-<body>
-    <div class="page-shell">
+<body class="news-page">
+    <div class="page-shell news-shell">
         <aside class="app-sidebar">
             <div class="brand-panel">
                 <div class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></div>
                 <div>
                     <div class="brand-name">HealthySystem</div>
-                    <div class="brand-caption">Health News</div>
+                    <div class="brand-caption">Patient Workspace</div>
                 </div>
             </div>
 
-            <div class="nav-section-title">Khám phá</div>
+            <div class="nav-section-title">Điều hướng</div>
             <ul class="app-nav">
-                <li><a href="index.html"><i class="fas fa-home"></i> Trang chủ</a></li>
-                <li><a href="doctors.html"><i class="fas fa-user-md"></i> Bác sĩ</a></li>
+                <li><a href="index.html"><i class="fas fa-house"></i> Trang chủ</a></li>
+                <li><a href="index.html#specialties"><i class="fas fa-stethoscope"></i> Chuyên khoa</a></li>
+                <li><a href="doctors.html"><i class="fas fa-user-doctor"></i> Bác sĩ</a></li>
                 <li><a href="pricing.html"><i class="fas fa-file-invoice-dollar"></i> Bảng giá</a></li>
                 <li><a class="active" href="news.html"><i class="fas fa-newspaper"></i> Tin tức</a></li>
+                <li><a href="index.html#contact"><i class="fas fa-phone"></i> Liên hệ</a></li>
             </ul>
 
             <div class="nav-section-title">Tài khoản</div>
             <ul class="app-nav mb-0">
-                <li><a href="login.html" id="login-btn"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a></li>
-                <li id="user-menu" style="display:none;"><a href="profile.html"><i class="fas fa-user-circle"></i> <span id="user-display-name">Tài khoản</span></a></li>
-                <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                <li><a href="login.html" id="login-btn"><i class="fas fa-right-to-bracket"></i> Đăng nhập</a></li>
+                <li><a href="profile.html" id="user-menu" style="display: none;"><i class="fas fa-user-circle"></i> <span id="user-display-name">Tài khoản</span></a></li>
+                <li><a href="#" id="logout-btn" style="display: none;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
             </ul>
         </aside>
 
         <main class="app-main">
-            <header class="app-topbar">
+            <header class="app-topbar news-topbar">
                 <div>
-                    <h2 class="mb-1">Tin tức y tế</h2>
-                    <p class="text-muted">Cập nhật kiến thức chăm sóc sức khỏe từ đội ngũ chuyên môn</p>
+                    <span class="topbar-eyebrow">Tin tức y tế</span>
+                    <h2 class="mb-1" id="news-page-title">Cập nhật kiến thức sức khỏe</h2>
+                    <p class="text-muted" id="news-page-subtitle">Tin tức mới nhất từ đội ngũ chuyên môn và hệ sinh thái chăm sóc sức khỏe</p>
                 </div>
+                <a class="btn btn-brand" href="news-detail.html?id=1"><i class="fas fa-book-open me-2"></i>Xem bài nổi bật</a>
             </header>
 
-    <!-- Hero Section -->
-    <section class="news-hero">
-        <div class="container">
-            <h1><i class="fas fa-newspaper"></i> Tin tức y tế</h1>
-            <p>Cập nhật kiến thức chăm sóc sức khỏe từ chuyên gia</p>
-        </div>
-    </section>
+            <section class="news-content">
+                <article class="modern-card news-filter-card">
+                    <div class="card-header-modern">
+                        <h3>Danh mục tin tức</h3>
+                        <span class="info-chip success" id="news-total-chip">0 bài viết</span>
+                    </div>
+                    <div id="news-category-filters" class="filter-list"></div>
+                </article>
 
-    <!-- Main Content -->
-    <section class="py-5">
-        <div class="container">
-            <!-- Filters -->
-            <div class="news-filters">
-                <div class="filter-tabs" id="category-tabs">
-                    <button class="filter-tab active" data-category="">
-                        <i class="fas fa-th-large"></i> Tất cả
-                    </button>
-                    <!-- Categories will be loaded dynamically -->
+                <div id="news-loading-state" class="modern-card state-card">
+                    <div id="news-list-loading-skeleton"></div>
                 </div>
-            </div>
 
-            <!-- News Grid -->
-            <div id="news-grid">
-                <div class="loading-spinner">
-                    <div class="spinner"></div>
-                    <p>Đang tải tin tức...</p>
+                <div id="news-error-state" class="modern-card state-card error-state" style="display: none;">
+                    <h3>Không thể tải tin tức</h3>
+                    <p>Vui lòng kiểm tra API hoặc thử tải lại trang.</p>
+                    <button type="button" class="btn btn-brand" id="news-retry-btn">Thử lại</button>
                 </div>
-            </div>
 
-            <!-- Pagination -->
-            <div class="pagination" id="pagination" style="display: none;">
-                <!-- Will be rendered dynamically -->
-            </div>
-        </div>
-    </section>
+                <article id="news-list-card" class="modern-card news-list-card" style="display: none;">
+                    <div id="newsContainer" class="news-grid"></div>
+
+                    <div id="news-empty-state" class="empty-state" style="display: none;">
+                        <h3>Chưa có bài viết phù hợp</h3>
+                        <p>Hãy chọn danh mục khác hoặc quay lại sau.</p>
+                    </div>
+
+                    <nav id="news-pagination" class="pagination-wrap" aria-label="News Pagination"></nav>
+                </article>
+            </section>
+
+            <footer class="workspace-footer news-footer">
+                <div class="footer-meta">
+                    <p>&copy; 2026 HealthySystem. Tất cả quyền được bảo lưu.</p>
+                    <p>API Status: <span id="api-status">Đang kiểm tra...</span></p>
+                </div>
+            </footer>
         </main>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer py-4 bg-primary text-white text-center">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-info">
-                    <h4><i class="fas fa-hospital"></i> HealthySystem</h4>
-                    <p><i class="fas fa-map-marker-alt"></i> 123 Đường Y Tế, Quận 1, TP.HCM</p>
-                    <p><i class="fas fa-phone"></i> Hotline: 1900-1234</p>
-                </div>
-            </div>
-            <hr style="margin: 1rem 0; opacity: 0.3;">
-            <p>&copy; 2025 HealthySystem. Tất cả quyền được bảo lưu.</p>
-        </div>
-    </footer>
-
-    <!-- Scripts -->
     <script src="assets/js/config.js"></script>
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/api.js"></script>
     <script src="assets/js/auth.js"></script>
-    <script>
-        // News page logic
-        let currentPage = 1;
-        let currentCategory = '';
-        let totalPages = 1;
-        let categories = [];
-
-        // Load categories
-        async function loadCategories() {
-            try {
-                const response = await apiService.getNewsCategories();
-                if (response.success) {
-                    categories = response.data;
-                    renderCategoryTabs();
-                }
-            } catch (error) {
-                console.error('Error loading categories:', error);
-            }
-        }
-
-        // Render category tabs
-        function renderCategoryTabs() {
-            const tabsContainer = document.getElementById('category-tabs');
-            const allTab = tabsContainer.querySelector('[data-category=""]');
-            
-            categories.forEach(cat => {
-                const tab = document.createElement('button');
-                tab.className = 'filter-tab';
-                tab.setAttribute('data-category', cat.Code);
-                tab.innerHTML = `${cat.Icon} ${cat.Name}`;
-                tab.addEventListener('click', () => filterByCategory(cat.Code));
-                tabsContainer.appendChild(tab);
-            });
-        }
-
-        // Filter by category
-        function filterByCategory(category) {
-            currentCategory = category;
-            currentPage = 1;
-            
-            // Update active tab
-            document.querySelectorAll('.filter-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            loadNews();
-        }
-
-        // Load news
-        async function loadNews() {
-            const gridContainer = document.getElementById('news-grid');
-            gridContainer.innerHTML = `
-                <div class="loading-spinner">
-                    <div class="spinner"></div>
-                    <p>Đang tải tin tức...</p>
-                </div>
-            `;
-
-            try {
-                const response = await apiService.getNews(currentPage, 9, currentCategory);
-                
-                if (response.success) {
-                    const { news, pagination } = response.data;
-                    totalPages = pagination.totalPages;
-                    
-                    renderNews(news);
-                    renderPagination(pagination);
-                }
-            } catch (error) {
-                console.error('Error loading news:', error);
-                gridContainer.innerHTML = `
-                    <div class="no-news">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <h3>Không thể tải tin tức</h3>
-                        <p>Vui lòng thử lại sau</p>
-                    </div>
-                `;
-            }
-        }
-
-        // Render news grid
-        function renderNews(newsList) {
-            const gridContainer = document.getElementById('news-grid');
-            
-            if (!newsList || newsList.length === 0) {
-                gridContainer.innerHTML = `
-                    <div class="no-news">
-                        <i class="fas fa-folder-open"></i>
-                        <h3>Chưa có tin tức nào</h3>
-                    </div>
-                `;
-                return;
-            }
-
-            gridContainer.innerHTML = `
-                <div class="news-grid">
-                    ${newsList.map(news => `
-                        <div class="news-card" onclick="goToNewsDetail(${news.Id})">
-                            <img src="${news.Image}" alt="${news.Title}" class="news-image" onerror="this.src='https://via.placeholder.com/400x200?text=Tin+tức+y+tế'">
-                            <div class="news-content">
-                                <span class="news-category">${news.CategoryName}</span>
-                                <h3 class="news-title">${news.Title}</h3>
-                                <p class="news-summary">${news.Summary}</p>
-                                <div class="news-meta">
-                                    <div class="news-author">
-                                        <i class="fas fa-user-md"></i>
-                                        <span>${news.Author}</span>
-                                    </div>
-                                    <div class="news-stats">
-                                        <span><i class="fas fa-eye"></i> ${news.Views}</span>
-                                        <span><i class="fas fa-calendar"></i> ${formatDate(news.PublishedDate)}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        // Render pagination
-        function renderPagination(pagination) {
-            const paginationContainer = document.getElementById('pagination');
-            
-            if (totalPages <= 1) {
-                paginationContainer.style.display = 'none';
-                return;
-            }
-
-            paginationContainer.style.display = 'flex';
-            paginationContainer.innerHTML = `
-                <button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">
-                    <i class="fas fa-chevron-left"></i> Trước
-                </button>
-                
-                ${Array.from({length: totalPages}, (_, i) => i + 1).map(page => `
-                    <button class="${page === currentPage ? 'active' : ''}" onclick="changePage(${page})">
-                        ${page}
-                    </button>
-                `).join('')}
-                
-                <button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">
-                    Sau <i class="fas fa-chevron-right"></i>
-                </button>
-            `;
-        }
-
-        // Change page
-        function changePage(page) {
-            if (page < 1 || page > totalPages || page === currentPage) return;
-            currentPage = page;
-            loadNews();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Go to news detail
-        function goToNewsDetail(newsId) {
-            window.location.href = `news-detail.html?id=${newsId}`;
-        }
-
-        // Helper functions
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            const day = date.getDate().toString().padStart(2, '0');
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            loadCategories();
-            loadNews();
-            authManager.init();
-        });
-    </script>
+    <script src="assets/js/news.js"></script>
 </body>
 </html>
