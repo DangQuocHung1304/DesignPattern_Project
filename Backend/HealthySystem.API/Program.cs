@@ -41,9 +41,9 @@ builder.Services.AddScoped<IEncounterNoteDirector, EncounterNoteDirector>();
 builder.Services.AddScoped<IInsurancePartnerClient, InsurancePartnerClient>();
 builder.Services.AddScoped<IInsuranceGateway, InsuranceGatewayAdapter>();
 
-builder.Services.AddScoped<IMedicalRecordReader, MedicalRecordReader>();
-builder.Services.AddScoped<IMedicalRecordAccessPolicy, MedicalRecordAccessPolicy>();
-builder.Services.AddScoped<IMedicalRecordProxyService, MedicalRecordProxyService>();
+builder.Services.AddSingleton<IMedicalRecordReader, MedicalRecordReader>();
+builder.Services.AddSingleton<IMedicalRecordAccessPolicy, MedicalRecordAccessPolicy>();
+builder.Services.AddSingleton<IMedicalRecordProxyService, MedicalRecordProxyService>();
 
 builder.Services.AddScoped<IAppointmentValidator, AppointmentValidator>();
 builder.Services.AddScoped<IEncounterDraftCreator, EncounterDraftCreator>();

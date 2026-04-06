@@ -2,10 +2,15 @@
 class ApiService {
     constructor() {
         this.baseURL = CONFIG.API_BASE_URL;
-        this.token = localStorage.getItem(CONFIG.STORAGE_KEYS.TOKEN);
+        this.token = localStorage.getItem(CONFIG.STORAGE_KEYS.TOKEN)
+            || localStorage.getItem('token')
+            || localStorage.getItem('authToken');
+
+        if (this.token && !localStorage.getItem(CONFIG.STORAGE_KEYS.TOKEN)) {
+            localStorage.setItem(CONFIG.STORAGE_KEYS.TOKEN, this.token);
+        }
     }
-    
-    // Set token
+
     setToken(token) {
         this.token = token;
         if (token) {
@@ -14,82 +19,172 @@ class ApiService {
             localStorage.removeItem(CONFIG.STORAGE_KEYS.TOKEN);
         }
     }
-    
-    // Get headers
+
     getHeaders(includeAuth = true) {
         const headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         };
-        
+
         if (includeAuth && this.token) {
-            headers['Authorization'] = `Bearer ${this.token}`;
+            headers.Authorization = `Bearer ${this.token}`;
         }
-        
+
         return headers;
     }
-    
-    // Generic request method
+
     async request(endpoint, options = {}) {
         const url = `${this.baseURL}${endpoint}`;
         const config = {
             headers: this.getHeaders(options.includeAuth !== false),
             ...options
         };
-        
+
         try {
             const response = await fetch(url, config);
-            
-            // Check if response has content
             const contentType = response.headers.get('content-type');
             let data = null;
-            
-            // Only parse JSON if content-type is JSON and response has body
+
             if (contentType && contentType.includes('application/json')) {
                 const text = await response.text();
                 if (text) {
                     try {
                         data = JSON.parse(text);
-                    } catch (e) {
+                    } catch (parseError) {
                         console.error('Failed to parse JSON:', text);
                         throw new Error('Invalid JSON response from server');
                     }
                 }
             } else {
-                // For non-JSON responses, try to get text
                 const text = await response.text();
                 if (text) {
                     data = { message: text };
                 }
             }
-            
+
             if (!response.ok) {
                 const errorMsg = data?.message || `HTTP Error: ${response.status}`;
                 const error = new Error(errorMsg);
                 error.status = response.status;
                 throw error;
             }
-            
+
             return { success: true, data };
         } catch (error) {
             console.error('API Request Error:', error);
-            return { 
-                success: false, 
+            return {
+                success: false,
                 error: error.message,
                 status: error.status || 0
             };
         }
     }
-    
-    // GET request
+
+    buildFriendlyErrorResult(error, fallbackMessage) {
+        return {
+            success: false,
+            error: error?.message || fallbackMessage,
+            status: error?.status || 0
+        };
+    }
+
+    async executeSafely(operation, fallbackMessage) {
+        try {
+            const result = await operation();
+            if (!result || typeof result.success !== 'boolean') {
+                return this.buildFriendlyErrorResult(null, fallbackMessage);
+            }
+
+            if (!result.success && !result.error) {
+                return {
+                    ...result,
+                    error: fallbackMessage
+                };
+            }
+
+            return result;
+        } catch (error) {
+            console.error('Operation failed:', error);
+            return this.buildFriendlyErrorResult(error, fallbackMessage);
+        }
+    }
+
+    applyPatternUiState(result, options = {}) {
+        if (!result || !result.success) {
+            return result;
+        }
+
+        const state = result.data?.processingState;
+        if (!state) {
+            return result;
+        }
+
+        const targetId = options.containerId || state.skeletonHint || '';
+        if (state.isLoading && targetId && typeof window.renderSkeletons === 'function') {
+            window.renderSkeletons(targetId, options.skeletonCount || 3);
+        }
+
+        if (!state.isLoading && targetId && typeof window.clearSkeletons === 'function') {
+            window.clearSkeletons(targetId);
+        }
+
+        if (typeof window.handlePatternObserverEvent === 'function') {
+            window.handlePatternObserverEvent(result, options.eventName || 'pattern.state.changed');
+        }
+
+        return result;
+    }
+
+    async fetchPatternBasedData({
+        endpoint,
+        method = 'GET',
+        payload = null,
+        includeAuth = true,
+        containerId,
+        eventName,
+        skeletonCount = 3,
+        fallbackErrorMessage = 'Không thể xử lý yêu cầu pattern lúc này.'
+    }) {
+        return this.executeSafely(async () => {
+            const requestMethod = method.toUpperCase();
+            let result;
+
+            switch (requestMethod) {
+                case 'GET':
+                    result = await this.get(endpoint, includeAuth);
+                    break;
+                case 'POST':
+                    result = await this.post(endpoint, payload, includeAuth);
+                    break;
+                case 'PUT':
+                    result = await this.put(endpoint, payload, includeAuth);
+                    break;
+                case 'DELETE':
+                    result = await this.delete(endpoint, includeAuth);
+                    break;
+                default:
+                    return {
+                        success: false,
+                        error: `Unsupported method: ${requestMethod}`,
+                        status: 400
+                    };
+            }
+
+            return this.applyPatternUiState(result, {
+                containerId,
+                eventName,
+                skeletonCount
+            });
+        }, fallbackErrorMessage);
+    }
+
     async get(endpoint, includeAuth = true) {
         return this.request(endpoint, {
             method: 'GET',
             includeAuth
         });
     }
-    
-    // POST request
+
     async post(endpoint, data, includeAuth = true) {
         return this.request(endpoint, {
             method: 'POST',
@@ -97,8 +192,7 @@ class ApiService {
             includeAuth
         });
     }
-    
-    // PUT request
+
     async put(endpoint, data, includeAuth = true) {
         return this.request(endpoint, {
             method: 'PUT',
@@ -106,63 +200,45 @@ class ApiService {
             includeAuth
         });
     }
-    
-    // DELETE request
+
     async delete(endpoint, includeAuth = true) {
         return this.request(endpoint, {
             method: 'DELETE',
             includeAuth
         });
     }
-    
-    // === API Methods ===
-    
-    // Health check
+
     async checkHealth() {
         return this.get(CONFIG.ENDPOINTS.HEALTH, false);
     }
-    
-    // Authentication
+
     async login(email, password) {
-        try {
-            console.log('API: Attempting login with email:', email);
-            const result = await this.post('/auth/login', { email, password }, false);
-            console.log('API: Login result from server:', result);
-            console.log('API: result.success:', result.success);
-            console.log('API: result.data:', result.data);
-            
-            return result;
-        } catch (error) {
-            console.error('API: Connection failed:', error);
-            return {
-                success: false,
-                error: error.message || 'Không thể kết nối đến server. Vui lòng kiểm tra backend đã chạy chưa.'
-            };
-        }
+        return this.executeSafely(
+            () => this.post('/auth/login', { email, password }, false),
+            'Không thể kết nối đến server. Vui lòng kiểm tra backend đã chạy chưa.'
+        );
     }
-    
+
     async register(userData) {
         return this.post(CONFIG.ENDPOINTS.AUTH.REGISTER, userData, false);
     }
-    
+
     async refreshToken(token) {
         return this.post(CONFIG.ENDPOINTS.AUTH.REFRESH, { token }, false);
     }
-    
-    // Specialties
+
     async getSpecialties() {
         return this.get(CONFIG.ENDPOINTS.SPECIALTIES, false);
     }
-    
+
     async getSpecialtyDoctors(specialtyId) {
         return this.get(`${CONFIG.ENDPOINTS.SPECIALTIES}/${specialtyId}/doctors`, false);
     }
-    
-    // Doctors
+
     async getDoctors() {
         return this.get(CONFIG.ENDPOINTS.DOCTORS, false);
     }
-    
+
     async getDoctor(publicId) {
         const doctorId = (publicId ?? '').toString().trim();
         if (!doctorId || /^(null|undefined|nan)$/i.test(doctorId)) {
@@ -175,65 +251,115 @@ class ApiService {
 
         return this.get(`${CONFIG.ENDPOINTS.DOCTORS}/${doctorId}`, false);
     }
-    
+
     async getDoctorSchedule(publicId, startDate, endDate) {
         const params = new URLSearchParams();
         if (startDate) params.append('startDate', startDate);
         if (endDate) params.append('endDate', endDate);
-        
-        return this.get(`${CONFIG.ENDPOINTS.DOCTORS}/${publicId}/schedule?${params}`, false);
+
+        const query = params.toString();
+        const suffix = query ? `?${query}` : '';
+        return this.get(`${CONFIG.ENDPOINTS.DOCTORS}/${publicId}/schedule${suffix}`, false);
     }
-    
+
     async getDoctorAvailableSlots(publicId, date) {
-        return this.get(`${CONFIG.ENDPOINTS.DOCTORS}/${publicId}/available-slots?date=${date}`, false);
+        return this.get(`${CONFIG.ENDPOINTS.DOCTORS}/${publicId}/available-slots?date=${encodeURIComponent(date)}`, false);
     }
-    
-    // Appointments
+
+    // ==================== APPOINTMENTS APIs ====================
     async getAppointments() {
-        return this.get(CONFIG.ENDPOINTS.APPOINTMENTS);
+        return this.executeSafely(
+            () => this.get('/appointments', true),
+            'Không thể tải danh sách lịch hẹn.'
+        );
     }
-    
-    async getAppointment(id) {
-        return this.get(`${CONFIG.ENDPOINTS.APPOINTMENTS}/${id}`);
+
+    async getAppointmentById(appointmentId) {
+        return this.executeSafely(
+            () => this.get(`/appointments/${appointmentId}`, true),
+            'Không thể tải chi tiết lịch hẹn.'
+        );
     }
-    
+
+    async getAppointment(appointmentId) {
+        return this.getAppointmentById(appointmentId);
+    }
+
     async createAppointment(appointmentData) {
-        return this.post(CONFIG.ENDPOINTS.APPOINTMENTS, appointmentData);
+        return this.executeSafely(
+            () => this.post('/appointments', appointmentData, true),
+            'Không thể tạo lịch hẹn.'
+        );
     }
-    
-    async updateAppointmentStatus(id, status, notes = '') {
-        return this.put(`${CONFIG.ENDPOINTS.APPOINTMENTS}/${id}/status`, { status, notes });
+
+    async createAppointmentForNewPatient(appointmentData) {
+        return this.executeSafely(
+            () => this.post('/appointments/with-new-patient', appointmentData, true),
+            'Không thể tạo lịch hẹn cho bệnh nhân mới.'
+        );
     }
-    
-    async cancelAppointment(id) {
-        return this.delete(`${CONFIG.ENDPOINTS.APPOINTMENTS}/${id}`);
+
+    async updateAppointmentStatus(appointmentId, status, notes = null) {
+        return this.fetchPatternBasedData({
+            endpoint: `/appointments/${appointmentId}/status/pattern`,
+            method: 'PUT',
+            payload: {
+                targetStatus: status,
+                notes
+            },
+            includeAuth: true,
+            eventName: 'appointment.status.changed',
+            fallbackErrorMessage: 'Không thể cập nhật trạng thái lịch hẹn.'
+        });
     }
-    
-    // Users
+
+    async cancelAppointment(appointmentId) {
+        return this.executeSafely(
+            () => this.delete(`/appointments/${appointmentId}`, true),
+            'Không thể hủy lịch hẹn.'
+        );
+    }
+
+    async rescheduleAppointment(rescheduleData) {
+        const { appointmentId, newAppointmentStart, newAppointmentEnd, reason } = rescheduleData;
+        return this.executeSafely(
+            () => this.put(`/appointments/${appointmentId}/reschedule`, {
+                newAppointmentStart,
+                newAppointmentEnd,
+                reason
+            }, true),
+            'Không thể đổi lịch hẹn.'
+        );
+    }
+
+    async getAppointmentHistory(userId) {
+        const result = await this.executeSafely(
+            () => this.get(`/appointments/history/${userId}`, true),
+            'Không thể tải lịch sử lịch hẹn.'
+        );
+
+        return result.success ? result : { success: true, data: [] };
+    }
+
+    async getDoctorAppointments() {
+        return this.getAppointments();
+    }
+
+    // ==================== USERS APIs ====================
     async getUserProfile() {
-        try {
-            console.log('🔄 Calling API: GET /users/profile');
-            
-            // Call the real API endpoint with authentication
-            const result = await this.get('/users/profile', true); // include auth token
-            
-            if (result.success && result.data) {
-                console.log('✅ API getUserProfile successful:', result.data);
-                return result;
-            } else {
-                console.log('⚠️ API getUserProfile failed or no data, using mock data');
-                return this.getMockUserProfile();
-            }
-        } catch (error) {
-            console.log('❌ API connection failed for getUserProfile, using mock data');
-            console.error('API Error details:', error);
-            return this.getMockUserProfile();
+        const result = await this.executeSafely(
+            () => this.get('/users/profile', true),
+            'Không thể tải hồ sơ người dùng.'
+        );
+
+        if (result.success && result.data) {
+            return result;
         }
+
+        return this.getMockUserProfile();
     }
-    
-    // Mock user profile for testing/fallback
+
     getMockUserProfile() {
-        console.log('📋 Using mock user profile data');
         return {
             success: true,
             data: {
@@ -251,232 +377,212 @@ class ApiService {
                 emergencyContact: '0987654321',
                 bloodType: 'O+',
                 avatar: null,
-                // Additional fields that might come from backend
                 createdAt: '2024-01-15T00:00:00Z',
                 updatedAt: new Date().toISOString()
             }
         };
     }
-    
-    async getAppointmentHistory(userId) {
-        try {
-            const result = await this.get(`/appointments/history/${userId}`);
-            if (result.success) {
-                return result;
-            } else {
-                // Return empty history
-                return { success: true, data: [] };
-            }
-        } catch (error) {
-            console.log('API connection failed for appointment history');
-            return { success: true, data: [] };
-        }
-    }
-    
+
     async getCurrentTreatments(userId) {
-        try {
-            const result = await this.get(`/treatments/current/${userId}`);
-            if (result.success) {
-                return result;
-            } else {
-                // Return empty treatments
-                return { success: true, data: [] };
-            }
-        } catch (error) {
-            console.log('API connection failed for current treatments');
-            return { success: true, data: [] };
-        }
+        const result = await this.executeSafely(
+            () => this.get(`/treatments/current/${userId}`, true),
+            'Không thể tải thông tin điều trị hiện tại.'
+        );
+
+        return result.success ? result : { success: true, data: [] };
     }
 
-    // Services (Pricing)
+    // ==================== SERVICES / NEWS / GUIDES APIs ====================
     async getServices(category = null) {
-        try {
-            const endpoint = category ? `/services?category=${category}` : '/services';
-            return await this.get(endpoint, false);
-        } catch (error) {
-            console.error('Error fetching services:', error);
-            return { success: false, error: error.message };
-        }
+        const endpoint = category ? `/services?category=${encodeURIComponent(category)}` : '/services';
+        return this.executeSafely(
+            () => this.get(endpoint, false),
+            'Không thể tải danh sách dịch vụ.'
+        );
     }
 
     async getServiceCategories() {
-        try {
-            return await this.get('/services/categories', false);
-        } catch (error) {
-            console.error('Error fetching service categories:', error);
-            return { success: false, error: error.message };
-        }
+        return this.executeSafely(
+            () => this.get('/services/categories', false),
+            'Không thể tải danh mục dịch vụ.'
+        );
     }
 
-    // News
     async getNews(page = 1, limit = 10, category = null) {
-        try {
-            let endpoint = `/news?page=${page}&limit=${limit}`;
-            if (category) {
-                endpoint += `&category=${category}`;
-            }
-            return await this.get(endpoint, false);
-        } catch (error) {
-            console.error('Error fetching news:', error);
-            return { success: false, error: error.message };
+        const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+        if (category) {
+            params.append('category', category);
         }
+
+        return this.executeSafely(
+            () => this.get(`/news?${params.toString()}`, false),
+            'Không thể tải danh sách tin tức.'
+        );
     }
 
     async getNewsDetail(newsId) {
-        try {
-            return await this.get(`/news/${newsId}`, false);
-        } catch (error) {
-            console.error('Error fetching news detail:', error);
-            return { success: false, error: error.message };
-        }
+        return this.executeSafely(
+            () => this.get(`/news/${newsId}`, false),
+            'Không thể tải chi tiết tin tức.'
+        );
     }
 
     async getFeaturedNews(limit = 4) {
-        try {
-            return await this.get(`/news/featured?limit=${limit}`, false);
-        } catch (error) {
-            console.error('Error fetching featured news:', error);
-            return { success: false, error: error.message };
-        }
+        return this.executeSafely(
+            () => this.get(`/news/featured?limit=${limit}`, false),
+            'Không thể tải tin tức nổi bật.'
+        );
     }
 
     async getNewsCategories() {
-        try {
-            return await this.get('/news/categories', false);
-        } catch (error) {
-            console.error('Error fetching news categories:', error);
-            return { success: false, error: error.message };
-        }
+        return this.executeSafely(
+            () => this.get('/news/categories', false),
+            'Không thể tải danh mục tin tức.'
+        );
     }
 
-    // Guides
     async getGuides(category = null) {
-        try {
-            const endpoint = category ? `/guides?category=${category}` : '/guides';
-            return await this.get(endpoint, false);
-        } catch (error) {
-            console.error('Error fetching guides:', error);
-            return { success: false, error: error.message };
-        }
+        const endpoint = category ? `/guides?category=${encodeURIComponent(category)}` : '/guides';
+        return this.executeSafely(
+            () => this.get(endpoint, false),
+            'Không thể tải danh sách hướng dẫn.'
+        );
     }
 
     async getGuideDetail(guideId) {
-        try {
-            return await this.get(`/guides/${guideId}`, false);
-        } catch (error) {
-            console.error('Error fetching guide detail:', error);
-            return { success: false, error: error.message };
-        }
+        return this.executeSafely(
+            () => this.get(`/guides/${guideId}`, false),
+            'Không thể tải chi tiết hướng dẫn.'
+        );
     }
 
     async getGuidesCategories() {
-        try {
-            return await this.get('/guides/categories', false);
-        } catch (error) {
-            console.error('Error fetching guides categories:', error);
-            return { success: false, error: error.message };
-        }
+        return this.executeSafely(
+            () => this.get('/guides/categories', false),
+            'Không thể tải danh mục hướng dẫn.'
+        );
     }
 
-    // ==================== APPOINTMENTS APIs ====================
-    
-    // Get all appointments for current user
-    async getAppointments() {
-        try {
-            return await this.get('/appointments', true);
-        } catch (error) {
-            console.error('Error fetching appointments:', error);
-            return { success: false, error: error.message };
-        }
+    // ==================== PATTERN APIs ====================
+    async fetchSecureMedicalHistory(patientCode) {
+        return this.fetchPatternBasedData({
+            endpoint: `/medicalhistory/secure-summary/${encodeURIComponent(patientCode)}/pattern`,
+            method: 'GET',
+            includeAuth: true,
+            containerId: 'medical-record-secure-summary',
+            fallbackErrorMessage: 'Không thể tải hồ sơ bệnh án bảo mật.'
+        });
     }
 
-    // Get appointment by ID
-    async getAppointmentById(appointmentId) {
-        try {
-            return await this.get(`/appointments/${appointmentId}`, true);
-        } catch (error) {
-            console.error('Error fetching appointment:', error);
-            return { success: false, error: error.message };
+    buildStartExaminationPayload(appointmentIdOrPayload, extraPayload = {}) {
+        if (typeof appointmentIdOrPayload === 'object') {
+            return appointmentIdOrPayload;
         }
+
+        return {
+            appointmentCode: `APT-${appointmentIdOrPayload}`,
+            doctorCode: extraPayload.doctorCode || 'DOC-DEMO',
+            patientCode: extraPayload.patientCode || 'PAT-DEMO',
+            doctorName: extraPayload.doctorName || 'Bac si',
+            patientName: extraPayload.patientName || 'Benh nhan',
+            currentAppointmentState: extraPayload.currentAppointmentState || 'checked-in',
+            symptomSummary: extraPayload.symptomSummary || 'Trieu chung tong quat',
+            diagnosis: extraPayload.diagnosis || 'Theo doi ban dau',
+            visitTime: extraPayload.visitTime || new Date().toISOString(),
+            initialFee: extraPayload.initialFee || 250000,
+            consultationFee: extraPayload.consultationFee || 250000,
+            labFee: extraPayload.labFee || 0,
+            isAfterHours: Boolean(extraPayload.isAfterHours),
+            hasInsurance: Boolean(extraPayload.hasInsurance),
+            isLoyalPatient: Boolean(extraPayload.isLoyalPatient),
+            room: extraPayload.room || 'General',
+            prescriptions: extraPayload.prescriptions || [],
+            labRequests: extraPayload.labRequests || []
+        };
     }
 
-    // Create new appointment
-    async createAppointment(appointmentData) {
-        try {
-            return await this.post('/appointments', appointmentData, true);
-        } catch (error) {
-            console.error('Error creating appointment:', error);
-            return { success: false, error: error.message };
-        }
+    async startExaminationWorkflow(appointmentIdOrPayload, extraPayload = {}) {
+        return this.fetchPatternBasedData({
+            endpoint: '/examinations/start/pattern',
+            method: 'POST',
+            payload: this.buildStartExaminationPayload(appointmentIdOrPayload, extraPayload),
+            includeAuth: true,
+            containerId: 'examination-workflow-result',
+            fallbackErrorMessage: 'Không thể bắt đầu quy trình khám bệnh.'
+        });
     }
 
-    // Create appointment for walk-in patient (new patient without account)
-    async createAppointmentForNewPatient(appointmentData) {
-        try {
-            return await this.post('/appointments/with-new-patient', appointmentData, true);
-        } catch (error) {
-            console.error('Error creating appointment for new patient:', error);
-            return { success: false, error: error.message };
-        }
+    async generateTreatmentPlanPattern(planType, payload) {
+        return this.fetchPatternBasedData({
+            endpoint: `/examinations/treatment-plan/${encodeURIComponent(planType)}/pattern`,
+            method: 'POST',
+            payload,
+            includeAuth: true,
+            containerId: 'treatment-plan-result',
+            fallbackErrorMessage: 'Không thể tạo phác đồ điều trị.'
+        });
     }
 
-    // Update appointment status
-    async updateAppointmentStatus(appointmentId, status, notes = null) {
-        try {
-            return await this.put(`/appointments/${appointmentId}/status`, { 
-                status, 
-                notes 
-            }, true);
-        } catch (error) {
-            console.error('Error updating appointment status:', error);
-            return { success: false, error: error.message };
-        }
+    async submitInsuranceClaimPattern(payload) {
+        return this.fetchPatternBasedData({
+            endpoint: '/examinations/insurance-claim/pattern',
+            method: 'POST',
+            payload,
+            includeAuth: true,
+            containerId: 'insurance-claim-result',
+            fallbackErrorMessage: 'Không thể gửi hồ sơ bảo hiểm.'
+        });
     }
 
-    // Cancel appointment
-    async cancelAppointment(appointmentId) {
-        try {
-            return await this.delete(`/appointments/${appointmentId}`, true);
-        } catch (error) {
-            console.error('Error cancelling appointment:', error);
-            return { success: false, error: error.message };
-        }
+    async previewInvoicePricingPattern(payload) {
+        return this.fetchPatternBasedData({
+            endpoint: '/invoice/pricing/preview/pattern',
+            method: 'POST',
+            payload,
+            includeAuth: true,
+            containerId: 'invoice-pricing-preview',
+            fallbackErrorMessage: 'Không thể xem trước chi phí hóa đơn.'
+        });
     }
 
-    // Reschedule appointment
-    async rescheduleAppointment(rescheduleData) {
-        try {
-            const { appointmentId, newAppointmentStart, newAppointmentEnd, reason } = rescheduleData;
-            return await this.put(`/appointments/${appointmentId}/reschedule`, {
-                newAppointmentStart,
-                newAppointmentEnd,
-                reason
-            }, true);
-        } catch (error) {
-            console.error('Error rescheduling appointment:', error);
-            return { success: false, error: error.message };
-        }
+    async payInvoiceWithStrategy(invoiceId, payload) {
+        return this.fetchPatternBasedData({
+            endpoint: `/invoice/${invoiceId}/pay/pattern`,
+            method: 'POST',
+            payload,
+            includeAuth: true,
+            containerId: 'invoice-payment-result',
+            fallbackErrorMessage: 'Không thể thanh toán hóa đơn.'
+        });
     }
 
-    // Get appointment history for a user
-    async getAppointmentHistory(userId) {
-        try {
-            return await this.get(`/appointments/history/${userId}`, true);
-        } catch (error) {
-            console.error('Error fetching appointment history:', error);
-            return { success: false, error: error.message };
-        }
+    async createAccountWithFactory(payload) {
+        return this.fetchPatternBasedData({
+            endpoint: '/account/create/pattern',
+            method: 'POST',
+            payload,
+            includeAuth: true,
+            containerId: 'account-creation-result',
+            fallbackErrorMessage: 'Không thể tạo tài khoản.'
+        });
     }
 
-    // Get doctor's appointments (for doctor dashboard)
-    async getDoctorAppointments() {
-        try {
-            // This will call GET /api/appointments which filters by doctor if logged in as doctor
-            return await this.get('/appointments', true);
-        } catch (error) {
-            console.error('Error fetching doctor appointments:', error);
-            return { success: false, error: error.message };
-        }
+    async getSystemConfigBySingleton(key) {
+        return this.executeSafely(
+            () => this.get(`/design-patterns/singleton/config/${encodeURIComponent(key)}/pattern`, true),
+            'Không thể tải cấu hình hệ thống.'
+        );
+    }
+
+    async updateSystemConfigBySingleton(key, value) {
+        return this.fetchPatternBasedData({
+            endpoint: '/design-patterns/singleton/config/pattern',
+            method: 'POST',
+            payload: { key, value },
+            includeAuth: true,
+            containerId: 'singleton-config',
+            fallbackErrorMessage: 'Không thể cập nhật cấu hình hệ thống.'
+        });
     }
 }
 

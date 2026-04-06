@@ -138,6 +138,7 @@ npx serve . -l 5501
 ### 8.1 Trang User/Public (HealthySystem-Frontend)
 
 - Trang chu: http://localhost:5501/index.html
+- Dang ky lich nhanh: http://localhost:5501/appointment-registration.html
 - Dang nhap: http://localhost:5501/login.html
 - Dang ky: http://localhost:5501/register.html
 - Danh sach bac si: http://localhost:5501/doctors.html
@@ -178,10 +179,6 @@ npx serve . -l 5501
 
 - http://localhost:5000/
 - http://localhost:5000/index.html
-
-### 8.5 Trang bo sung trong project
-
-- Web/HealthySystem-Web/index.html (mo bang static server hoac mo truc tiep file)
 
 ---
 

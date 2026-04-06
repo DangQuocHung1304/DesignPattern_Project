@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Accounts - Pattern Factory Method</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/design-system.css">
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 mb-0"><i class="fa-solid fa-user-plus me-2"></i>Tao tai khoan (Factory Method)</h1>
+            <a class="btn btn-outline-secondary" href="admin-dashboard.html">Quay lai Admin</a>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <form id="factoryAccountForm" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Role</label>
+                        <select id="role" class="form-select" required>
+                            <option value="doctor">Doctor</option>
+                            <option value="reception">Reception</option>
+                            <option value="patient">Patient</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Ho</label>
+                        <input id="firstName" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Ten</label>
+                        <input id="lastName" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">So dien thoai</label>
+                        <input id="phone" class="form-control" placeholder="09xxxxxxxx">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input id="email" type="email" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Mat khau</label>
+                        <input id="password" type="password" class="form-control" required>
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fa-solid fa-code-branch me-2"></i>Tao tai khoan qua Factory Method
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="account-creation-result" class="card shadow-sm d-none">
+            <div class="card-body" id="factoryResultBody"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/notifications.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script>
+        (function initFactoryAccountPage() {
+            const token = localStorage.getItem('healthysystem_token') || localStorage.getItem('token') || localStorage.getItem('authToken');
+            if (token) {
+                apiService.setToken(token);
+            }
+
+            const form = document.getElementById('factoryAccountForm');
+            const resultCard = document.getElementById('account-creation-result');
+            const resultBody = document.getElementById('factoryResultBody');
+
+            form.addEventListener('submit', async function onSubmit(event) {
+                event.preventDefault();
+
+                resultCard.classList.remove('d-none');
+                renderSkeletons('factoryResultBody', 2);
+
+                const payload = {
+                    role: document.getElementById('role').value,
+                    firstName: document.getElementById('firstName').value.trim(),
+                    lastName: document.getElementById('lastName').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
+                    password: document.getElementById('password').value
+                };
+
+                const result = await apiService.createAccountWithFactory(payload);
+                clearSkeletons('factoryResultBody');
+
+                if (!result.success) {
+                    resultBody.innerHTML = `<div class="alert alert-danger mb-0">${result.error || 'Tao tai khoan that bai'}</div>`;
+                    notification.error(result.error || 'Tao tai khoan that bai');
+                    return;
+                }
+
+                const data = result.data && result.data.data ? result.data.data : {};
+                resultBody.innerHTML = `
+                    <div class="alert alert-success">Tao tai khoan thanh cong bang Factory Method.</div>
+                    <ul class="mb-0">
+                        <li>UserId: ${data.userId || 'N/A'}</li>
+                        <li>Email: ${data.email || payload.email}</li>
+                        <li>Role: ${data.role || payload.role}</li>
+                        <li>Onboarding: ${data.onboardingMessage || 'N/A'}</li>
+                    </ul>
+                `;
+
+                notification.success('Da tao tai khoan bang Factory Method');
+                form.reset();
+            });
+        })();
+    </script>
+</body>
+</html>

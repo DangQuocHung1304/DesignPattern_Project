@@ -28,6 +28,8 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpGet("secure-summary/{patientCode}")]
+        [HttpGet("secure-summary/{patientCode}/pattern")]
+        [HttpGet("/api/medicalhistory/secure-summary/{patientCode}/pattern")]
         [Authorize(Roles = "doctor,admin,patient")]
         public async Task<IActionResult> GetSecureMedicalSummary(string patientCode)
         {

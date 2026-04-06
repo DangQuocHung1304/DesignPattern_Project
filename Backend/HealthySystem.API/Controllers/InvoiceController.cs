@@ -32,6 +32,8 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("pricing/preview")]
+        [HttpPost("pricing/preview/pattern")]
+        [HttpPost("/api/invoice/pricing/preview/pattern")]
         public IActionResult PreviewPricing([FromBody] InvoicePricingPreviewRequest request)
         {
             var pricing = _invoicePricingComposer.Calculate(new InvoicePricingInput(
@@ -55,6 +57,8 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("{invoiceId:long}/pay")]
+        [HttpPost("{invoiceId:long}/pay/pattern")]
+        [HttpPost("/api/invoice/{invoiceId:long}/pay/pattern")]
         public async Task<IActionResult> PayInvoice(long invoiceId, [FromBody] PayInvoiceRequest request)
         {
             var invoice = await _context.Invoices

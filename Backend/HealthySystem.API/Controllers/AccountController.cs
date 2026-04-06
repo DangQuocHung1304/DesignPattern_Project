@@ -30,6 +30,8 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("create")]
+        [HttpPost("create/pattern")]
+        [HttpPost("/api/account/create/pattern")]
         public async Task<IActionResult> CreateAccount([FromBody] CreateAccountRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Email) ||

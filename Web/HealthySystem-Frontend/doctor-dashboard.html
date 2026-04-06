@@ -28,6 +28,7 @@
                 <li><a href="doctor-appointments.html"><i class="fas fa-calendar-check"></i> Lịch hẹn của tôi</a></li>
                 <li><a href="doctor-schedule.html"><i class="fas fa-calendar-days"></i> Lịch làm việc</a></li>
                 <li><a href="patient-lookup.html"><i class="fas fa-user-injured"></i> Tra cứu bệnh nhân</a></li>
+                <li><a href="treatment-plan.html"><i class="fas fa-notes-medical"></i> Phác đồ điều trị</a></li>
                 <li><a href="lab-request.html"><i class="fas fa-vial"></i> Yêu cầu xét nghiệm</a></li>
                 <li><a href="doctor-profile-edit.html"><i class="fas fa-user-gear"></i> Hồ sơ cá nhân</a></li>
             </ul>
@@ -154,6 +155,26 @@
                         <div class="text-start">
                             <div class="fw-bold">Xem tất cả lịch hẹn</div>
                             <small class="text-muted">Quản lý toàn bộ lịch hẹn</small>
+                        </div>
+                    </button>
+
+                    <button class="quick-action-btn" onclick="startExaminationFromNextAppointment()">
+                        <div class="quick-action-icon bg-danger bg-opacity-10 text-danger">
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+                        <div class="text-start">
+                            <div class="fw-bold">Bắt đầu ca khám</div>
+                            <small class="text-muted">Facade + Builder SOAP note</small>
+                        </div>
+                    </button>
+
+                    <button class="quick-action-btn" onclick="window.location.href='treatment-plan.html'">
+                        <div class="quick-action-icon bg-warning bg-opacity-10 text-warning">
+                            <i class="fas fa-notes-medical"></i>
+                        </div>
+                        <div class="text-start">
+                            <div class="fw-bold">Phác đồ điều trị chuẩn</div>
+                            <small class="text-muted">Template Method + Adapter</small>
                         </div>
                     </button>
 
@@ -298,16 +319,35 @@
         </div>
     </div>
 
+    <div class="modal fade" id="soapNoteModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="fas fa-file-medical me-2"></i>SOAP Note Builder</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="soapNoteBody">
+                    <div class="text-center text-muted py-4">Chua co du lieu SOAP.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/config.js"></script>
     <script src="assets/js/notifications.js"></script>
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/design-patterns/appointment-notification-observer.js"></script>
     <script src="assets/js/auth.js"></script>
     <script>
         let doctorData = null;
         let allAppointments = [];
-        let viewAppointmentModal, rescheduleModal;
+        let viewAppointmentModal, rescheduleModal, soapNoteModal;
+        let selectedAppointment = null;
 
         function renderDashboardSkeletons() {
             if (typeof renderSkeletons === 'function') {
@@ -350,6 +390,14 @@
             // Initialize modals
             viewAppointmentModal = new bootstrap.Modal(document.getElementById('viewAppointmentModal'));
             rescheduleModal = new bootstrap.Modal(document.getElementById('rescheduleModal'));
+            soapNoteModal = new bootstrap.Modal(document.getElementById('soapNoteModal'));
+
+            const token = localStorage.getItem('healthysystem_token') || localStorage.getItem('token') || localStorage.getItem('authToken');
+            if (window.apiService && token) {
+                window.apiService.setToken(token);
+            }
+
+            initPatternObserverBridge();
 
             // Load data
             loadDashboardData();
@@ -539,6 +587,7 @@
                 }
 
                 const apt = result.data;
+                selectedAppointment = apt;
                 
                 // Build detail HTML
                 const detailHTML = `
@@ -607,6 +656,14 @@
                 let actions = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>';
                 
                 if (apt.status !== 'cancelled' && apt.status !== 'completed') {
+                    if (['scheduled', 'checked-in', 'confirmed'].includes((apt.status || '').toLowerCase())) {
+                        actions += `
+                            <button type="button" class="btn btn-danger" onclick="startExaminationById(${apt.id})">
+                                <i class="fas fa-stethoscope me-2"></i>Bắt đầu ca khám
+                            </button>
+                        `;
+                    }
+
                     // US-01: Reschedule button
                     actions += `
                         <button type="button" class="btn btn-reschedule" onclick="openRescheduleModal(${apt.id}, '${apt.appointmentStart}', '${apt.appointmentEnd}')">
@@ -784,6 +841,135 @@
                 loading.hide();
                 notification.error('Đã xảy ra lỗi');
             }
+        }
+
+        function initPatternObserverBridge() {
+            const observer = window.DesignPatterns && window.DesignPatterns.AppointmentObserver;
+            if (!observer || !observer.eventBus) {
+                return;
+            }
+
+            observer.eventBus.subscribe('appointment.status.changed', observer.createToastObserver());
+        }
+
+        function normalizePatternState(status) {
+            const normalized = (status || '').toLowerCase();
+            if (['scheduled', 'checked-in', 'in-progress', 'completed', 'cancelled'].includes(normalized)) {
+                return normalized;
+            }
+
+            if (['confirmed', 'pending', 'rescheduled'].includes(normalized)) {
+                return 'scheduled';
+            }
+
+            return 'checked-in';
+        }
+
+        function buildStartExaminationPayload(apt) {
+            const user = getCurrentUser() || {};
+            const doctorName = apt.doctor?.fullName || user.fullName || 'Bac si';
+            const patientName = apt.patient?.fullName || apt.walkInPatient?.fullName || 'Benh nhan';
+
+            return {
+                appointmentCode: `APT-${apt.id}`,
+                doctorCode: apt.doctor?.publicId || user.publicId || String(user.id || ''),
+                patientCode: apt.patient?.publicId || apt.walkInPatient?.publicId || String(apt.patient?.id || apt.walkInPatient?.id || ''),
+                doctorName,
+                patientName,
+                currentAppointmentState: normalizePatternState(apt.status),
+                symptomSummary: apt.notes || 'Benh nhan den kham theo lich hen.',
+                diagnosis: 'Theo doi va danh gia ban dau',
+                visitTime: apt.appointmentStart || new Date().toISOString(),
+                initialFee: 250000,
+                consultationFee: 250000,
+                labFee: 0,
+                isAfterHours: false,
+                hasInsurance: false,
+                isLoyalPatient: false,
+                room: 'General',
+                prescriptions: [],
+                labRequests: []
+            };
+        }
+
+        function renderSoapNoteModal(workflowData) {
+            const soap = workflowData.soapNote || {};
+            const visit = workflowData.visitWorkflow || {};
+            const pricing = workflowData.pricing || {};
+
+            document.getElementById('soapNoteBody').innerHTML = `
+                <div class="alert alert-success">
+                    <strong>Facade workflow:</strong> ${visit.message || 'Da khoi dong quy trinh tham kham'}
+                </div>
+                <div class="mb-3">
+                    <h6>Header</h6>
+                    <div class="p-2 border rounded bg-light">${soap.header || '-'}</div>
+                </div>
+                <div class="mb-3">
+                    <h6>Subjective</h6>
+                    <div class="p-2 border rounded">${soap.subjectiveSection || '-'}</div>
+                </div>
+                <div class="mb-3">
+                    <h6>Assessment</h6>
+                    <div class="p-2 border rounded">${soap.assessmentSection || '-'}</div>
+                </div>
+                <div class="mb-3">
+                    <h6>Plan</h6>
+                    <div class="p-2 border rounded">${soap.planSection || '-'}</div>
+                </div>
+                <div class="mb-3">
+                    <h6>Footer</h6>
+                    <div class="p-2 border rounded bg-light">${soap.footer || '-'}</div>
+                </div>
+                <div class="alert alert-info mb-0">
+                    <strong>Decorator pricing total:</strong> ${(pricing.total || 0).toLocaleString('vi-VN')} VND
+                </div>
+            `;
+        }
+
+        async function startExaminationById(appointmentId) {
+            let apt = allAppointments.find(item => item.id === appointmentId);
+
+            if (!apt) {
+                const detail = await apiService.getAppointmentById(appointmentId);
+                if (!detail.success) {
+                    notification.error('Khong tai duoc thong tin lich hen.');
+                    return;
+                }
+                apt = detail.data;
+            }
+
+            loading.show('Dang khoi dong Facade workflow...');
+            if (typeof renderSkeletons === 'function') {
+                renderSkeletons('soapNoteBody', 3);
+            }
+
+            try {
+                const result = await apiService.startExaminationWorkflow(buildStartExaminationPayload(apt));
+                if (!result.success) {
+                    notification.error(result.error || 'Khong the bat dau ca kham');
+                    return;
+                }
+
+                const workflowData = result.data?.data || {};
+                renderSoapNoteModal(workflowData);
+                soapNoteModal.show();
+                notification.success('Da bat dau ca kham bang Facade + Builder.');
+            } catch (error) {
+                notification.error(error.message || 'Da xay ra loi khi khoi dong ca kham.');
+            } finally {
+                loading.hide();
+            }
+        }
+
+        async function startExaminationFromNextAppointment() {
+            const candidate = allAppointments.find(item => ['scheduled', 'checked-in', 'confirmed'].includes((item.status || '').toLowerCase()));
+            if (!candidate) {
+                notification.warning('Khong co lich hen phu hop de bat dau ca kham.');
+                return;
+            }
+
+            await startExaminationById(candidate.id);
         }
 
         // Open schedule modal (placeholder)

@@ -49,19 +49,52 @@
 
     function createToastObserver() {
         return function onAppointmentEvent(payload) {
-            const status = payload.status || "updated";
-            const code = payload.appointmentCode || "N/A";
-            if (typeof global.showNotification === "function") {
-                global.showNotification("Appointment " + code + " was " + status + ".", "info");
+            const status = payload.status || payload.currentStatus || "updated";
+            const code = payload.appointmentCode || payload.appointmentId || "N/A";
+            const previous = payload.previousStatus || "";
+            const message = previous
+                ? "Lich hen " + code + ": " + previous + " -> " + status
+                : "Lich hen " + code + " da chuyen sang " + status;
+
+            if (global.notification && typeof global.notification.info === "function") {
+                global.notification.info(message);
             }
         };
     }
 
+    function publishFromPatternResult(result, eventName) {
+        if (!result || !result.success) {
+            return;
+        }
+
+        const payload = result.data && result.data.data ? result.data.data : null;
+        if (!payload || (!payload.appointmentId && !payload.appointmentCode)) {
+            return;
+        }
+
+        const eventPayload = {
+            appointmentId: payload.appointmentId,
+            appointmentCode: payload.appointmentCode || (payload.appointmentId ? "APT-" + payload.appointmentId : undefined),
+            previousStatus: payload.previousStatus,
+            currentStatus: payload.currentStatus,
+            status: payload.currentStatus,
+            pendingCount: payload.currentStatus === "scheduled" ? 1 : 0,
+            changedAtUtc: new Date().toISOString()
+        };
+
+        appointmentEventBus.publish(eventName || "appointment.status.changed", eventPayload);
+    }
+
     const appointmentEventBus = new AppointmentEventBus();
+
+    global.handlePatternObserverEvent = function handlePatternObserverEvent(result, eventName) {
+        publishFromPatternResult(result, eventName);
+    };
 
     DesignPatterns.AppointmentObserver = {
         eventBus: appointmentEventBus,
         createBadgeObserver: createBadgeObserver,
-        createToastObserver: createToastObserver
+        createToastObserver: createToastObserver,
+        publishFromPatternResult: publishFromPatternResult
     };
 })(window);

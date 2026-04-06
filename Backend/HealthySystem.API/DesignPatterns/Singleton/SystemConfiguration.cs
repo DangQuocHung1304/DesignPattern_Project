@@ -28,6 +28,11 @@ public sealed class ClinicConfigurationStore
         return _settings.TryGetValue(key, out var value) ? value : null;
     }
 
+    public void Set(string key, string value)
+    {
+        _settings[key] = value;
+    }
+
     public IReadOnlyDictionary<string, string> Snapshot()
     {
         return _settings.ToDictionary(k => k.Key, v => v.Value);
@@ -37,6 +42,7 @@ public sealed class ClinicConfigurationStore
 public interface ISystemConfigurationProvider
 {
     string GetValue(string key, string fallback = "");
+    void SetValue(string key, string value);
     IReadOnlyDictionary<string, string> Snapshot();
 }
 
@@ -53,6 +59,7 @@ public sealed class SystemConfigurationProvider : ISystemConfigurationProvider
             ["Clinic:Name"] = configuration["ClinicSettings:Name"] ?? "Healthy System",
             ["Clinic:Timezone"] = configuration["ClinicSettings:Timezone"] ?? "SE Asia Standard Time",
             ["Clinic:DefaultConsultationFee"] = configuration["ClinicSettings:DefaultConsultationFee"] ?? "250000",
+            ["Clinic:MaxAppointmentsPerHour"] = configuration["ClinicSettings:MaxAppointmentsPerHour"] ?? "8",
             ["Notifications:DefaultChannel"] = configuration["ClinicSettings:NotificationChannel"] ?? "sms"
         };
 
@@ -62,6 +69,11 @@ public sealed class SystemConfigurationProvider : ISystemConfigurationProvider
     public string GetValue(string key, string fallback = "")
     {
         return _store.Get(key) ?? fallback;
+    }
+
+    public void SetValue(string key, string value)
+    {
+        _store.Set(key, value);
     }
 
     public IReadOnlyDictionary<string, string> Snapshot()

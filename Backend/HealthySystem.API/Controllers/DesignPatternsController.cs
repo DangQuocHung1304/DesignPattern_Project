@@ -60,6 +60,7 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpGet("singleton/config/{key}")]
+        [HttpGet("singleton/config/{key}/pattern")]
         public ActionResult<object> GetConfiguration([FromRoute] string key)
         {
             var value = _systemConfigurationProvider.GetValue(key, "N/A");
@@ -71,7 +72,38 @@ namespace HealthySystem.API.Controllers
             });
         }
 
+        [HttpPost("singleton/config")]
+        [HttpPost("singleton/config/pattern")]
+        public ActionResult<object> UpdateConfiguration([FromBody] SingletonConfigUpdateRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Key))
+            {
+                return BadRequest(new { success = false, message = "Config key is required." });
+            }
+
+            _systemConfigurationProvider.SetValue(request.Key, request.Value ?? string.Empty);
+
+            return Ok(new
+            {
+                success = true,
+                message = "Configuration updated with Singleton workflow.",
+                processingState = new
+                {
+                    phase = "ready",
+                    isLoading = false,
+                    skeletonHint = "singleton-config"
+                },
+                data = new
+                {
+                    Pattern = "Singleton",
+                    Key = request.Key,
+                    Value = _systemConfigurationProvider.GetValue(request.Key, string.Empty)
+                }
+            });
+        }
+
         [HttpPost("factory-method/actors/{role}")]
+        [HttpPost("factory-method/actors/{role}/pattern")]
         public ActionResult<ActorProfile> CreateActorProfile([FromRoute] string role, [FromBody] ActorCreationCommand command)
         {
             var profile = _actorFactoryMethodService.CreateActor(role, command);
@@ -79,6 +111,7 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("abstract-factory/reminders/{role}")]
+        [HttpPost("abstract-factory/reminders/{role}/pattern")]
         public async Task<ActionResult<DeliveryReceipt>> SendReminder(
             [FromRoute] string role,
             [FromBody] AppointmentSnapshot appointment,
@@ -89,6 +122,7 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("builder/soap-note")]
+        [HttpPost("builder/soap-note/pattern")]
         public ActionResult<ClinicalEncounterNote> BuildSoapNote([FromBody] ClinicalEncounterContext context)
         {
             var note = _encounterNoteDirector.ConstructSoapNote(context);
@@ -96,6 +130,7 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("adapter/insurance-claims")]
+        [HttpPost("adapter/insurance-claims/pattern")]
         public async Task<ActionResult<ClaimSubmissionResult>> SubmitInsuranceClaim(
             [FromBody] ClaimSubmission claim,
             CancellationToken cancellationToken)
@@ -105,6 +140,7 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("proxy/medical-records")]
+        [HttpPost("proxy/medical-records/pattern")]
         public async Task<ActionResult<MedicalRecordView?>> ReadMedicalRecord(
             [FromBody] MedicalRecordProxyRequest request,
             CancellationToken cancellationToken)
@@ -119,6 +155,7 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("facade/start-visit")]
+        [HttpPost("facade/start-visit/pattern")]
         public async Task<ActionResult<StartVisitResult>> StartVisit(
             [FromBody] StartVisitCommand command,
             CancellationToken cancellationToken)
@@ -128,6 +165,7 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("decorator/invoice-pricing")]
+        [HttpPost("decorator/invoice-pricing/pattern")]
         public ActionResult<InvoicePricingResult> CalculateInvoicePricing([FromBody] InvoicePricingInput input)
         {
             var result = _invoicePricingComposer.Calculate(input);
@@ -135,6 +173,7 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("observer/appointments/{appointmentCode}/status")]
+        [HttpPost("observer/appointments/{appointmentCode}/status/pattern")]
         public async Task<ActionResult<object>> NotifyStatusChange(
             [FromRoute] string appointmentCode,
             [FromBody] AppointmentStatusChangeRequest request,
@@ -157,6 +196,7 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("state/appointments/transition")]
+        [HttpPost("state/appointments/transition/pattern")]
         public ActionResult<AppointmentStateTransitionResult> TransitAppointmentState([FromBody] StateTransitionRequest request)
         {
             var result = _appointmentStateMachineService.Transit(request.CurrentState, request.Action);
@@ -164,6 +204,7 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("strategy/payments")]
+        [HttpPost("strategy/payments/pattern")]
         public async Task<ActionResult<PaymentResult>> ProcessPayment([FromBody] PaymentRequest request, CancellationToken cancellationToken)
         {
             var result = await _paymentProcessor.ProcessAsync(request, cancellationToken);
@@ -171,6 +212,7 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("template-method/treatment-plans/{planType}")]
+        [HttpPost("template-method/treatment-plans/{planType}/pattern")]
         public async Task<ActionResult<TreatmentPlanResult>> GenerateTreatmentPlan(
             [FromRoute] string planType,
             [FromBody] TreatmentPlanRequest request,
@@ -185,5 +227,7 @@ namespace HealthySystem.API.Controllers
         public sealed record AppointmentStatusChangeRequest(string CurrentStatus, string NewStatus);
 
         public sealed record StateTransitionRequest(string CurrentState, string Action);
+
+        public sealed record SingletonConfigUpdateRequest(string Key, string? Value);
     }
 }

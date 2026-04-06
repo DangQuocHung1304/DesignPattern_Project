@@ -28,6 +28,7 @@
                 <li><a class="active" href="doctor-appointments.html"><i class="fas fa-calendar-check"></i> Lịch hẹn của tôi</a></li>
                 <li><a href="doctor-schedule.html"><i class="fas fa-calendar-days"></i> Lịch làm việc</a></li>
                 <li><a href="patient-lookup.html"><i class="fas fa-user-injured"></i> Tra cứu bệnh nhân</a></li>
+                <li><a href="treatment-plan.html"><i class="fas fa-notes-medical"></i> Phác đồ điều trị</a></li>
                 <li><a href="lab-request.html"><i class="fas fa-vial"></i> Yêu cầu xét nghiệm</a></li>
                 <li><a href="doctor-profile-edit.html"><i class="fas fa-user-gear"></i> Hồ sơ cá nhân</a></li>
             </ul>
@@ -85,6 +86,9 @@
                     <label class="form-label">Trạng thái</label>
                     <select class="form-select" id="statusFilter">
                         <option value="">Tất cả</option>
+                        <option value="scheduled">Đã đặt</option>
+                        <option value="checked-in">Đã check-in</option>
+                        <option value="in-progress">Đang khám</option>
                         <option value="pending">Chờ xác nhận</option>
                         <option value="confirmed">Đã xác nhận</option>
                         <option value="completed">Hoàn thành</option>
@@ -124,6 +128,7 @@
             <button class="btn btn-outline-success filter-btn" data-filter="week" onclick="quickFilter('week')">
                 <i class="fas fa-calendar-week me-1"></i>Tuần này
             </button>
+            <span class="badge bg-danger ms-2" id="patternPendingBadge">0</span>
         </div>
 
         <!-- Appointments List -->
@@ -256,7 +261,10 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/config.js"></script>
     <script src="assets/js/notifications.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/design-patterns/appointment-notification-observer.js"></script>
     <script>
         const API_BASE_URL = 'http://localhost:5000/api';
         let appointments = [];
@@ -297,7 +305,7 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             // Check authentication - Fix: check both token keys
-            const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+            const token = localStorage.getItem('healthysystem_token') || localStorage.getItem('token') || localStorage.getItem('authToken');
             const userRole = localStorage.getItem('userRole');
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             
@@ -313,6 +321,12 @@
             rescheduleModal = new bootstrap.Modal(document.getElementById('rescheduleModal'));
             cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
             detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+
+            if (window.apiService && token) {
+                window.apiService.setToken(token);
+            }
+
+            initPatternObservers();
 
             // Load doctor info and appointments
             loadDoctorInfo();
@@ -383,7 +397,7 @@
                 renderSkeletons('appointmentsList', 6);
                 
                 // Fix: Use correct token key
-                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const token = localStorage.getItem('healthysystem_token') || localStorage.getItem('token') || localStorage.getItem('authToken');
                 
                 console.log('Loading appointments with token:', token ? 'Token exists' : 'No token');
                 
@@ -588,8 +602,18 @@
                         </div>
                     ` : ''}
 
-                    ${canRescheduleOrCancel(apt) ? `
+                    ${(canRescheduleOrCancel(apt) || canCheckIn(apt) || canStartVisit(apt)) ? `
                         <div class="appointment-actions mt-3" onclick="event.stopPropagation()">
+                            ${canCheckIn(apt) ? `
+                                <button class="btn btn-sm btn-outline-primary" onclick="applyPatternStatus(${apt.id}, 'checked-in', 'Check-in tai quay kham')">
+                                    <i class="fas fa-user-check me-1"></i>Check-in
+                                </button>
+                            ` : ''}
+                            ${canStartVisit(apt) ? `
+                                <button class="btn btn-sm btn-success" onclick="applyPatternStatus(${apt.id}, 'in-progress', 'Bat dau tham kham')">
+                                    <i class="fas fa-stethoscope me-1"></i>Bắt đầu khám
+                                </button>
+                            ` : ''}
                             <button class="btn btn-sm btn-reschedule" onclick="showRescheduleModal(${apt.id})">
                                 <i class="fas fa-calendar-alt me-1"></i>Thay đổi lịch
                             </button>
@@ -664,7 +688,7 @@
 
                 loading.show('Đang thay đổi lịch hẹn...');
 
-                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const token = localStorage.getItem('healthysystem_token') || localStorage.getItem('token') || localStorage.getItem('authToken');
                 console.log('Reschedule - Token:', token ? 'exists' : 'missing');
                 console.log('Reschedule - Appointment ID:', appointmentId);
                 console.log('Reschedule - Data:', { newStart, newEnd, reason });
@@ -757,7 +781,7 @@
 
                 loading.show('Đang hủy lịch hẹn...');
 
-                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const token = localStorage.getItem('healthysystem_token') || localStorage.getItem('token') || localStorage.getItem('authToken');
                 console.log('Cancel - Token:', token ? 'exists' : 'missing');
                 console.log('Cancel - Appointment ID:', appointmentId);
                 
@@ -801,6 +825,56 @@
             } catch (error) {
                 console.error('Error cancelling appointment:', error);
                 notification.error(error.message);
+            } finally {
+                loading.hide();
+            }
+        }
+
+        function initPatternObservers() {
+            const observer = window.DesignPatterns && window.DesignPatterns.AppointmentObserver;
+            if (!observer || !observer.eventBus) {
+                return;
+            }
+
+            const eventBus = observer.eventBus;
+            const badge = document.getElementById('patternPendingBadge');
+
+            eventBus.subscribe('appointment.status.changed', observer.createToastObserver());
+            if (badge) {
+                eventBus.subscribe('appointment.status.changed', observer.createBadgeObserver(badge));
+            }
+        }
+
+        function canCheckIn(apt) {
+            const status = (apt.status || '').toLowerCase();
+            return status === 'scheduled';
+        }
+
+        function canStartVisit(apt) {
+            const status = (apt.status || '').toLowerCase();
+            return status === 'scheduled' || status === 'checked-in';
+        }
+
+        async function applyPatternStatus(appointmentId, targetStatus, note) {
+            if (!window.apiService) {
+                notification.error('Khong tim thay API service.');
+                return;
+            }
+
+            loading.show('Dang chay State + Observer workflow...');
+            renderSkeletons('appointmentsList', 4);
+
+            try {
+                const result = await apiService.updateAppointmentStatus(appointmentId, targetStatus, note || '');
+                if (!result.success) {
+                    notification.error(result.error || 'Cap nhat trang thai that bai');
+                    return;
+                }
+
+                notification.success('Cap nhat trang thai thanh cong qua luong pattern.');
+                await loadAppointments();
+            } catch (error) {
+                notification.error(error.message || 'Da xay ra loi khi cap nhat trang thai.');
             } finally {
                 loading.hide();
             }
@@ -899,6 +973,9 @@
 
         function getStatusText(status) {
             const statusMap = {
+                'scheduled': 'Đã đặt',
+                'checked-in': 'Đã check-in',
+                'in-progress': 'Đang khám',
                 'pending': 'Chờ xác nhận',
                 'confirmed': 'Đã xác nhận',
                 'cancelled': 'Đã hủy',

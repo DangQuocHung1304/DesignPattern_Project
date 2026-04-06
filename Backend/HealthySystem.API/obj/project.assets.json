@@ -4948,11 +4948,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\1.MTKPM_TT_Done\\LyThuyet\\Project\\Backend\\HealthySystem.API\\HealthySystem.API.csproj",
+      "projectUniqueName": "d:\\1.MTKPM_TT_Done\\LyThuyet\\Project\\Backend\\HealthySystem.API\\HealthySystem.API.csproj",
       "projectName": "HealthySystem.API",
-      "projectPath": "D:\\1.MTKPM_TT_Done\\LyThuyet\\Project\\Backend\\HealthySystem.API\\HealthySystem.API.csproj",
+      "projectPath": "d:\\1.MTKPM_TT_Done\\LyThuyet\\Project\\Backend\\HealthySystem.API\\HealthySystem.API.csproj",
       "packagesPath": "C:\\Users\\YLC\\.nuget\\packages\\",
-      "outputPath": "D:\\1.MTKPM_TT_Done\\LyThuyet\\Project\\Backend\\HealthySystem.API\\obj\\",
+      "outputPath": "d:\\1.MTKPM_TT_Done\\LyThuyet\\Project\\Backend\\HealthySystem.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

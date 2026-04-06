@@ -52,6 +52,8 @@ namespace HealthySystem.API.Controllers
 
         // Demonstration endpoint that combines Facade + State + Decorator + Builder
         [HttpPost("start")]
+        [HttpPost("start/pattern")]
+        [HttpPost("/api/examinations/start/pattern")]
         public async Task<IActionResult> StartExamination([FromBody] StartExaminationRequest request)
         {
             var transition = _appointmentStateMachineService.Transit(
@@ -118,6 +120,8 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("treatment-plan/{planType}")]
+        [HttpPost("treatment-plan/{planType}/pattern")]
+        [HttpPost("/api/examinations/treatment-plan/{planType}/pattern")]
         public async Task<IActionResult> GenerateTreatmentPlan([FromRoute] string planType, [FromBody] GenerateTreatmentPlanRequest request)
         {
             var result = await _treatmentPlanService.GenerateAsync(
@@ -142,6 +146,8 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("insurance-claim")]
+        [HttpPost("insurance-claim/pattern")]
+        [HttpPost("/api/examinations/insurance-claim/pattern")]
         public async Task<IActionResult> SubmitInsuranceClaim([FromBody] SubmitInsuranceClaimRequest request)
         {
             var result = await _insuranceGateway.SubmitClaimAsync(new ClaimSubmission(
@@ -165,6 +171,8 @@ namespace HealthySystem.API.Controllers
         }
 
         [HttpPost("medical-records/secure")]
+        [HttpPost("medical-records/secure/pattern")]
+        [HttpPost("/api/examinations/medical-records/secure/pattern")]
         public async Task<IActionResult> GetSecureMedicalRecord([FromBody] SecureMedicalRecordRequest request)
         {
             var requesterRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "guest";

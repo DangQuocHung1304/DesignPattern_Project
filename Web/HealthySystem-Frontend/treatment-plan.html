@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treatment Plan - Template Method + Adapter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 mb-0"><i class="fa-solid fa-notes-medical me-2"></i>Phac do dieu tri (Template + Adapter)</h1>
+            <a class="btn btn-outline-secondary" href="doctor-dashboard.html">Quay lai Bac si</a>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Plan type</label>
+                        <select id="planType" class="form-select">
+                            <option value="acute">Acute</option>
+                            <option value="chronic">Chronic</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Encounter Code</label>
+                        <input id="encounterCode" class="form-control" placeholder="ENC-APT-1001" value="ENC-DEMO-001">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Patient Code</label>
+                        <input id="patientCode" class="form-control" placeholder="PAT-001" value="PAT-DEMO-001">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Diagnosis</label>
+                        <input id="diagnosis" class="form-control" value="Dau dau, sot nhe">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Symptoms (phan tach bang dau phay)</label>
+                        <input id="symptoms" class="form-control" value="dau dau, met moi">
+                    </div>
+                    <div class="col-12">
+                        <button id="generatePlanBtn" class="btn btn-primary">
+                            <i class="fa-solid fa-diagram-project me-2"></i>Tao phac do chuan (Template Method)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="treatment-plan-result" class="card shadow-sm mb-3">
+            <div class="card-body" id="treatmentResultBody">
+                <p class="text-muted mb-0">Ket qua tao phac do se hien thi tai day.</p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h2 class="h6">Gui bao hiem (Adapter)</h2>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Claim code</label>
+                        <input id="claimCode" class="form-control" value="CLM-DEMO-001">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Amount</label>
+                        <input id="claimAmount" type="number" class="form-control" value="300000">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Diagnosis code</label>
+                        <input id="claimDiagnosis" class="form-control" value="R69">
+                    </div>
+                    <div class="col-12">
+                        <button id="sendInsuranceBtn" class="btn btn-success">
+                            <i class="fa-solid fa-paper-plane me-2"></i>Gui bao hiem (Adapter)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="insurance-claim-result" class="card shadow-sm">
+            <div class="card-body" id="insuranceResultBody">
+                <p class="text-muted mb-0">Ket qua Adapter insurance se hien thi tai day.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/notifications.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script>
+        (function initTreatmentPlanPage() {
+            const token = localStorage.getItem('healthysystem_token') || localStorage.getItem('token') || localStorage.getItem('authToken');
+            if (token) {
+                apiService.setToken(token);
+            }
+
+            const treatmentResultBody = document.getElementById('treatmentResultBody');
+            const insuranceResultBody = document.getElementById('insuranceResultBody');
+
+            document.getElementById('generatePlanBtn').addEventListener('click', async function generatePlan() {
+                renderSkeletons('treatmentResultBody', 2);
+
+                const payload = {
+                    encounterCode: document.getElementById('encounterCode').value.trim(),
+                    patientCode: document.getElementById('patientCode').value.trim(),
+                    diagnosis: document.getElementById('diagnosis').value.trim(),
+                    symptoms: document.getElementById('symptoms').value.split(',').map(item => item.trim()).filter(Boolean)
+                };
+
+                const result = await apiService.generateTreatmentPlanPattern(document.getElementById('planType').value, payload);
+                clearSkeletons('treatmentResultBody');
+
+                if (!result.success) {
+                    treatmentResultBody.innerHTML = `<div class="alert alert-danger mb-0">${result.error || 'Tao phac do that bai'}</div>`;
+                    return;
+                }
+
+                const data = result.data && result.data.data ? result.data.data : {};
+                const actions = Array.isArray(data.actions) ? data.actions : [];
+                treatmentResultBody.innerHTML = `
+                    <div class="alert alert-success">Template Method tao phac do thanh cong.</div>
+                    <ul class="mb-2">
+                        <li>Encounter: ${data.encounterCode || payload.encounterCode}</li>
+                        <li>PlanType: ${data.planType || document.getElementById('planType').value}</li>
+                    </ul>
+                    <ol class="mb-0">${actions.map(action => `<li>${action}</li>`).join('')}</ol>
+                `;
+            });
+
+            document.getElementById('sendInsuranceBtn').addEventListener('click', async function sendInsurance() {
+                renderSkeletons('insuranceResultBody', 2);
+
+                const payload = {
+                    claimCode: document.getElementById('claimCode').value.trim(),
+                    patientCode: document.getElementById('patientCode').value.trim(),
+                    amount: Number(document.getElementById('claimAmount').value || 0),
+                    diagnosis: document.getElementById('claimDiagnosis').value.trim() || 'R69',
+                    visitDate: new Date().toISOString()
+                };
+
+                const result = await apiService.submitInsuranceClaimPattern(payload);
+                clearSkeletons('insuranceResultBody');
+
+                if (!result.success) {
+                    insuranceResultBody.innerHTML = `<div class="alert alert-danger mb-0">${result.error || 'Gui bao hiem that bai'}</div>`;
+                    return;
+                }
+
+                const data = result.data && result.data.data ? result.data.data : {};
+                insuranceResultBody.innerHTML = `
+                    <div class="alert alert-info">Adapter da gui du lieu sang cong bao hiem.</div>
+                    <ul class="mb-0">
+                        <li>Accepted: ${data.accepted === true ? 'Yes' : 'No'}</li>
+                        <li>ExternalReference: ${data.externalReference || 'N/A'}</li>
+                        <li>Message: ${data.message || 'N/A'}</li>
+                    </ul>
+                `;
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments Management - Strategy + Decorator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 mb-0"><i class="fa-solid fa-file-invoice-dollar me-2"></i>Thanh toan (Decorator + Strategy)</h1>
+            <a class="btn btn-outline-secondary" href="accountant-dashboard.html">Quay lai Ke toan</a>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header"><strong>Decorator - Tinh phi da tang</strong></div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Consultation Fee</label>
+                                <input id="consultationFee" type="number" class="form-control" value="250000">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Lab Fee</label>
+                                <input id="labFee" type="number" class="form-control" value="0">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input id="isAfterHours" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="isAfterHours">Ngoai gio</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input id="hasInsurance" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="hasInsurance">Co BHYT</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input id="isLoyalPatient" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="isLoyalPatient">BN than thiet</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button id="previewPricingBtn" class="btn btn-primary">
+                                    <i class="fa-solid fa-calculator me-2"></i>Xem tinh phi Decorator
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header"><strong>Strategy - Chon phuong thuc thanh toan</strong></div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Invoice ID</label>
+                                <input id="invoiceId" type="number" min="1" class="form-control" placeholder="1">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Method</label>
+                                <select id="paymentMethod" class="form-select">
+                                    <option value="cash">Cash</option>
+                                    <option value="card">Card</option>
+                                    <option value="insurance">Insurance</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Amount</label>
+                                <input id="payAmount" type="number" class="form-control" placeholder="Tu dong theo invoice">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Diagnosis (insurance)</label>
+                                <input id="diagnosisCode" class="form-control" value="R69">
+                            </div>
+                            <div class="col-12">
+                                <button id="payInvoiceBtn" class="btn btn-success">
+                                    <i class="fa-solid fa-money-check-dollar me-2"></i>Thanh toan qua Strategy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-1">
+            <div class="col-lg-6">
+                <div id="invoice-pricing-preview" class="card shadow-sm">
+                    <div class="card-body" id="pricingResultBody">
+                        <p class="text-muted mb-0">Ket qua tinh phi Decorator se hien thi tai day.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div id="invoice-payment-result" class="card shadow-sm">
+                    <div class="card-body" id="paymentResultBody">
+                        <p class="text-muted mb-0">Ket qua thanh toan Strategy se hien thi tai day.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="invoice-history" class="mt-4 text-muted small">
+            Lich su hoa don co the tich hop tiep vao bang ke toan hien co.
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/notifications.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script>
+        (function initPaymentsPage() {
+            const token = localStorage.getItem('healthysystem_token') || localStorage.getItem('token') || localStorage.getItem('authToken');
+            if (token) {
+                apiService.setToken(token);
+            }
+
+            const pricingResultBody = document.getElementById('pricingResultBody');
+            const paymentResultBody = document.getElementById('paymentResultBody');
+
+            document.getElementById('previewPricingBtn').addEventListener('click', async function previewPricing() {
+                renderSkeletons('pricingResultBody', 2);
+                const payload = {
+                    consultationFee: Number(document.getElementById('consultationFee').value || 0),
+                    labFee: Number(document.getElementById('labFee').value || 0),
+                    isAfterHours: document.getElementById('isAfterHours').checked,
+                    hasInsurance: document.getElementById('hasInsurance').checked,
+                    isLoyalPatient: document.getElementById('isLoyalPatient').checked
+                };
+
+                const result = await apiService.previewInvoicePricingPattern(payload);
+                clearSkeletons('pricingResultBody');
+
+                if (!result.success) {
+                    pricingResultBody.innerHTML = `<div class="alert alert-danger mb-0">${result.error || 'Tinh phi that bai'}</div>`;
+                    return;
+                }
+
+                const data = result.data && result.data.data ? result.data.data : {};
+                const notes = Array.isArray(data.notes) ? data.notes : [];
+                pricingResultBody.innerHTML = `
+                    <h6>Ket qua Decorator</h6>
+                    <ul class="mb-2">
+                        <li>Subtotal: ${(data.subtotal || 0).toLocaleString('vi-VN')} VND</li>
+                        <li>Discount: ${(data.discount || 0).toLocaleString('vi-VN')} VND</li>
+                        <li>Surcharge: ${(data.surcharge || 0).toLocaleString('vi-VN')} VND</li>
+                        <li><strong>Total: ${(data.total || 0).toLocaleString('vi-VN')} VND</strong></li>
+                    </ul>
+                    <div>${notes.map(item => `<span class="badge text-bg-info me-1">${item}</span>`).join('')}</div>
+                `;
+            });
+
+            document.getElementById('payInvoiceBtn').addEventListener('click', async function payInvoice() {
+                const invoiceId = Number(document.getElementById('invoiceId').value || 0);
+                if (!invoiceId) {
+                    notification.warning('Vui long nhap Invoice ID');
+                    return;
+                }
+
+                renderSkeletons('paymentResultBody', 2);
+                const payload = {
+                    method: document.getElementById('paymentMethod').value,
+                    amount: document.getElementById('payAmount').value ? Number(document.getElementById('payAmount').value) : null,
+                    diagnosis: document.getElementById('diagnosisCode').value || 'R69'
+                };
+
+                const result = await apiService.payInvoiceWithStrategy(invoiceId, payload);
+                clearSkeletons('paymentResultBody');
+
+                if (!result.success) {
+                    paymentResultBody.innerHTML = `<div class="alert alert-danger mb-0">${result.error || 'Thanh toan that bai'}</div>`;
+                    notification.error(result.error || 'Thanh toan that bai');
+                    return;
+                }
+
+                const data = result.data && result.data.data ? result.data.data : {};
+                const payment = data.payment || {};
+                const claim = data.insuranceClaim || null;
+
+                paymentResultBody.innerHTML = `
+                    <h6>Ket qua Strategy</h6>
+                    <ul class="mb-2">
+                        <li>Invoice: ${data.invoiceId || invoiceId}</li>
+                        <li>Status: ${data.invoiceStatus || 'N/A'}</li>
+                        <li>Method: ${payment.method || payload.method}</li>
+                        <li>Transaction: ${payment.transactionCode || 'N/A'}</li>
+                        <li>Message: ${payment.message || 'N/A'}</li>
+                    </ul>
+                    ${claim ? `<div class="alert alert-info mb-0">Insurance claim: ${claim.externalReference || 'N/A'} - ${claim.message || ''}</div>` : ''}
+                `;
+
+                notification.success('Thanh toan thanh cong theo Strategy');
+            });
+        })();
+    </script>
+</body>
+</html>

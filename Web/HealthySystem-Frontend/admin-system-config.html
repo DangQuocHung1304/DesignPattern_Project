@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin System Config - Singleton</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 mb-0"><i class="fa-solid fa-gear me-2"></i>Cau hinh he thong (Singleton)</h1>
+            <a class="btn btn-outline-secondary" href="admin-dashboard.html">Quay lai Admin</a>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-8">
+                        <label class="form-label">MaxAppointmentsPerHour</label>
+                        <input id="maxAppointments" type="number" min="1" class="form-control" placeholder="8">
+                        <small class="text-muted">Luu trong Singleton key: Clinic:MaxAppointmentsPerHour</small>
+                    </div>
+                    <div class="col-md-4">
+                        <button id="saveConfigBtn" class="btn btn-primary w-100">
+                            <i class="fa-solid fa-floppy-disk me-2"></i>Luu cau hinh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm" id="singleton-config">
+            <div class="card-body" id="configState">
+                <div class="text-muted">Dang tai cau hinh...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/notifications.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script>
+        (function initSingletonConfigPage() {
+            const token = localStorage.getItem('healthysystem_token') || localStorage.getItem('token') || localStorage.getItem('authToken');
+            if (token) {
+                apiService.setToken(token);
+            }
+
+            const key = 'Clinic:MaxAppointmentsPerHour';
+            const valueInput = document.getElementById('maxAppointments');
+            const state = document.getElementById('configState');
+
+            async function loadConfig() {
+                renderSkeletons('configState', 2);
+                const result = await apiService.getSystemConfigBySingleton(key);
+                clearSkeletons('configState');
+
+                if (!result.success) {
+                    state.innerHTML = `<div class="alert alert-danger mb-0">${result.error || 'Khong the tai cau hinh'}</div>`;
+                    return;
+                }
+
+                const value = result.data && (result.data.Value || result.data.value) ? (result.data.Value || result.data.value) : '';
+                valueInput.value = value;
+                state.innerHTML = `<div class="alert alert-info mb-0">Gia tri hien tai: <strong>${value || 'N/A'}</strong></div>`;
+            }
+
+            document.getElementById('saveConfigBtn').addEventListener('click', async function saveConfig() {
+                const nextValue = (valueInput.value || '').trim();
+                if (!nextValue) {
+                    notification.warning('Vui long nhap gia tri MaxAppointmentsPerHour');
+                    return;
+                }
+
+                renderSkeletons('configState', 2);
+                const result = await apiService.updateSystemConfigBySingleton(key, nextValue);
+                clearSkeletons('configState');
+
+                if (!result.success) {
+                    state.innerHTML = `<div class="alert alert-danger mb-0">${result.error || 'Cap nhat that bai'}</div>`;
+                    notification.error(result.error || 'Cap nhat cau hinh that bai');
+                    return;
+                }
+
+                const saved = result.data && result.data.data ? result.data.data : {};
+                state.innerHTML = `<div class="alert alert-success mb-0">Da luu Singleton: ${saved.Key || key} = <strong>${saved.Value || nextValue}</strong></div>`;
+                notification.success('Cap nhat Singleton thanh cong');
+            });
+
+            loadConfig();
+        })();
+    </script>
+</body>
+</html>

@@ -46,15 +46,15 @@
         createSidebarItems() {
             return [
                 { href: "reception-dashboard.html", icon: "fa-gauge", label: "Overview" },
-                { href: "appointment-create.html", icon: "fa-calendar-plus", label: "Create appointment" },
-                { href: "patient-list.html", icon: "fa-users", label: "Patient queue" }
+                { href: "appointment-registration.html", icon: "fa-calendar-plus", label: "Create appointment" },
+                { href: "patient-lookup.html", icon: "fa-users", label: "Patient queue" }
             ];
         }
 
         createQuickActions() {
             return [
-                { href: "appointment-create.html", icon: "fa-calendar-plus", label: "New walk-in" },
-                { href: "doctor-schedule-management.html", icon: "fa-calendar-days", label: "Check doctor slots" }
+                { href: "appointment-registration.html", icon: "fa-calendar-plus", label: "New walk-in" },
+                { href: "doctor-schedule.html", icon: "fa-calendar-days", label: "Check doctor slots" }
             ];
         }
 
@@ -71,14 +71,14 @@
             return [
                 { href: "accountant-dashboard.html", icon: "fa-gauge", label: "Overview" },
                 { href: "payments-management.html", icon: "fa-file-invoice-dollar", label: "Payments" },
-                { href: "invoices.html", icon: "fa-receipt", label: "Invoices" }
+                { href: "payments-management.html#invoice-history", icon: "fa-receipt", label: "Invoices" }
             ];
         }
 
         createQuickActions() {
             return [
                 { href: "payments-management.html", icon: "fa-money-bill-wave", label: "Collect payment" },
-                { href: "reports-dashboard.html", icon: "fa-chart-line", label: "Financial report" }
+                { href: "accountant-dashboard.html", icon: "fa-chart-line", label: "Financial report" }
             ];
         }
 
