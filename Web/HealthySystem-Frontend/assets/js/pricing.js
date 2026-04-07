@@ -47,19 +47,29 @@ class PricingPage {
         this.showLoading();
 
         try {
-            const [categoriesResponse, servicesResponse] = await Promise.all([
-                apiService.getServiceCategories(),
-                apiService.getServices()
+            const [categoriesResponse, servicePricesResponse] = await Promise.all([
+                apiService.getServicePriceCategories(),
+                apiService.getServicePrices()
             ]);
 
-            const servicePayload = this.extractArrayPayload(servicesResponse);
+            let servicePayload = this.extractArrayPayload(servicePricesResponse);
+            if (!servicePayload.length) {
+                const fallbackServicesResponse = await apiService.getServices();
+                servicePayload = this.extractArrayPayload(fallbackServicesResponse);
+            }
+
             this.groups = this.normalizeServiceGroups(servicePayload);
 
             if (!this.groups.length) {
                 throw new Error('Không nhận được dữ liệu dịch vụ từ API.');
             }
 
-            const categoryPayload = this.extractArrayPayload(categoriesResponse);
+            let categoryPayload = this.extractArrayPayload(categoriesResponse);
+            if (!categoryPayload.length) {
+                const fallbackCategoriesResponse = await apiService.getServiceCategories();
+                categoryPayload = this.extractArrayPayload(fallbackCategoriesResponse);
+            }
+
             this.categories = this.normalizeCategories(categoryPayload, this.groups);
 
             this.renderFilterButtons();
@@ -140,7 +150,7 @@ class PricingPage {
                     group?.Category || group?.category || group?.Code || group?.code || group?.CategoryName || group?.categoryName
                 );
                 const name = this.toCategoryName(
-                    group?.CategoryName || group?.categoryName || group?.Name || group?.name,
+                    group?.CategoryName || group?.categoryName || group?.Name || group?.name || group?.Category || group?.category,
                     code
                 );
 
@@ -209,17 +219,35 @@ class PricingPage {
     normalizeCategories(categoryPayload, groups) {
         const fromApi = Array.isArray(categoryPayload)
             ? categoryPayload.map((item) => {
-                const code = this.toCategoryCode(item?.Code || item?.code || item?.Category || item?.category || item?.Name || item?.name);
+                const isStringItem = typeof item === 'string';
+                const rawCode = isStringItem
+                    ? item
+                    : (item?.Code || item?.code || item?.Category || item?.category || item?.Name || item?.name);
+                const code = this.toCategoryCode(rawCode);
+                const rawName = isStringItem
+                    ? item
+                    : (item?.Name || item?.name || item?.CategoryName || item?.categoryName || item?.Category || item?.category);
                 return {
                     code,
-                    name: this.toCategoryName(item?.Name || item?.name || item?.CategoryName || item?.categoryName, code),
-                    icon: (item?.Icon || item?.icon || this.getCategoryIcon(code)).toString()
+                    name: this.toCategoryName(rawName, code),
+                    icon: ((isStringItem ? '' : (item?.Icon || item?.icon)) || this.getCategoryIcon(code)).toString()
                 };
             }).filter((item) => item.code)
             : [];
 
         if (fromApi.length > 0) {
-            return fromApi;
+            const unique = [];
+            const seen = new Set();
+
+            fromApi.forEach((item) => {
+                if (seen.has(item.code)) {
+                    return;
+                }
+                seen.add(item.code);
+                unique.push(item);
+            });
+
+            return unique;
         }
 
         return groups.map((group) => ({
@@ -393,6 +421,16 @@ class PricingPage {
             procedure: 'Thủ thuật',
             surgery: 'Phẫu thuật',
             package: 'Gói dịch vụ',
+            'kham benh': 'Khám bệnh',
+            'xet nghiem': 'Xét nghiệm',
+            'chan doan hinh anh': 'Chẩn đoán hình ảnh',
+            'thu thuat': 'Thủ thuật',
+            'dich vu khac': 'Dịch vụ khác',
+            'khám bệnh': 'Khám bệnh',
+            'xét nghiệm': 'Xét nghiệm',
+            'chẩn đoán hình ảnh': 'Chẩn đoán hình ảnh',
+            'thủ thuật': 'Thủ thuật',
+            'dịch vụ khác': 'Dịch vụ khác',
             other: 'Dịch vụ khác'
         };
 
@@ -408,6 +446,16 @@ class PricingPage {
             procedure: '⚕️',
             surgery: '🏥',
             package: '📦',
+            'kham benh': '🩺',
+            'xet nghiem': '🔬',
+            'chan doan hinh anh': '🧪',
+            'thu thuat': '⚕️',
+            'dich vu khac': '📋',
+            'khám bệnh': '🩺',
+            'xét nghiệm': '🔬',
+            'chẩn đoán hình ảnh': '🧪',
+            'thủ thuật': '⚕️',
+            'dịch vụ khác': '📋',
             other: '📋'
         };
 

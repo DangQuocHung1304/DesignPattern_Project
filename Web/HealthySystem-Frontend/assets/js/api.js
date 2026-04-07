@@ -408,6 +408,21 @@ class ApiService {
         );
     }
 
+    async getServicePrices(category = null) {
+        const endpoint = category ? `/serviceprices?category=${encodeURIComponent(category)}` : '/serviceprices';
+        return this.executeSafely(
+            () => this.get(endpoint, false),
+            'Không thể tải bảng giá dịch vụ.'
+        );
+    }
+
+    async getServicePriceCategories() {
+        return this.executeSafely(
+            () => this.get('/serviceprices/categories', false),
+            'Không thể tải danh mục bảng giá dịch vụ.'
+        );
+    }
+
     async getNews(page = 1, limit = 10, category = null) {
         const params = new URLSearchParams({ page: String(page), limit: String(limit) });
         if (category) {

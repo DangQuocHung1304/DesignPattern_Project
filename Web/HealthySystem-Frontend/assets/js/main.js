@@ -236,7 +236,7 @@ async function loadHealthNews() {
         
         if (result.data && result.data.length > 0) {
             newsList.innerHTML = result.data.map(news => `
-                <div class="col-md-4">
+                <div class="col-4">
                     <div class="card h-100 news-card">
                         ${news.imageUrl ? `
                             <img src="${news.imageUrl}" class="card-img-top" alt="${news.title}" style="height: 200px; object-fit: cover;">
@@ -312,7 +312,7 @@ async function loadServicePrices() {
             const previewData = groupedData.slice(0, 2);
             
             pricingPreview.innerHTML = previewData.map(group => `
-                <div class="col-md-6">
+                <div class="col-6">
                     <div class="card h-100">
                         <div class="card-header bg-primary text-white">
                             <h5 class="mb-0">
